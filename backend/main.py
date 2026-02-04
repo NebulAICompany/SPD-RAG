@@ -15,7 +15,7 @@ import shutil
 from backend.pipeline.upload import process_file
 from backend.shared.constants import UPLOADS_PATH_STR
 
-from backend.agent_graph.graph import get_compiled_graph
+from backend.core.graph import get_compiled_graph
 from backend.shared.logger import get_logger
 from backend.retrieval.retriever import load_vectorstore, close_vectorstore
 from backend.shared.constants import (

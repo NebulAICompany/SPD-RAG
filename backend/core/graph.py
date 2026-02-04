@@ -3,7 +3,7 @@ from langgraph.graph import START, StateGraph
 from langgraph.types import Send
 from langgraph.checkpoint.memory import InMemorySaver
 
-from backend.agent_graph.nodes import (
+from backend.core.nodes import (
     clarify_intent_node,
     document_sub_agent_node,
     generate_plan_node,
@@ -12,7 +12,7 @@ from backend.agent_graph.nodes import (
     synthesis_node,
     summarize_conversation_node,
 )
-from backend.agent_graph.state import AgentState
+from backend.core.state import AgentState
 
 
 def route_from_start(

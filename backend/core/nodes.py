@@ -12,14 +12,14 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
 from pydantic import BaseModel, Field
-from backend.agent_graph.prompts import (
+from backend.core.prompts import (
     CLARIFY_WITH_USER_INSTRUCTIONS,
     FINAL_REPORT_GENERATION_PROMPT,
     LEAD_RESEARCHER_PROMPT,
     TRANSFORM_MESSAGES_INTO_PLAN_PROMPT,
     RESEARCH_SYSTEM_PROMPT,
 )
-from backend.agent_graph.state import AgentState, Plan, SubAgentInput, Summary, TodoItem
+from backend.core.state import AgentState, Plan, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
 from backend.core.tools.rag import search_specific_document_for_research
 from backend.core.tools.api import web_search_tool
