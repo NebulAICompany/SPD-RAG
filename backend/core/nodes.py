@@ -23,7 +23,6 @@ from backend.core.state import AgentState, Plan, SubAgentInput, Summary, TodoIte
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
 from backend.core.tools.rag import search_specific_document_for_research
 from backend.core.tools.api import web_search_tool
-from backend.core.tools.skills import load_skill
 
 
 def get_today_str() -> str:
@@ -269,7 +268,7 @@ async def orchestrator_node(
     todos = state.get("todo_queue", [])
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos, web_search_tool, load_skill], tool_choice="auto")
+    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos, web_search_tool], tool_choice="auto")
 
     system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
     context_prompt = f"""
@@ -297,20 +296,6 @@ Current TODO List:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
             elif tool_call["name"] == "web_search_tool":
                 tool_output = await web_search_tool.ainvoke(tool_call["args"])
-                if isinstance(tool_output, tuple):
-                    content, _ = tool_output
-                else:
-                    content = str(tool_output)
-
-                tool_outputs.append(
-                    ToolMessage(
-                        content=str(content),
-                        tool_call_id=tool_call["id"],
-                        name=tool_call["name"],
-                    )
-                )
-            elif tool_call["name"] == "load_skill":
-                tool_output = await load_skill.ainvoke(tool_call["args"])
                 if isinstance(tool_output, tuple):
                     content, _ = tool_output
                 else:

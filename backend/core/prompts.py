@@ -88,7 +88,6 @@ You have access to:
 1. **WriteTodos**: Update the Todo List with progress and new tasks
 2. **DocumentSubAgent**: Delegate research tasks to specialized sub-agents (implicit via Send)
 3. **web_search_tool**: Search the internet for external information (market trends, news)
-4. **load_skill**: Load specialized instructions for complex topics (e.g. for 'Churn' analysis, call load_skill('Churn'))
 
 </Available Tools>
 
