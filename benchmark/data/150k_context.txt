@@ -1,0 +1,1653 @@
+The following lines contains a single episode transcript of a Dungeons and Dragons game played by a group of players. The episode transcript is delimited by [START OF EPISODE] and [END OF EPISODE]. The transcript is followed by a question about the game statistics. Answer the question based on the transcript. Do not try to guess, estimate or approximate the result. Do not ask the user for clarification or follow-up. Do step-by-step reasoning if needed. Return the final answer in \boxed{{}}. 
+
+The following lines contain the mapping between player names and character names.
+Matt plays the character DM.
+Travis plays the character Fjord.
+Laura plays the character Jester.
+Marisha plays the character Beau.
+Taliesin plays the character Caduceus.
+Sam plays the character Veth.
+Liam plays the character Caleb.
+Ashley plays the character Yasha.
+Khary plays the character Shakäste.
+Mark plays the character Cali.
+Ashly plays the character Keg.
+Sumalee plays the character Nila.
+Deborah plays the character Twiggy.
+Chris perkins plays the character Spurt.
+Mica plays the character Reani.
+
+Use this mapping when answering the questions below.
+
+[START OF EPISODE]
+Matt: Hello, everyone. (laughter)
+Matt: And welcome to tonight's episode of Critical Role, where a bunch of us nerdy-ass voice actors sit around and play the first game of our new campaign of Dungeons and Dragons. (cheering)
+Matt: Super excited to be back. I've missed this a lot. Missed this-- oh, you guys will be fine. So yes. Glad you guys can join us, apparently in some crazy numbers. So welcome new viewers. Hope you enjoy your stay. So, without further ado, let's get this going so we can get through our announcements. Since it is our first episode of the year, of the campaign, I want to make sure that we get our announcements out of the way. We've got some cool stuff to talk about. First and foremost, we have two sponsors tonight. Our first sponsor-- and we're going into, for a time, a cool partnership with the folks at DnD Beyond, actually. They've been really awesome, and we've been talking, and anybody who hasn't seen it, it's an online digital tool where you can create your own D&D character, they have options to purchase any of the current D&D books out there, and then carry over any of the character options and racial options over into it, so you can basically use it as a tool. We'll be using it to help us out in the game as we go, 'cause it's actually got some pretty cool stuff. So excited about that. It is D-N-D Beyond, by the way, if you haven't seen, not the ampersand. It's D-N-D.
+Laura: As in nnnn.
+Matt: Nnnn. But yeah, so they're going to be a long-term partner for the show, so working with us through the start of this campaign. We're super excited. But yeah. So we're excited. You can currently activate-- it should be now-- some Critical Role content on there. They should have available the Blood Hunter class that I created a couple of years ago, kind of refining. Should be available for you guys to find on the DnD Beyond, which I'm excited about, and there's a one-time discount of $10 off any digital book in the dndbeyond.com marketplace if you use the codeword 'beginnings' in there right now. So yeah, get a chance to check it out.
+Travis: (vomiting noises) Would you like some?
+Matt: So yeah. I'm super excited to have that, guys. So you apply that code at checkout to make that happen, in case you're confused and trying to get it to work. There's a bunch of stuff to explore on there, and a bunch of cool ways to incorporate the existing breadth of D&D lore and options in there, and now you have some of our stuff in there as well, and hopefully more Critical Role content and Tal'Dorei content and Exandria content down the road to also be available on there as we go. Super excited about that. I'd like to thank you guys at DnD Beyond for being awesome. We also have our second sponsor. Sam, if you want to take it away.
+Sam: I'm our second sponsor. (laughter)
+Laura: Thanks, Sam!
+Sam: No. Welcome, new viewers. Every week-- or many weeks, I am charged with writing the ad for the sponsor of that week. I did this one way back in mid-December, so it'll feel a little stale. (laughter)
+Sam: Sorry. I didn't have time to write a new one. Apologies to our sponsor. But our second sponsor tonight is Backblaze. They offer unlimited cloud backup for Macs and PCs. You can restore from the web or via hard drive. They'll even overnight FedEx a drive to you, and because it's Christmas season, I wrote this. 'Twas the night before Critmas when I clicked on my mouse, but the drive wasn't whirring; it had said 'Adi-ouse'. When up from the cloud there arose such a sight, I knew in a flash that my shit was all right. As I spat out my plate of cold chicken kiev, down my chimney came a weird little elf named Lev. I said, "Whoa, whoa, whoa, how'd you get in my place?" Lev gave me a wink and punched me in the face. And suddenly he fired up a pipe and started to restore my computer from a backup he carted. My documents, like slash fiction from My Little Pony. My photos, like me naked, covered in bologna. He mumbled that you can get backed up at once for a merry little fee of $5 a month-s. You even get 15 days free if you scroll over to backblaze.com/criticalrole. And just like that, my computer was on. Lev greased up his body, and bam, he was gone. But I heard him exclaim, "Peace out, yo, whassup! Happy Backblaze to all, don't forget to back up!" (cheering)
+Sam: I'll write another one for Easter, I promise. (laughter)
+Matt: Thank you, Sam. So thank you, Backblaze. Happy to have you for our sponsor tonight as well. Also, as a heads-up, we've had our friends at Wyrmwood for a while have been awesomely providing Wyrmwood dice boxes and dice trays and dice towers to give away to people in the community. They have new boxes for all the players in the new campaign. And they have been working on something for a while for us to kick off the new campaign. They made us a new table. If we can go to a camera view of this table they made for the campaign. (cheering)
+Matt: It's made out of English brown oak, the center Critical Role inlay is made of ash burl, is the background, and then rosewood for the d20 outline, wenge for the Critical Role words themselves, and silver stringing around the border. It was built by hand in their Massachusetts office and workshop, and it was hand-rubbed oil on a wax finish. Over a hundred hours were put into this table. They did an incredible job, and we're super honored to have that here, and thank you guys for showing such an awesome appreciation for what we do.
+Sam: It smells really nice.
+Laura: We have cubbies!
+Marisha: It smells like wood in the studio, like fresh wood.
+Sam: And, when we get canceled, this is going to be a great dining room table.
+Matt: This is true! Thank you guys, Wyrmwood. If you aren't familiar with any of their stuff, go to wyrmwoodgaming.com, that's W-Y-R-M-wood Gaming dot com. They do awesome work. It's really super high-quality, it's great. So thank you guys. All right, so. Let's see. Updates we can get through. Laura, do you have an update for merch stuff in the new year?
+Laura: (yells) Okay. Yes, I do. It's a new campaign, new us, new merch. I don't know which camera I'm looking at.
+Sam: That one.
+Laura: So we released our teaser on socials, and everybody was like, "I want that as a poster!" So we listened to you, and we made it a poster! (cheering)
+Sam: It's a real poster?
+Laura: It's a real poster!
+Sam: Oh, wow!
+Laura: Look at this lameness that you could have on your wall! So yeah. It's in the store right now, you guys, and we printed a small amount, so those ones will be shipped faster, and then after that it'll just be pre-order, but I think it's all listed as pre-order, so just so you know.
+Sam: Can you photoshop out my crotch region?
+Laura: No.
+Taliesin: That would be a lot of photoshop, man.
+Matt: None of us have that much talent in post, Sam.
+Laura: But let's just talk about this Matthew Mercer.
+Matt: Let's not talk about what I-- when I put that outfit on, I did not consider quite the permeation in my life it would become. So there's that.
+Laura: So we can be with you always. Matt can stare at you while you sleep.
+Liam: That's actually how Purvon dressed.
+Matt: God damn it.
+Taliesin: Hey, first throwback! Well done.
+Laura: Oh yeah. We've got to be careful, guys, because we have a lot of people that haven't watched the last campaign, or haven't finished the last campaign, so no spoilers for last campaign.
+Sam: I don't really remember it.
+Travis: Well, we all died, so.
+Matt: That's true, yeah. Okay, next announcements the Critical Role podcast we have currently up to date. All of Vox Machina's story, the whole first campaign, is now on the podcast. You can find it where the finest podcasts are downloaded. And do we have an update as far as the release schedule for this podcast?
+Marisha: Yes, we do. They will be releasing one week after we are live. We'll be one week behind.
+Sam: On a Thursday?
+Marisha: They will be releasing on Thursdays the week after.
+Laura: Oh, so you can listen to it in the morning and watch it live at night. If you have a lot of free time. Or a really long drive, maybe.
+Sam: An extra eight hours to spend every Thursday.
+Matt: To be fair, you guys would have about as much free time on a Thursday as I would. Cool, so look forward to that. Comic book, issue four of Critical Role: Vox Machina Origins, Liam, when does that come out?
+Liam: It is coming out on the 24th of this month.
+Travis: Oh, make it sooner!
+Liam: I've read it. It's so good, it's real good, it's so good. You guys, Vox Machina's story ended at this table, but it is going to live on and on and on-- at least for three more issues.
+Matt: Thank you very much.
+Travis: Check it out everywhere.
+Liam: Yeah, on Zune, on PalmPilot. Darkhorse app, Comixology, Limewire, finally.
+Marisha: Napster.
+Laura: I'm going to throw up.
+Matt: That's okay, guys, we've got a couple more things left. Thank you for hanging in there. As far as con appearances go, I actually fly tomorrow to Miami, Florida for Paradise City Comic Con. I'll be there tomorrow until Sunday. If you guys are in the area, come say hi at the convention. It should be fun. I have panels and signings and stuff. Hopefully see you there. Also, I'll be at Lexington Comic and Toy Con in Lexington, Kentucky, March 9-11, Otafest in Calgary, May 18-20, and A-Kon in Texas, June 7-10.
+Ashley: Jeez Louise, Matt.
+Laura: We have Emerald City Comic Con, me and Travis.
+Travis: First weekend of March.
+Matt: Badass. Cool. All right, so. Paring it down, finishing it up here. Thank you for your patience. With the new campaign, I want to renew our appreciation for and make sure that we push to you guys that we, from the very beginning, have been supporting a really amazing charity called 826, 826LA being our local chapter. They have 826 groups all over the United States that they do after-school creative writing, and a lot of great creative classes for children who are either underprivileged or don't have opportunities to go to these types of classes. They do wonderful, wonderful work, and we've been supporting them from the very beginning, and we're just doubling down on that for this new campaign. You guys as a community have been fantastic in supporting them, and all the charities that we've supported from the very beginning. Critmas every year has been a very prime example of that, so I just wanted to continue to push that forward, share the love, and a big thank-you to 826 for being such an amazing source of creative drive for so many young kids who normally wouldn't have that opportunity. So you guys are amazing, and show them your appreciation if you can. (cheering)
+Matt: Final shout-outs. One, thank you to Ian Phillips of Iron Tusk Painting, who has painted the miniatures for this campaign. (cheering)
+Matt: He actually painted me and Marisha's cake toppers for our wedding, and whenever you manage to see them in the campaign, you can know that it's his handiwork. Soon enough.
+Ashley: Also, fun fact about Ian Phillips  I grew up with him. He was one of my brother's best friends when we first moved out here to LA, and so when that name was floating around, I was like, wait a minute. And then we reconnected back on Instagram. It's such a crazy story. You know, Critical Role brings it all back around. (laughter)
+Matt: I love it. So you can follow him, @PaintingTusk on Twitter.
+Liam: I've had him paint 20 to 30-- I'm kind of addicted-- 20 to 30 miniatures. They're amazing. He's amazing at what he does.
+Matt: And final thank-yous to Warner Bros and Monolith Entertainment for letting us incorporate the Shadow of War soundtrack into our Critical Role soundtrack here on the air, so those will be coming into the new campaign. And, super excited, CD Projekt Red has been nice enough to allow us use of the Witcher series soundtrack to also incorporate into the campaign, which, honestly, when we started playing at home, the Witcher soundtrack was most of my music, and I couldn't use it when we started streaming, and so it's been a cool full-circle to be able to bring it back in. Plus it brings a unique flavor that works with the new campaign setting, so. With that, I believe our announcements are done. Thank you for bearing with us.
+Laura: Wait, we're going to give-- oh, that's--
+Marisha: Afterwards.
+Sam: There's one more announcement.
+Marisha: Our announcement is our brand-new opening title sequence. Which I think we're ready for.
+Matt: So, as we bring it down, guys, let's go ahead and prepare to dive in to the new year and the new campaign for this episode of Critical Role. (yelling) [80s music] (laughter)
+Matt: And welcome back.
+Travis: That was a new level.
+Matt: We've definitely returned to the table. Thank you, Sam. So.
+Marisha: Wait, super fast. We've got to go through credits. Right? Okay. So normally we don't do this, and I did this once before when we released our other opening title sequence. Yeah, 50th. So we're going to do this again. These are just people who do so much and who do not get enough love. I'm going to shout them out. Sean Becker, who's the unsung hero of Geek and Sundry, he's the executive producer. T.J. Rotell, he's our production manager around here, he makes sure that we actually have cameras. Maxwell James, our producer that makes this show go every week. Dani Carr, our production coordinator, also huge producer here. Steve Sprinkles, who directed that amazing opening title sequence.
+Sam: That's not a real name!
+Marisha: I know. I love it on the slate. It always says 'Sprinkles'. Jan-Michael Losada, who is our D.P., and is the same D.P. from last time. Tristan Savage-Tate, our first A.C. Sean Delahunt, who is our key grip. Tyler Hart, who is our gaffer, who gaffs everything around here, he's amazing. Jenny Newman, who did the amazing wardrobe. She sourced all the wardrobe. Wren Witting, who's one of our hair and makeup artists. Vanessa Marie, who is our second hair and makeup artist. Jose Sosa, who was our production assistant. Selina Ruthe--
+Laura: That's a lot of pieces of paper!
+Marisha: I know. Selina Ruthe, who did additional photography, and she also does stuff every day.
+Laura: Why didn't you put them on the same piece of paper?
+Marisha: Because I didn't know there was going to be this many. Brandon Clark, who was our location manager. Pamela Joy, who shot all the photos for that, and Loretta Ritchert.
+Laura: Yeah, they're with Heirloom Photography, and they did all of our thumbnails, too. They did that poster.
+Ashley: Go check them out on Instagram!
+Marisha: Jason Charles Miller, who does our music.
+Liam: Party on, Garthok!
+Marisha: Sean Hudson, who does our post-production. And Andy Inglat, who edited that thing. Okay. I'm sweating a lot.
+Matt: That's okay. So.
+Sam: What a night. Well, guys...
+Taliesin: This has been great.
+Liam: Holy shit.
+Matt: Everyone. Everyone.
+Sam: Can we open our fricking books yet?
+Marisha: Not yet.
+Matt: Welcome to Wildemount. The year is 835 P.D., or post-Divergence. This continent is divided both by jagged terrain and political powers. The Menagerie Coast, a collection of city-states united under the Clovis Concord, monopolizes the southwestern shores and ports of Wildemount, thriving on open trade and cultural freedom. Beyond the Cyrios Mountains lies the massive region known as Wynandir, bisected by the Ashkeeper Peaks. Eastern Wynandir houses the expansive wastes and turbulent badlands of Xhorhas, overrun with all manner of beasts and terrors, relics from the final battles of the Calamity that ruined that scarred landscape. Northward, you would find the Greying Wildlands, a lawless realm harboring a curse that has kept it unconquered by human hands. However, this story begins in the territory of Western Wynandir, within the boundaries of the Dwendalian Empire. Emerging 13 generations before, the Dwendalian Empire has slowly spread to encompass the surrounding societies of the region, absorbing the peoples of the Zemni Fields and the Marrow Valley, before finally conquering the Julous Dominion and taking the whole of Western Wynandir for the Empire.
+Sam: There will be no test.
+Matt: No. This is-- let me continue. Under the rule of the current King Bertrand Dwendal, now in his 68th year, most are left to their own devices. You live as you did before. The crown only takes a tithe of what you produce and earn. You follow its laws, worship its gods, and bow to its installed local leadership. In return, denizens of the Empire are protected from the chaotic horrors and shadowed evils that stalk the edges of the civilized lands. This accord has led to a prosperous century for the Empire, or at least the political elite. Tensions brew beneath the chafing watch of the Crown's Guard. Every temple is government-owned and run, and worship outside the approved idolatry is met with imprisonment. Rumors of military clashes at the eastern border near Xhorhas have many common folk on edge. Our story, however, begins much smaller. Here in the southern reaches of the Marrow Valley, beyond the entry gates of the Wuyun Gorge, lies the small rural town of Trostenwald. Bordering the blue waters of the Ustaloch, this town came to prominence near the turn of this recent century, when the surrounding fertile farmlands were discovered to produce a unique type of grain and wheat, leading to a boom of breweries. When the glut subsided, three large families stood triumphant in the local business of fermented delights. Now Trostenwald thrives on their exports of fish, crops, and ale. Here in this sleepy trade stop along the Amber Road, a handful of wandering destinies slowly begin to intersect. We begin in the early hours of the morning on the day of Grissen in a messy room on the second floor of the Nestled Nook Inn. A bleary-eyed, bruised man in a tattered coat slowly wakens from his lengthy sleep, catching his small, snoring ally curled at the foot of the bed. Liam, if you would like to describe your character, please. (nervous laughter)
+Laura: Oh my god, no pressure!
+Sam: Were we supposed to prepare this?
+Liam: I'm pretty filthy. I have a mess of reddish-brown hair, and really filthy road clothes. I wear a long coat that I slept in. I slept about 20 hours last night. Jeez. Unshaven, a bit of a mess.
+Sam: So far you're just talking about current Liam.
+Laura: What color are your eyes? I need visual.
+Liam: They're blue. That's it. It was a rough day yesterday, and-- that's it.
+Matt: And your name is?
+Liam: Oh. Caleb. Caleb Widogast.
+Matt: All right. As your smaller friend curls awake, Sam, would you like to describe your character?
+Sam: Yeah. Um. I am a little goblin girl. (laughter)
+Sam: I am a goblin. So, you know, the green skin, the green hair, the yellow eyes. And she wears not-great clothes, just like her traveling companion there. She hides in the shadows a lot, because she knows goblins aren't welcome in this part, and that's about it. I mean, she's a little skittish, and right now she's probably stirring awake as well, right?
+Matt: Well. What's your name?
+Sam: Oh. Nott the Brave.
+Matt: So Caleb, as you come to consciousness, you glance over and can see, slowly snoring and rousing at about the same time, Nott's eyes blink open, her slowly groaning face looking over towards you.
+Sam: (high-pitched Cockney accent) Oh! You're finally awake, I see. Oh yeah, motherfuckers. It's on. You were out for quite some time, there. Rough day, eh?
+Liam: (light German accent) Not our best day, no.
+Sam: No, I mean, usually you're so good at everything, but yesterday you were just-- maybe you needed the sleep, is what you needed.
+Liam: Thank you.
+Sam: Well, don't thank me yet. I should probably tell you what happened while you were asleep. I mean, you were asleep for so long. I got bored, frankly. I was going through my pack and reorganizing.
+Liam: Has anybody seen you-- seen you seen you?
+Sam: Well, I mean, many people? I got bored. You've never slept that long, so I left, I went downstairs, I thought I'd do a bit of window-shopping, and you know how sometimes I get the itch, you know?
+Liam: I do. Did you make it back here okay, at night?
+Sam: I'm here, aren't I?
+Liam: Yeah, you are.
+Sam: Yeah, I did. But I might have been spotted by a few of the Crown's Guard.
+Liam: Did you have the mask on?
+Sam: No? No, I didn't. But they didn't catch me, so. Listen, I'm sorry, sometimes I get the urge, I've got to take something, you know? I was trying to replentish what you lost yesterday, and I failed.
+Liam: Well, we-- (sighs)-- discussed coming to a bigger town. It's going to be a little more difficult now. You can't go-- it was easier on outskirts, it was easier in farms, but we can't do that here.
+Sam: I know, I'm sorry. Yeah. I know. You're right. Yep. I just got a little bit squiggly. That's all.
+Liam: Okay. Well, I think today you should have the mask on at all times.
+Sam: Yeah, good idea, Caleb.
+Liam: It's better when we're working together. If you need to steal something, do it with my help, all right?
+Sam: Yeah, yeah, of course. Yeah.
+Liam: Back up the conversation a minute. Thank you. I would not be alive if you had not-- you saved my life. So thank you.
+Sam: Ah, no problem.
+Liam: Yesterday was really not great.
+Sam: Yeah, well, we'll do better today, right?
+Liam: Sure. Sure we will. Are you hungry?
+Sam: Yeah, I'm starving.
+Matt: At this point, you notice the gentle smell of cooked meats and promises of mediocre porridge and eggs just barely begins to creep beneath the subtle floor of your room, meet your nostrils.
+Liam: Well, Nott, what are we going to do today? I can go down and get breakfast and bring it up here. At least-- I don't know. I mean, I'm a little wary of just splashing back into the town right away.
+Sam: Let's go down, get some food. I'll come with you, 'cause as you said, we're better together. And we'll take it from there. You need some books and stuff, right?
+Liam: Always.
+Sam: All right, well, that's on the to-do list.
+Liam: All right, well, let's get something to eat, then.
+Matt: All right, so you prepare yourself with your mask set over?
+Sam: Yes, yeah, so I have a half a mask that covers my goblin face, and with the hood over, kind of obscures. Maybe it's not a goblin, maybe it's a little halfling person or something.
+Matt: Which is helpful. The southern, more rural region of the Empire, especially near Felderwin, which is one of the largest tilling and farming areas of the entire Empire, has a very heavy halfling population. And so while this city is not the core of it, you'd probably see a larger 20-25% of the population here in Trostenwald is halfling. So you pass off pretty decently as long as you keep away from discerning, intent eyes. So the two of you manage to gather your things for the time being, wander down the stairs from the top floor down to the base of the tavern, which, the air is already bustling with townsfolk and all manner of travelers preparing to take on the day's responsibilities. Yorda, the 40-something woman barkeep with shoulder-length blonde hair and weathered skin that you previously rented your room at the inn from, frantically darts behind the bar while the red-headed barmaid rushes from table to table. It seems that the clientele is a bit more than they were expecting this morning. Yorda yells from behind the bar to the barkeep, "Adelaine, two more brats and a bit of mush at the corner table." She looks up, "I'm working on it!" And she runs over and heads back to the kitchen. There's a faint bit of music as two slovenly-looking musicians in the corner are trying to work for tips with a small hat on the floor that it looks like nobody's thrown any coin into it. The tables are fairly busy, except for maybe two that appear to be available between the two of you guys, if you'd like to find a seat.
+Liam: Okay. Sure. Is that easy to do, find a seat?
+Matt: Yeah, you walk over to it, you sit down. (laughter)
+Liam: Is this how D&D works?
+Sam: What do we roll for? (laughter)
+Matt: You sit down, and due to the chaos that ensues around you, it takes a little while for Adelaine, the red-headed barmaid, to come by, and she scoots by the table. "I'm terribly sorry. What can I get you?"
+Sam: You know, meat if you have it, but if you don't, that's okay, too. Potatoes, or bacon if it's on the menu, but really anything--
+Matt: "I can get you all three, it's fine. What you want?"
+Liam: A Trost for each of us, please.
+Matt: "For breakfast? I like you. All right, two Trosts and a bunch of meats. Be right back." And she rushes off, she pulls her hair back and ties it as she goes into the kitchen, getting ready for the midst of chaos. While you guys have a moment there at the table, you can hear conversation muttering around you, and you have a brief bit of privacy to discuss.
+Liam: Yes, I need books, that's true, but did you find drink yesterday?
+Sam: I have a little left in my flask.
+Liam: How much?
+Sam: Just a couple swigs.
+Liam: So that's also on the to-do list, then.
+Sam: I mean, if you don't want me to get too jittery, yeah.
+Liam: All right. Okay. So we'll do that first.
+Sam: All right.
+Travis: I love her. (laughter)
+Matt: A short time passes before the two platters are rushed over and scattered across the front of your table with a clattering. Pile of meats there set for you, a little bit placed on the side, because you might need, especially with the look on your face-- Adelaine gives you a glance and goes, "Put something in your belly." Comes back and slides two Trosts to you.
+Sam: I remove my little mask, and then just go (eating noises). (laughter)
+Liam: I take the last piece.
+Matt: As you guys are partway through your meal-- let's see, this would be Caleb. You notice out of the corner of your eye a gentleman enter the door looking kind of meek. Middle-age, looks work-hardened. He has a heavy chin-beard that is unkempt and a bit wild, but his eyes are warm. He's holding his hat in his grip, and he scans the room with an eager glance before his face brightens, and he begins to push his way across the room, in your direction, it looks like. He scoots over towards your table, and as you're about to turn and see what he's about--
+Liam: I'm putting my hand on my purse.
+Matt: --he pivots to the table next to you instead. He turns to you three. (yelps)
+Laura: We've just been sitting here this whole time!
+Matt: Yeah. You've met this man the day before, Rinaldo, the fisherman, who you had aided. And as he approaches, he goes, "Might I sit, please?"
+Laura: Of course, take a seat.
+Sam: What's that?
+Matt: As he sits down in his chair, I would ask each of you to please describe yourselves, starting with you, Laura.
+Laura: (Slavic accent) Oh, well, okay. I'm just, you know, a little blue tiefling, that's all, with blue hair. And I'm wearing a pretty cute dress, that's all. And I'm having a good time, you know? We're just having a good time here at breakfast.
+Matt: All right. And you?
+Marisha: Uh, yeah. Yeah. I'm, you know, simple girl, simple needs. Just wearing nice, baggy clothes, some monk vestiges. They're in nice blues and greys. You notice I have a blue sash around my belt. Got a nice shave going on, little undercut. Looks like maybe I put on makeup two days ago, and I'm like, yeah, it's still holding up. It's fine. I can work with that.
+Sam: What's your name?
+Matt: We'll get to that. Thank you. And Travis, if you'd like to describe yourself, please?
+Travis: (Texan drawl) Yeah, I'm here too. (laughter)
+Travis: I'm a half-orc, sitting here in beat-up leathers. Have a big scar across my face.
+Sam: (sings 'Bad to the Bone') (laughter)
+Travis: Green skin tone, and got some piecemeal armor put together and stuff. My name's Fjord.
+Laura: You're very handsome. I just need to tell you.
+Travis: Thank you. Appreciate that.
+Matt: As Rinaldo sits down, clutching his hat still in his hands, says, "I thank you for your time. Fjord. And, I apologize, I forget your names."
+Marisha: Beauregard.
+Matt: "Beauregard. And?"
+Laura: Jester.
+Matt: "Jester, thank you. You all came when no one else would yesterday, and because of you my daughter is still alive."
+Marisha: Oh yeah. Sorry for being a pessimistic asshole, by the way, when we first came into town.
+Matt: "Oh, that's okay."
+Marisha: I'm not used to things turning out good.
+Matt: "You'll do well this side of the Empire. Anyway. I won't keep you, but I-- we spoke yesterday, and I didn't have much to give you. Sent you away with nothing but my gratitude. But I've been asking around the other fishermen, lochsmen, and we've put together a little bit of coin for your troubles, so." And he turns his cap over on the table, and this catches your attention, you hear this clattering of coin. Your eyes glance over, especially you, Nott, and watch as he leaves this pile of what looks to be mostly copper and silver pieces, with a couple of glimmers of gold, and as soon as it clatters across the hard wood table here in the center of the tavern, other faces begin to turn, gather attention as to what's happening over here in the back edge, and he takes his cap back and pushes it forward towards all of you, his dirty, you can see cracked and very callused fingers shoving it in your direction, before taking his hat and placing it back over his head.
+Laura: So cool!
+Liam: Those coins went all over the floor?
+Matt: All over the table. "I hope it's helpful. But thank you."
+Marisha: Yeah, yeah. Oh wait.
+Travis: We can't accept this, right? I mean, it's too much.
+Marisha: We're supposed to at least say that, right? And then still accept it, right?
+Travis: I think you're supposed to do it if you say it.
+Laura: Well, I mean, he did go around to a bunch of people. That was a lot of work on his part. I would hate to make him go back to all of those people and give it back to each individual person.
+Travis: Fine, fine.
+Marisha: If he didn't keep a ledger, you know. We wouldn't want to do that. It's rude not to accept a gift, right? It's rude not to accept a gift, right?
+Matt: "I would hope that is the case. Anyway. Thank you very much. I am sorry for getting in your way." And he stands up and gives you all a nod and rushes out of the tavern, a little embarrassed by all the attention that's now placed on him by the other patrons, and as he leaves, everyone goes back to their business, a couple of wandering eyes starting to count what coins are there as you slowly mitt them in your direction.
+Laura: Divide it up.
+Marisha: Okay, okay.
+Matt: There are four gold pieces amongst the pile, 22 silver, and 48 copper pieces.
+Travis: Can I clock the room, see who else is watching her count?
+Matt: Perception check. 48 copper.
+Travis: Is this the first roll?
+Matt: First roll of the campaign.
+Travis: Natural 20. (cheering)
+Matt: And that's how you start it. All right.
+Laura: So I'm leaving it to you to do that counting. Which is really hard for me, personally, but there you go.
+Marisha: How do you split up four gold? We have four gold and there's only three of us.
+Laura: Don't know.
+Travis: Well, I actually did pretty good at that card game, so you can have mine.
+Marisha: Aw. I will. Okay.
+Laura: So two for each of us! That's great.
+Marisha: Oh, that's good. One for you, two for me, two for-- oh wait, no, wait, math doesn't make sense.
+Sam: She's your treasurer?
+Matt: This is going to go great.
+Laura: It's hard not being the treasurer.
+Marisha: I'll give two to Jester, one for you, one for me. And then 22 silver, that's--
+Laura: Tell you what, you do that math.
+Matt: While you're counting this out and figuring out the division of your gains, Fjord, you glance about, narrowing your orcish eyes across the room, and you can see two other tables there are some gentlemen who are peering over, and as soon as they meet your gaze, they go right back to their business and completely shrink away. There's a man and a hooded figure at a table immediately adjacent to you. The man looks rather filthy, his hair a bit unkempt, and he's trying to finish his drink. However, the smaller halfling-looking figure is just glaring intently, and is slowly leaning in the direction of the table.
+Travis: That's creepy. Fucking disgusting. I think we have people watching us.
+Laura: Who is watching us?
+Travis: Well, just take a look right over there.
+Sam: Don't arouse suspicion, but did you hear all that coin hit that table, Caleb?
+Liam: I did. It's on the table, though, so I think on the table it will stay.
+Sam: Yes, but we could follow them out. We could do the Moneypot. We could run Rat Food. We could do Prince and the Pauper to get it from them. We could try Spider Eyes. Any of those could work--
+Laura: Are you guys staying here?
+Matt: This blue-skinned tiefling suddenly leans over to you at the table.
+Sam: Don't move. Don't move. Tieflings can only see movement.
+Liam: I don't think that's true--
+Laura: It's very true, we have a hard time seeing things that aren't moving, it's very true. But I can hear you. You should take a bath. You know they have showers here. It's possible.
+Liam: A what now?
+Laura: You bathe yourself in water.
+Liam: No, I've bathed before, yeah, I know what a bath is.
+Laura: It's because you smell really bad, and it's wafting over this direction. I'm just letting you know. I would hate if I smelled that bad and someone didn't tell me.
+Liam: I've only just met you.
+Laura: Hi! I'm Jester.
+Liam: Hi, I'm Caleb.
+Laura: Nice to meet you, Caleb. How much silver did I just get?
+Marisha: Seven!
+Laura: Woo! (laughter)
+Marisha: And 16 copper. Aren't you all jealous?
+Sam: Morning.
+Marisha: Morning.
+Matt: Make a perception check, Beauregard and Jester.
+Laura: Whoa.
+Liam: Are you checking your DnD Beyond specs?
+Marisha: I am, I'm adding my--
+Laura: 22. I haven't even flipped over my character sheet yet. This is crazy.
+Marisha: 19.
+Matt: Okay. The somewhat meek female halfling who's now suddenly very reserved, and not as filthy as the human compatriot that she keeps, seems less and less halfling the more you glance in her direction. The ears are folded inward but elongated, the tinges of green to the skin, and with the little words that have poked through her lips, you can see what appear to be teeth more jagged than expected of the half-folk.
+Marisha: I just shout over and I say, good morning, in Halfling.
+Sam: I know Halfling, right? Yes. I'll shout back, top of the morning to you. (laughter)
+Marisha: Would you like a coffee? I'd love to buy you a coffee.
+Sam: We've got-- free coffee? Yeah, yeah, I'll take it. Sure. Thank you.
+Travis: You're being mighty fucking friendly. They were looking at our coin.
+Marisha: Why can't they have been looking at me? Maybe they were looking at me.
+Travis: I didn't think of that.
+Marisha: Maybe they were looking at you. As Jester said, you're handsome.
+Liam: Just--
+Laura: Yes?
+Liam: Nott.
+Sam: He said "Jest".
+Laura: I just thought you said my name, is all.
+Marisha: Oh, I said your name. Oh, they might have said your name, too.
+Liam: Never mind, never mind. Could I get another Trost over here, please?
+Sam: Two, please, right away.
+Matt: Eventually Adelaine comes by and brings two fresh Trosts to the table, glancing about at the unique tension in the air right here. "Would you like anything as well?"
+Laura: Oh, yes. Lots of baked goods if you have them, please.
+Travis: Pork belly, if you have it.
+Marisha: I don't think I've seen you eat anything other than pastries.
+Laura: I really like them.
+Marisha: I'm kind of concerned for your well-being. It's fine, I'm not that concerned. Eat whatever you want. I'll have bacon, some ham, whatever.
+Matt: "All right, pork it is. I'll be right back." She rushes off to the kitchen. You guys continue to awkwardly stare at each other.
+Liam: I'm going to put my hand up and say, quietly, to Nott, the Moneypot is not for them. It's not for them, it's for farmers. Okay?
+Sam: Yeah, you're right, you're right.
+Marisha: Do we notice them whispering?
+Matt: With your perception rolls earlier? Yes.
+Liam: But I said it really quietly. (laughter)
+Matt: She rolled a 22.
+Liam: But she can hear my little whisper?
+Matt: No, you heard the whisper, you're not sure what the words are. You can see that they're whispering. Being mysterious.
+Laura: Okay, cool.
+Sam: In Halfling, I'll say to Beau--
+Marisha: Beau for short works.
+Sam: Are you in town for business or pleasure?
+Marisha: Can I insight check him, see what he's hiding?
+Matt: Make an insight check.
+Marisha: Okay. What's my insight, I can't remember.
+Laura: What is he saying? I mean you, you're a girl. What is she saying? Shit. That's really hard to remember now.
+Sam: You're asking me what I'm saying.
+Laura: Yeah, what did you just say?
+Marisha: 13.
+Matt: 13? I mean, seems to be genuine. Hard to read through all the wrappings, shadow, and the hood still obscuring the face.
+Laura: Do you have the mask covering you?
+Sam: I think I do.
+Matt: Yeah, it's this porcelain covering that has painted lips. It's a little unsettling.
+Liam: I mean, I'm sorry, not to be blunt, but, you know. It's pretty obvious goblins are not welcome strolling about.
+Laura: She's a goblin?!
+Sam: Yeah, yeah, but you don't have to make a big thing of it, all right? There could be people here who don't know.
+Liam: That's right. She's my companion, she's my friend. There's nothing to make a big deal about. That's why she's wrapped up. Just leave it, please.
+Laura: I didn't ask why she was wrapped up.
+Marisha: I know, we're not making a big deal out it. You're making a big deal out of it.
+Liam: Somebody asked why she was wrapped up.
+Laura: No, nobody asked.
+Liam: Somebody said the words-- this is Liam-- "Why are you all wrapped up?"
+Marisha: Oh, I asked if she was cold. (laughter)
+Sam: That's concern.
+Matt: As Caleb finishes oversharing.
+Liam: Vaxleth is over. It's so over!
+Marisha: Those are old times, man. That was a different universe. Different life.
+Matt: At this point, there is a bit of a commotion towards the entrance of the tavern. Two shadows step into the doorway of the nearish-noonday sun. The figures, one eclipsing the other from behind, begin to step in. You notice one of them begins to step from table to table, glancing about with a sort of grace to the movement, the other staying a few feet behind. Taliesin, if you'd like to describe your character, please.
+Laura: I didn't think we were going to meet you so soon!
+Taliesin: Neither did I.
+Ashley: I didn't either.
+Taliesin: But here we are. A lavender-- damn it, Travis. A lavender tiefling with red eyes and very pierced, extremely ostentatious horns that are pierced with little gems and little baubles. He's got a tattoo that seems to be running up the side of his face, a peacock tattoo that goes off into his very ostentatious, ridiculous, overblown robes that he wears. His two swords and pouch dangling at the side of his hips. He's very broad in his dress.
+Liam: So a literal and figurative peacock.
+Taliesin: Oh yes.
+Travis: One of your characters? No.
+Taliesin: I know, mine. Who knew?
+Matt: As this tiefling darts from table to table, a few feet behind, you see--
+Ashley: Wait, did you say your name?
+Taliesin: I didn't say my name.
+Ashley: Okay. So there is a woman behind him. Taller than your average... lass. (laughter)
+Ashley: She's very, very, very pale-skinned. Her hair is black that starts to turn white as it gets longer. It's matted, it's dreaded, it's braided. Her clothes are a bit tattered, but just sort of-- she's a bit of a mess, and she has two different color eyes. One of them is a light greenish-blue, and the other is a violet color. And she's very standoffish, hunch-y, arms folded.
+Matt: You watch as these figures slowly move from table to table, the tiefling engaging in some distant conversation, leaving a slip of paper, walking to the next table. Gauging the atmosphere, not leaving a slip of paper, and quickly moving on, and then eventually your eyes meet what looks to be two tables with a very motley crew of individuals that are both awkwardly avoiding their own tension and currently trying to figure you out.
+Taliesin: Can I tell if-- where are they in the dispensement of the coin? Can I tell they have a little coin on them? Did I catch any of that?
+Matt: They've completed distributing, so you don't see any coin, unfortunately.
+Taliesin: Well. I don't believe I've ever seen a group of people more in need of a good time in my entire life. Mollymauk Tealeaf of the Fletching and Moondrop Traveling Carnival of Curiosities. If there was ever a group of people that needed a good time to go out, have a laugh, see things that you have never seen before, and my god, take my word for it, one month's time, people will be buying your ale to hear the tale of what you saw at the Traveling Carnival of Curiosities this night.
+Laura: We saw your tent going up! We did!
+Marisha: We were actually going to go without the flyer, but now we also have a flyer.
+Taliesin: It's just five copper. A steal. At five silver, it would be a steal, at five gold? Worth every penny. But if you've got the five copper to spend, we would happily have you all.
+Laura: Do you perform?
+Taliesin: Ah. I'm less of a performer and more of an intermediary for these parts. I do on occasion perform. I can read fortunes--
+Laura: (gasps) I was going to ask if you read fortunes! Can you do one now?
+Taliesin: I knew you were going to ask that.
+Laura: (gasps) Oh my gosh, you're so smart. Look at this guy, he knows everything!
+Taliesin: I'm going to sit down at the table.
+Matt: Okay. He goes and sits down at this table, finishing his presentation. One of the barmaids comes up to you, and looks up. You're standing almost a solid seven inches taller than her. "Miss, can I get you a drink?"
+Ashley: (deadpan) Yes could I have a drink, please. Just some ale.
+Matt: "Coming right up. Any preferences for the family? Baumbauch?"
+Laura: Stay clear of Baumbauch. They're dicks.
+Marisha: That's kind of true.
+Ashley: Just a big.
+Matt: "Husseldorf, then. All right. Be right back." And she wanders off.
+Taliesin: Well. Who has coin for a fortune?
+Laura: Do you know my name?
+Taliesin: What is your name?
+Laura: Jester.
+Taliesin: I know your name now!
+Laura: (laugh)
+Taliesin: (laugh)
+Laura: What is your name?
+Taliesin: Oh, my name is Molly to my friends, and we're friends, now, aren't we? Pleasure.
+Laura: Molly. Look at this guy.
+Taliesin: Mollymauk. Molly for short. This is Yasha, she's a charm.
+Ashley: Hello.
+Marisha: Yasha. Yasha.
+Taliesin: Now. Would anyone like a fortune read?
+Laura: I would love one.
+Taliesin: Do you have coin?
+Laura: Yes. How much do you want?
+Taliesin: Two copper.
+Laura: Two copper, okay, I just got some copper. Here you go.
+Matt: Mark down your two copper. (laughs)
+Taliesin: I am taking this in. All right. (sighs) I'm going to try and do this.
+Laura: Oh my gosh, really?
+Matt: So, as he pulls out a small set of cards and begins to shuffle them, go ahead and roll an insight check.
+Ashley: (deadpan) He's really quite good, you all should line up and get your fortunes told. (laughter)
+Taliesin: Let's do a 16 there.
+Matt: Okay, so you get a brief conversation here, you get a pretty solid read: the excitability, the eagerness, and the exuberant interest in just getting in your face that this person wants-- any fortune you tell will probably suffice. Go ahead and roll a sleight-of-hand check as well.
+Sam: Look at this fucking game! (laughter)
+Taliesin: Also 16.
+Matt: Yeah. And you feel pretty confident that her eyes are locked onto your eyes at the moment and not the deck, as you set up a proper reading. And the cards are shuffled, set, you place them before you, and you may give your fortune.
+Sam: I'm going to just keep my eyes open for any tricks of the hand, sleight-of-hand-y-type tricks.
+Matt: Make a perception check.
+Sam: Okay. Perception. 14.
+Matt: 14. All right. Everything seems pretty above-board.
+Taliesin: Your first card, the Silver Dragon. This is good. You're pure, you're virtue, you are a worthwhile and wonderful human being, obviously, or creature of some repute.
+Laura: That's what everyone always tells me.
+Taliesin: It's true. And heading towards the Anvil.
+Laura: What is that?
+Taliesin: That is a destiny forged.
+Ashley: (deadpan) Ohh.
+Taliesin: There is something bright and adventurous in your future.
+Laura: Wow! You know, we did just defeat a really big snake? So maybe there's even bigger things coming up, you know?
+Taliesin: Can I make another roll?
+Matt: Sure.
+Sam: Ashley confirmed worst hype-man ever. (laughter)
+Taliesin: 19.
+Matt: Yeah, easy enough. Even with discerning eyes at the table, you are at the top of your game.
+Taliesin: The Serpent card appears. Of course you did.
+Laura: (gasps) Oh my gosh! Look at that! How did you even do that?
+Taliesin: That's all the cards. I'm simply a vessel for higher powers.
+Liam: While everybody's watching this shit happen, may I cast Detect Magic?
+Matt: You may. You lean back and subtly begin a brief muttering of an incantation, your fingers wash through the air, a faint silver gleam across your fingertips. Nothing magical shows up in the immediate vicinity.
+Laura: Will you ask the cards if I'm going to find him?
+Taliesin: If you're going to find her?
+Laura: Him.
+Taliesin: Give me a little bit more. Who's this 'him' that you're looking for?
+Laura: I'm looking for my dad.
+Taliesin: 14.
+Matt: You fumble for a second, but the card still finds its way through without issue.
+Taliesin: Pushing through, pushing through. The Eye card pulls up. You've already found the clue you're looking for. You just don't know what it is yet.
+Laura: Really?
+Taliesin: Apparently. Well, it's what the cards are saying. It's right in front of you.
+Laura: Wow. Does it say how long ago I found it? Because that's--
+Taliesin: Sadly, I don't have that sort of specifics. That's much more expensive.
+Laura: That's going to take a lot of thinking.
+Taliesin: Well, you find us at the show, you'll find my tent and I'd be happy to give you a more complicated reading.
+Laura: I can't wait! It's going to be so much fun.
+Taliesin: So much fun.
+Matt: Yasha, at this point, the barmaid, Adelaine, comes up and hands you the ordered ale.
+Ashley: Thank you, my lady.
+Matt: "On the house."
+Taliesin: On the house!
+Ashley: That's very kind of you.
+Marisha: Do you perform in the circus, too?
+Ashley: No. I do not. I just-- I put it up.
+Marisha: Oh, cool.
+Travis: The tent.
+Laura: It's a big tent. It would take a lot of work.
+Ashley: I put up the stage, I move things around. I'm very strong. But I don't do anything in the show.
+Taliesin: Some of our acts are a little complicated, with performers who are not of the traditional variety. Can make some of the locals get a little shifty, if you know what I mean, and it's good to have a few people around who are capable of keeping issues contained.
+Marisha: Is that why it says 'No admittance to the elderly'? You don't want to deal with those riley elderly. Or the ill, yeah. Why no elderly, though? Ill kind of makes sense, but elderly?
+Taliesin: We cannot be held responsible for anything that may happen to someone who is ill or infirm. It is such an exciting, impressive show.
+Ashley: We've had people die watching it. Yeah. It's just that exciting. Just from excitement.
+Travis: Did they die in the show, or from watching it?
+Ashley: Yeah, just like heart attack. Just from getting so excited, I guess.
+Marisha: We gotta get so wasted.
+Laura: When is it? How long is it? When is it?
+Matt: It is actually the day of Grissen, and your first show is today.
+Taliesin: First show is tonight.
+Laura: Well, we have plans tonight!
+Marisha: Yay!
+Laura: Do you stinky people want to come with us?
+Sam: I-- Caleb, we don't have any plans tonight. I guess we could go along. I wouldn't mind seeing it.
+Marisha: It'll be fun!
+Taliesin: Or you could stay here and buy beer for the people who do see the shows, and you can hear all about it and pay more.
+Liam: Yeah, we can go.
+Laura: It's going to be so much fun.
+Sam: Yeah, yeah, it sounds like a good night. Yeah.
+Laura: Look at all these friends we're making here. This is a good city.
+Sam: Yeah, it is.
+Marisha: Yeah, yeah.
+Taliesin: You are all the most charming people I've met in-- yes. I finish my beer. (sighs) Well, we'd better be getting on.
+Ashley: Yep, nice to meet you all. You're so, uh, wonderful.
+Taliesin: Charm. Pure charm. See you tonight!
+Matt: And as they leave you, Yasha just downs her entire ale, slams it on the table, and they both walk out, passing a couple more flyers at off tables, and then exit out to the rest of the day's sun beyond your sight.
+Marisha: She was awesome.
+Travis: She didn't say much.
+Marisha: That's why I liked her.
+Laura: She was really, really cool. Did you see that cool thing she had going on with her chin? That's interesting. I wish I would have thought of something like that.
+Marisha: Yeah, I mean, you could maybe do something like that in time. Just wait until maybe--
+Laura: So she doesn't know I copied. I can't do it tonight.
+Marisha: No, no.
+Laura: Wow. Cool. What do you guys want to do now? (laughter)
+Travis: Was he using magic?
+Laura: I don't know.
+Marisha: Are you-- you're superstitious. Yeah?
+Laura: No.
+Marisha: Okay.
+Laura: No, I'm not superstitious at all.
+Marisha: You-- sure.
+Laura: Why?
+Marisha: I mean, what he was working in was-- he was doing a little like-- he-- he's a smart guy. He's a smart guy.
+Laura: By the way, did you open your Christmas present from me?
+Taliesin: No, not yet, no.
+Laura: You should go open it! Yes! Go grab the bag!
+Taliesin: On the break. On the break, I'll grab it.
+Sam: Hey, Matt. Dungeon master. They're wearing what they described. They're not wearing any cloaks or anything right now, are they?
+Matt: Both of them have small cloaks over the shoulders, Beau has a--
+Sam: Do I recognize those cloaks?
+Matt: No, you do not.
+Laura: What? Why would you recognize the cloaks?
+Sam: Maybe I saw something. I don't know.
+Matt: No, you do not.
+Sam: I didn't see them last night?
+Matt: No.
+Sam: Okay. Interesting.
+Marisha: Mysteries.
+Liam: Also, for the record, there was nothing magic about that. Maybe he's good at reading people, but that was not magic.
+Sam: Caleb knows everything about magic. He's been even teaching me some. He's real good. You should see him--
+Liam: Nott--
+Laura: Caleb, are you going to go the Academy?
+Liam: (strained laugh) That's silly.
+Sam: He could if he wanted to. He's really good at magic. He can make a cat appear and disappear whenever he wants.
+Laura: Really? A cat?
+Liam: (snaps)
+Matt: You watch as just beneath the table, this orange patchy tabby leaps up.
+Marisha: Oh, shit! What's his name?
+Laura: Or her name!
+Liam: Well, it is a he. This is my cat Frumpkin. Frumpkin, yes.
+Laura: Aw! Can I call him Lumpy?
+Liam: You can call him Frumpkin.
+Laura: Look at this Lumpy! Made in England. (laughter)
+Liam: That was a little show gift from Marisha, so this is Frumpkin.
+Laura: That's so great.
+Sam: That's not all he can do. Caleb, tell them all the stuff you can do. It's really impressive!
+Liam: You know, sometimes less is more.
+Laura: I can do things, too.
+Sam: With magic?
+Laura: Yeah.
+Sam: Like what?
+Laura: Like--
+Sam: Not to me, not to me!
+Laura: Like-- oh, gosh. Okay. I'm going to use Thaumaturgy and I'm going to make all the windows in the place open up really fast, like crash open.
+Matt: Okay. You watch as four of the nearby windows slam open with a sudden burst of wind, and all the various bits of torchlight that light the deeper and more shadowed corners of the room suddenly darken and flicker. The music suddenly comes to a stop. Everyone holds their position and glances over at the table where you're all sitting.
+Travis: Jester, don't you remember us talking about keeping a low profile?
+Laura: You're right. I'm sorry. I use Thaumaturgy and I close all the windows. (laughter)
+Matt: They all slam shut a second time. The light flickers and then brightens back to its normal place.
+Laura: Ta-da!
+Marisha: Yeah! Yeah!
+Laura: Come see me tonight at the carnival! I'm really good!
+Matt: One really crotchety-looking guy in his early 50s with a super underbite, probably missing most of his teeth, just goes-- (laughter)
+Liam: I telepathically tell Frumpkin to jump up and sit in the lap of the woman in the monk's robes who just made a big scene and hopefully keep her occupied with being cute.
+Matt: Okay. As soon as you sit down, Frumpkin leaps into your lap and starts purring and rubbing up against your hand.
+Marisha: Hey, buddy. Look at this kitty! I think he likes me.
+Liam: Sure, right now he likes you.
+Marisha: Is this a real cat? Or is this a fake cat?
+Liam: What do you mean, a fake cat?
+Marisha: Like a magic cat.
+Liam: He's both a real cat and a magic cat.
+Marisha: Is he an illusion cat?
+Liam: Do you feel him?
+Travis: Could you put him over there?
+Marisha: Are you allergic to Frumpkins? Oh no!
+Laura: But he's a magic cat. How can you be allergic to magic cats?
+Travis: I'm pretty sure he's a real fucking cat.
+Marisha: He's one of those hypoallergenic magic cats.
+Liam: I don't know what the Fifth Edition rules are--
+Laura: --for cat dander?
+Matt: As far as you know right now? Yeah, he's having an actual allergic attack. A minor one.
+Marisha: I walk away a little bit from Fjord.
+Liam: Shit. (laughter)
+Sam: Well, you're both magic-users, then. And so is the larger fellow?
+Travis: Well, I mean, a little.
+Laura: Yeah, I mean, he's learning. He's getting really good at it.
+Travis: Trying to learn more.
+Laura: Yeah, you should have seen him. He disguised himself the other day, and it was like, (clicks tongue).
+Travis: Thanks, Jester. She's better at it than I am. We're trying to make our way up to the Academy to get a little bit more learning done.
+Laura: Well, he's going to learn. I'm not going to go to the Academy.
+Marisha: Man, this Academy place keeps getting brought up.
+Travis: Well yeah, it's the place to be.
+Marisha: Okay.
+Sam: I'm sorry, what Academy are we talking about?
+Travis: Solstryce Academy. You know.
+Matt: Soltryce.
+Laura: Yeah, that one.
+Sam: The Soul Train Academy.
+Liam: It's a very fancy place.
+Travis: You know it.
+Liam: I have heard of it.
+Travis: And you have arcane talents as well.
+Liam: Yeah.
+Laura: How long have you had yours?
+Liam: That's a tricky question. I studied when I was younger, and then I gave it up for a while. I picked it up again recently. It's all book-learned.
+Laura: Wow, that's cool.
+Marisha: This was a good way to go for your first.
+Laura: A frickin' cat!
+Marisha: This is kind of therapeutic. Making me feel better, just about life in general.
+Travis: (sneezes)
+Marisha: All right.
+Sam: He reads lots of books, Caleb does. He's very smart. In fact, should we go looking for more right now?
+Liam: Maybe in a little while.
+Laura: Can I see one of your books?
+Liam: Well-- and I pull apart the lapels of my coat. I have books in what modern-day people like to think of as holster-straps, but there's a book hanging here.
+Sam: I think ancient people would call it a holster as well.
+Liam: Bap-bap-bap. The books are right here. I have these, but these are heirlooms, family heirlooms, so I don't share those, but-- no, I like to read. That's all. And I'm a bit of a self-starter, so I have to find-- I mean, good luck at the Academy. That's rough, I hear.
+Travis: Do you know anything about it? We're just going up. Beginner's luck.
+Laura: We know it's rich people that go there. We have to find a way to get you in.
+Liam: All I know is how hard it is to get into.
+Sam: You don't have a lot of money, then?
+Laura: Well.
+Travis: No.
+Laura: We had more.
+Marisha: But then we lost it, but then we got it back.
+Travis: Somebody has a gambling problem.
+Sam: Oh. Which one?
+Laura: What's the name of it again?
+Matt: It is the Crick-Queen's Call.
+Laura: Have you played it?
+Sam: No, I haven't.
+Laura: I'll teach you someday. It's so much fun.
+Sam: It's a game?
+Laura: Yes.
+Sam: Cards? All right. I might like to know that.
+Laura: I mean, I can teach you, if you want.
+Sam: Yes, I would like to know that.
+Laura: Okay, I'll deal!
+Sam: Oh, right now?
+Laura: Yes, sure, this will be fun.
+Sam: Is this okay?
+Liam: Listen, I would not be sitting here if it were not for you. Do whatever you like.
+Laura: Okay. You draw three cards. Well, I give you three cards. So you use 3d6.
+Sam: 3d6.
+Laura: Yeah.
+Sam: Got one. I'm not you. I have one of each dice. (laughter)
+Laura: Okay. So hide your roll from me, because we can't know. So first you have to ante up. How much coin do you want to put in?
+Sam: I'm out. (laughter)
+Liam: It's all right. I will front some coin for you to play this game.
+Laura: Oh, great! How much do you want to front him?
+Liam: I will give you a silver piece.
+Laura: A silver. Okay, this is great.
+Sam: Thank you, Caleb. Thank you.
+Liam: Wish I had more.
+Laura: Okay. Am I doing this right?
+Matt: So far.
+Laura: Now I'm going to give us three cards, so we both roll, but we can't see. That's good. Okay.
+Marisha: Don't say 'that's good'.
+Laura: Bluffing. How do you know I wasn't?
+Sam: I'm going to try to change one of my cards.
+Laura: No, wait, there's rules!
+Sam: Without you seeing.
+Matt: Make a sleight-of-hand check.
+Sam: 12 plus eight, so that's 20.
+Matt: Make a perception check.
+Laura: No, he totally did it. She totally did it. This is really hard, Sam.
+Liam: You're only an hour and a half in.
+Sam: This is my only skill, guys.
+Laura: But, you know, that's my skill, too.
+Sam: Oh, shit.
+Laura: So I'm going to try to do it as well, 'cause that's my skill as well.
+Matt: Well, first, what'd you roll for--
+Laura: I did not notice him doing it.
+Matt: Okay, yeah, so you only get to reroll one of the dice.
+Laura: Okay, so I'm going to try to reroll one of my three, too.
+Matt: Go ahead. So make a sleight-of-hand check.
+Laura: Oh, right. Oh, shit.
+Sam: Do I notice her?
+Matt: Well, roll a perception check.
+Sam: Nope.
+Laura: 13?
+Sam: No, I rolled three.
+Laura: Okay. So the best hand you can get is three of a kind. Then, after that, it's a straight. A high straight. Then a low straight. Then it's if you get all evens, or if you get all odds, then it's two of a kind, then it's nothing, it's just high card. Okay, but now we put in a second amount, because you can up the ante, and you get one more card.
+Sam: I'm out.
+Laura: No, but wait, wait, wait. You can put in more money, and then I deal you a different card. You get to give a card back, and then I deal you another card.
+Sam: Should I? Caleb, do you have any more?
+Liam: Because you saved my life yesterday, you may have one more silver piece.
+Laura: One more silver. Okay, I'll keep it low, too, because you're only doing the one. So I only put in one silver, too.
+Matt: That's a four-silver pot.
+Laura: Yes. And now give one of your dice back, whichever one you don't want, and roll it again.
+Matt: So you get to reroll.
+Sam: Okay, got it.
+Matt: And you get to reroll one as well.
+Laura: I don't want to reroll any. Okay. Now you show what you got and we'll see who wins.
+Sam: I got a pair of fours.
+Laura: I got three fives.
+Sam: I draw my shortsword. (laughter)
+Marisha: I immediately grapple him.
+Matt: Make an athletics check. You make an acrobatics check.
+Sam: Acrobatics? 24.
+Marisha: 14.
+Matt: So the female goblin draws a shortsword. You reach out to grab, and she slips out of your grasp and is now holding the blade at the edge of the table.
+Sam: You're cheating. Somehow you're cheating.
+Liam: Nott, Nott, that's fine. That's fine. She won my two silver pieces. We'll just leave it at that.
+Sam: I'm sorry.
+Liam: That's okay. She's very jumpy sometimes. You can understand; we've been living in the woods for a long time. Every time we come near any place like this, we're attacked, jumped, followed. So I apologize on behalf of--
+Sam: That was stupid. I'm sorry. I shouldn't have done that. I'm sorry.
+Laura: No, it's okay. Just don't do it again. But I'm sorry I took all this money from your friend.
+Liam: That's making it worse.
+Travis: Maybe you could give some of it back.
+Laura: Why, though? But I won it.
+Sam: Your Laura is showing. (laughter)
+Laura: Tell you what. I'll give you-- none of it back, I can't! Okay, here's one silver back--
+Liam: No, I insist.
+Laura: Okay, but I insist, all the money back. All right, fine, it's mine, thank you. Yay.
+Sam: I need another drink.
+Liam: A round of Trosts for both our tables, please.
+Laura: See? Isn't that the most fun?
+Sam: It's fun.
+Matt: Yorda looks over and goes, "Any preference of family?"
+Liam: Not Baumbauch.
+Matt: "Von Brandt it is."
+Marisha: I'm impressed that you stuck to taking a guy's money in a training game.
+Laura: Right? Oh, wait, is that bad?
+Marisha: Meh.
+Laura: Well, I only learned last night, you guys.
+Liam: What is a training game?
+Marisha: Just meaning when she was teaching.
+Laura: People took my money when I was learning.
+Liam: It's fine. It's water under the bridge. It's fine. It's all right.
+Matt: Another round is brought to your table. You guys can share a solemn post-game drink amongst yourselves.
+Liam: If you feel slightly worse, there's a drink on me.
+Laura: Oh jeez, now I'm definitely giving you your two silver back. Don't worry about it, man. (laughter)
+Sam: She's just a couple of wild and crazy guys over here. (laughter)
+Laura: Have my baked goods come out yet?
+Matt: They have. Your meal's been presented for a while now. You've had the opportunity to eat most of your meal.
+Sam: That's real.
+Matt: That is actually real. That's the power of imagination, Sam. That wasn't there a second ago.
+Taliesin: Bangarang! (laughter)
+Taliesin: Right there for you.
+Matt: So you all finish your independent meals and decide to continue your conversations or go about your business for the day.
+Laura: I just want to go to the carnival.
+Liam: That's later tonight, though, isn't it?
+Matt: If you have no other business, we can wait until dusk.
+Sam: Well, there's that board on the wall. Has anything new been posted on the board?
+Matt: You go ahead and take a look at it. There is one sheet that pertains to somebody in the Hills Ward looking for folks to go ahead and do an extermination run near the southern portion of the Ustaloch. It looks like there's what looks to be a vole infestation.
+Travis: What the fuck is a vole?
+Matt: It's a small rat.
+Laura: Should we do it?
+Marisha: I mean, we have to kill Rodents of Unusual Size.
+Sam: That doesn't sound interesting to me at all.
+Travis: What else is there?
+Matt: Currently, it looks like there was another sheet that looks like most has been torn off. The rest of the board is pretty empty at the moment.
+Liam: DM, did I tear that? I can't remember.
+Matt: You did, yes.
+Sam: Wasn't it a delivery thing?
+Liam: That was what it was, yeah.
+Matt: It was to help move and load crates at one of the local breweries.
+Sam: Fuck that.
+Laura: We've done that. It sucked so much.
+Sam: You did that?
+Laura: Well, by mistake.
+Marisha: We played D&D and we moved crates for eight hours. (laughter)
+Travis: We did, yeah.
+Matt: Welcome to level two.
+Sam: We said no to that job, thank you.
+Travis: We get bored pretty easily.
+Marisha: We did, however, then gamble with the other workers and then Jester-- yeah. Jester--
+Laura: Well, I lost it, but he made so much.
+Travis: Maybe not out loud say that. Just a thought.
+Marisha: Oh, that's right. We probably shouldn't. We didn't make any money.
+Laura: Do you guys want company? Do you want us to come and hang out with you today?
+Sam: I don't know about that. That sounds risky, I don't know.
+Liam: Do you know something? I, shockingly, think that's not a bad idea.
+Sam: To have these weirdos with us?
+Laura: I can hear you.
+Liam: Yesterday was a very bad day.
+Sam: Yes. Well, I suppose if we surrounded ourselves with weirdos, then maybe it would take some of heat off of me.
+Liam: Well, yes. Bottom line  can you hang with the goblin?
+Laura: Bottom line-- and I touch Nott's shoulder, and I cast Blessing of the Trickster.
+Sam: Oh, Jesus, she's going to kill me right now. (laughter)
+Sam: Any magic kills a goblin instantly. Yeah, instantly. (laughter)
+Laura: That would be the worst character choice ever. (laughter)
+Liam: We will mourn her. Tschuss.
+Matt: Okay, so there's a slight sense of warmth that emanates from under her hand, and for a moment, you look over and glance instinctively, ready to almost draw your sword again. But it seems to quicken your reflexes. You have this surge of adrenaline that doesn't quite fade.
+Laura: You have advantage on all your stealth checks.
+Matt: For the next hour.
+Sam: Thank you. That's very nice.
+Travis: I don't have a problem with goblins, but you guys aren't in any trouble, are you? No one's after you?
+Laura: Because she is all kinds of trouble.
+Sam: No one is after me!
+Travis: Can I make an insight check?
+Matt: You may. (laughter)
+Travis: 13.
+Matt: 13. If you want to go ahead and try and lie.
+Sam: That's a 14, except negative three to performance.
+Taliesin: I've been waiting for this for so long.
+Sam: So 11.
+Matt: So, are you lying?
+Sam: I am lying. I am definitely on the run from someone.
+Travis: Good to know.
+Marisha: So. Mask. I'm just fascinated by the mask. Looks well-made. Did you make it?
+Sam: That's a good fucking question. Did I make it? (laughter)
+Sam: I don't make things.
+Matt: No, I presume-- and we discussed this a little bit-- we presume it may have been scavenged from a porcelain doll.
+Sam: Oh, that's cool. Cool and gross, cool and gross.
+Laura: What's her name? The creepy doll?
+Travis: Annabelle. (laughter)
+Laura: No, don't say that. I don't want to see art with you with Annabelle's face.
+Sam: Too late.
+Matt: The internet's running with that now.
+Sam: Check your Twitter.
+Travis: It seems we have all day. What were your plans?
+Liam: Not much. We were going to sample the different Trosts, and I wanted to maybe do some book browsing. Nothing major.
+Laura: What's a Trost?
+Marisha: Brewery tour!
+Sam: It's ale.
+Laura: We just can't go by the Baumbauch ale.
+Sam: What happened with the Baumbauchs?
+Liam: There are two others to choose from, here.
+Marisha: They're who we loaded crates for, and then we kind of swindled their employee.
+Travis: Didn't leave on the best of terms.
+Liam: DM, which one is the one that everybody knows has got the blessing of Fryda Langer?
+Matt: No, that is actually the Baumbauch.
+Liam: Shit.
+Matt: Yeah, the Starosta is kind of tied with the Baumbauch family.
+Taliesin: We're imaginary beer snobs now.
+Laura: Is that the one you need?
+Liam: No, I'm just saying the one that you swindled, it's got the blessing of the big cheese here.
+Laura: Oh. Well. Why do you need it?
+Liam: We don't need it. It's just pleasurable to have a Trost, is what they say. She kind of needs it.
+Sam: I need it a little bit.
+Laura: You need a beer?
+Sam: Well, I prefer the harder stuff, but I'll take what I can get at this point. Yeah, I'm sticking with this fucking accent for the next two years. (laughter)
+Travis: Laryngitis every Friday. (laughter)
+Marisha: So beer tour, then circus?
+Laura: I've got to say, I miss those two people we ran into at the carnival.
+Travis: I might just wait for the carnival, actually.
+Marisha: Well, if we just montage through a beer tour, we'll quickly get to the circus. To the carnival!
+Matt: You can totally do that.
+Liam: Can we just bring my book-browsing down to a single roll to see if anything of use--
+Matt: Yeah, we can do that. We'll say, if you guys decide to go ahead and travel, the five of you, you make your way through the town for the day, you coast around the Husseldorf family brewery, you meet Voss and June, who are the two very nice ladies who run the facility. The Husseldorf family. You avoid the Baumbauch, but can acquire Baumbauch ale from other taverns in the town, of course. And the von Brandt family brewery. All of them, as soon as you say 'Trost', they correct you and say the family name. They're very intent on getting rid of the name 'Trost' as an overall, discussion of Trost-brand brews, and trying to make it their family name. There's an offense, to the point where you're like, "Oh, Jesus. I didn't realize."
+Taliesin: Like Kleenex and tissue paper? All right.
+Matt: But you manage to get nice and sauced throughout the day.
+Liam: I take it easy. I have one more in the first half of the day, and one in the second half.
+Matt: Okay.
+Laura: I don't have very much either.
+Matt: Okay.
+Sam: I'm going to have tons.
+Marisha: I get sauced.
+Matt: All right, well, that being the case--
+Liam: --you are poisoned.
+Matt: No, make a constitution saving throw.
+Sam: Well, that was crazy. 12.
+Matt: 12, okay. You get a little woozy for a while, and as the sun begins to crawl towards the distant horizon, you do not manage to allow your meal to usurp your control.
+Laura: Aw, it's like Ren Faire.
+Matt: Yeah. Don't remind me.
+Marisha: Good times, good times.
+Matt: So as the day comes to a close, you're fairly tipsy, you're not fully intoxicated. For your trip, you wanted to head to the Hillsbrook Parchment and Binding.
+Liam: Is that where I went the last time? Except not as myself. So I'll go as myself.
+Matt: Okay. Go ahead and make an investigation check.
+Liam: All right. Don't fuck me, Vax. That is--
+Laura: That's Vax. That's Vax's dice.
+Liam: Yeah, the thing about even a light German accent is that when you say "Vex" and "Vax", it's the same shit. (laughter)
+Liam: That is a 12.
+Matt: 12. You take the better part of 30 minutes or so, and you find there's a lot of books on farming techniques. There's a lot of books about how to grow, care for different types of vegetation, plants, various beasts of burden. You find books on the different seasons and what's best for different types of grain and wheats. You manage to pull through and find a couple of books that deal with discussion of the Menagerie Coast that talk about what's called the Clovis Concord. It's more of a discussion of the political structure that maintains all the city-states there.
+Liam: And the person who ran this place was an older man, right? Just sipping tea.
+Matt: Yeah, Sheenah, yeah.
+Liam: I'm sorry. You have a nice selection here. Do you mind if I ask-- I haven't seen any other booksellers of any kind in town. I'm not really looking for anything on farming, so much. Is there anywhere else I could look into?
+Matt: "If you're looking for some sort of a library, your best bet is to go to Zadash up north."
+Liam: Zadash.
+Matt: "That's where the Library of the Cobalt Soul resides. They have all the information you could hope for. A bit pricey to peruse their interior, unless you have proper coverage, but unfortunately if what we have isn't what you're looking for, I can't help you."
+Liam: No, it's a fine selection. Sorry. How much for this book on hoe technique?
+Matt: "Oh! Jamieson's Hoedown, yes, quite. That will be two silver pieces."
+Liam: Oh. I'm very embarrassed, I'm sorry, I gave away my last two silver pieces.
+Laura: No, I gave it back to you, remember?
+Liam: I gave away my last two silver pieces, so. Maybe I can earn it back and come back later this week.
+Matt: "Please do. Do you want me to hold it for you?"
+Liam: Yes.
+Matt: "What's your name?"
+Liam: My name is Caleb Widogast.
+Matt: "All right. I will keep it here under the shelf. Thank you so much."
+Liam: Okay, good day, thank you.
+Laura: Is this a big shop?
+Matt: It's a boutique. It's designed almost like a cross. There's two cross-sections of hallways that have books across the walls, and there's a window at the end of each and then a door at the far back.
+Laura: While he was talking to the shopkeeper, I'm going to take out as many books as I can and move them around on the shelves, and then take some of them and turn them around to where their binding is facing the inside.
+Matt: Go ahead and make a sleight-of-hand check.
+Laura: Natural 20!
+Matt: Over the period of him searching and distracting this man, you have completely rearranged the interior of this bookstore, to the point where even in the far corner, you Ghostbusters stack them in the center of the room, floor-to-ceiling, with him not even noticing it.
+Liam: You little fucking poltergeist.
+Matt: You feel confident and happy and a sensation of approval washes over you. All right, so.
+Laura: I skip out the door.
+Matt: Okay. You turn around from having this conversation and notice the interior is not as you last saw it, and a bit of nerves begin to brew up under you.
+Liam: Frumpkin, come on.
+Matt: (meows) Frumpkin follows behind.
+Liam: Oh yes! Matt's got to make cat sounds now!
+Matt: I didn't even think about that until now. God damn it. All right, so as you guys have gathered at this point, the oranges and the pinks of dusk begin to peek through the quite-cloudy sky, the chilled air of the coming night sky signalling the Crown's Guard to begin lighting the hanging lanterns that line the streets of Trostenwald. A renewed energy takes the streets as the sound of a fiddle seems to creep through the night air.
+Sam: My god, Ashley's a master fiddler, isn't she?
+Ashley: Beedle-deedle. (laughter)
+Travis: I love how your fiddle noises were "beedle-deedle".
+Ashley: That's the sound for all instruments, right?
+Sam: Drums.
+Liam: By the way, DM, can I ask-- sometime in the entire day, when Nott was getting wasted, could I have spent an hour using Arcane Recovery to gain back that one spell slot I used this morning?
+Matt: Sure, yeah. I'll allow that. All right. Folks begin to prod their heads out into the open air, curious about the source of this unusual din, and you find your vision capturing a small procession of flamboyantly dressed people parading through the central road. A lanky man of some obvious elven descent leads the pack, his long, ashy-brown hair curling ever-so-slightly past his mid-back, his long coat and tails knocking around by his skipping step. Two halfling women in purple and green bodysuits dance from side to side, handing flowers to children and flyers to adults, as a bald man in a neck-frilled frock coat of bright red, his face adorned in vibrant orange makeup to look like the setting sun behind him, plays the violin that you heard earlier in an upbeat, jovial manner. A tall half-orc masculine man with a well-groomed handlebar mustache that curves out to the side, billowing white silk shirt and black trousers, follows behind with a big drum slung over his shoulder, going (drumming) along with the fiddle. The tiefling man of lavender skin that you saw earlier walks along with a grin, juggling two curved scimitars as he walks in place, almost loses one and catches it, continues to go. Families are beginning to gather out to see this display. The two dancers part, and then a woman of short, fiery red hair and dark skin walking between them, lifting a small candle before-- fwoosh! A giant burst, a gout of flame emerges from the front of her mouth, brightens the vicinity, and everyone collectively gasps and begins cheering and clapping as they continue the walk. There, to the back of it, you see the rather burly-looking pale woman, arms crossed, just following behind and keeping an eye like a security guard to ensure that no business gets out of hand. The gasps and the cheers begin to follow, and as the procession continues down its way, the families and civilians begin to gather and follow behind. As the last bit of the sun sets behind the mountain range, the torches glowing, the procession curves through the center of the Loch Ward to the edge of the Ustaloch itself. Through the fishing village, more folks begin to gather. Do you all follow?
+All: Yeah.
+Laura: And I cast Blessing of the Trickster on you again, just in case.
+Sam: Thank you.
+Matt: People following the parade, you see faces, eager for this fresh form of entertainment. Children laugh and chatter excitedly, while the Crown's Guard in their familiar bronze and vermilion uniform try to maintain order between themselves being quite curious or visibly mistrusting of these hooligans that suddenly have usurped the evening air. The procession continues towards the eastern side, out along the southern edge of this Loch Ward, to the Ustaloch's southern place, towards the new, completely constructed, large, dark blue tent. Lengthy streamers of white and silver flap with the cold winds from the top of the structure. As you guys walk, you watch as the horned tiefling you had approached earlier slowly saunters up to your side, you recognizing these individuals you had spoken with earlier.
+Marisha: I go, Molly! Molly, hey!
+Taliesin: Oh, it's my favorites. Hello.
+Laura: We came!
+Taliesin: I'm so glad you all came to see the show. It's going to be great tonight.
+Ashley: (deadpan) It's going to blow you away. (laughter)
+Sam: The hype continues.
+Ashley: You're going to love it.
+Taliesin: First show of a round's always the best. Without fail.
+Marisha: Where are the best seats?
+Taliesin: Well, I'm always partial to the front. Then you're right in it, if something goes wrong, it's nothing between you and whatever terrible, bloody mess is going to happen. It's just the best.
+Marisha: What?
+Taliesin: Nothing, nothing, you're fine.
+Ashley: It's going to be great, but before you go in, I do have to give you guys a pat-down, 'cause you can't go in with any weapons.
+Matt: At this point, a voice rings out behind you, you see as the carnival master Gustav glances over your shoulder and goes, "You two, skip ahead, quick. We need to go ahead and set up. Looks like we're already having quite a few people excited to come here, so at the door, interior to set up. Meet us at the front. Actually, you know what? You'll be on card duty. We need a little extra change on the side."
+Taliesin: Card duty it is.
+Matt: "All right. Folks, excited for your patronage." As he spins around and addresses the whole crowd now and says, "Enjoy the night air. Walk slowly. We need just a moment to set up." And the half-elf man bows and tips his large-- it looks almost like a top hat that gets floppy towards the top and flops forward, and he puts it back on top and begins sauntering, continuing the music, but picking up their pace to get ahead of the crowd as they draw you all slowly towards the exterior tent. And that's where we're going to go ahead and take our break. (yelling)
+Travis: Face is on fire.
+Laura: Am I the only one going, do we really have to give up our weapons? I don't feel okay with this.
+Sam: Ashley, I'll do whatever you want, but if you take my weapons I might kill you.
+Ashley: I'd like to see you try. (yelling)
+Matt: All right, so. We'll be back here in a few minutes. We're going to take a quick break. We have our weekly giveaway from our friends at Wyrmwood. We have a white oak complete dice tower system that's a three-piece set. That's going to be given away to one of you there in the chat. The password, if I recall, is 'beginnings'. Yeah. This one. If you're in the Twitch chat, if you want to be part of this, when you're prompted there, go ahead and enter the word 'beginnings' once. If you enter it more than once, you'll get disqualified, so be careful with that. Otherwise, it gets this spamming spree of chaos. So the word is 'beginnings'. When prompted, go ahead and enter that, and we'll come back from the break with the winner of that. Regardless, guys, welcome to the beginning of the new campaign. (yelling)
+Matt: We'll see you here in a few minutes.
+Liam: Magic!
+Laura: Magic! [break]
+Matt: Welcome back, ladies and gentlemen. Guys! Wow!
+Liam: Grenade lobbed in by Foster at the last second.
+Matt: I know. Welcome back. So, first and foremost, we have our winner of the white oak complete dice tower from our friends at Wyrmwood. The winner is GTDevoto. Congratulations. Denova will reach out to you and get your contact information. Everyone else, thank you for entering. We'll have more with each future episode of Critical Role, thanks to our friends at Wyrmwood Gaming. Also, as a heads-up for those who aren't familiar and for those who may be, we have a Tuesday aftershow of this called Talks Machina where our friend W. Brian Foster Esq., just mixing up all of his names-- you guys know him, Brian W. Foster, friend of the show, is the host of the show, and he'll be there Tuesday talking about this episode tonight with some of the cast. 7PM Pacific time on Tuesday. So. Anyway. (laughter)
+Matt: Bringing us back.
+Travis: Bring that ass back.
+Sam: Five dragons swoop down. (laughter)
+Matt: It's so hackneyed. As you guys begin to approach the outside of this large, dark navy tent, people are being inspected and ushered through by the well-groomed half-orc on one side, and the pale woman, Yasha, you met for a second time approaching the outskirts of this carnival, with entry fees being collected by both as people begin to pass into this large structure. A few feet off to the side, you see a small crowd gathered around Mollymauk, who is sitting atop a small blanket and has cards splayed before him, a similar set that you saw Jester toying with earlier, and a farmer sits across from him, listening intently. "All right, so what can you tell me about this here cough?"
+Taliesin: How long have you had it?
+Matt: "Oh, going on like three, four months." (coughs)
+Taliesin: It looks like it's getting better. Oh yes. Does it feel like it's getting better?
+Matt: "Oh, right now? Yeah."
+Taliesin: Yeah, look at that. I would maybe breathe a tincture or something. Let's-- yeah, maybe you should get that looked at.
+Matt: "From who? What do the cards tell me?"
+Taliesin: Some sort of physician, perhaps.
+Matt: "Right! Of course! Oh, thank you so much." And he places a--
+Taliesin: Platinum Dragon be with you. Thank you.
+Matt: Stands up. "Dear, a physician!" And he walks off. (laughter)
+Marisha: What happened to 'no sick people'?
+Taliesin: This is outside the tent.
+Matt: Yeah, he doesn't enter the tent. He goes off to the side.
+Marisha: Fair.
+Taliesin: It's good to see you all here, though.
+Laura: Here's the thing. Some of us have weapons that we don't want to pass away to other people, so how much of a chance is it that we could get through without having to do that, you know?
+Ashley: Well, you can't see the show if you have a weapon on you.
+Laura: Right. And we really want to see the show. But, you know, we are really good at security, like all of us are really strong, and we could fight things that came up, too, so maybe it would be best if you don't take our weapons, and then we could help.
+Marisha: Actually, here's a deal. We'll make you a good deal. You waive our entry fee and if anyone needs to be kicked out, or any security needs to happen, we'll help you out.
+Sam: Like deputy bouncers?
+Marisha: Like deputy bouncers.
+Ashley: Well, see, funny thing about that, though, is that's my job. So.
+Laura: So do you want to hire us?
+Ashley: No.
+Marisha: You would be like our boss. Have you ever wanted to be a boss? Like, in charge?
+Ashley: Well, I am.
+Laura: We could ask you for days off sometimes.
+Matt: A heavy greenish-grey-skinned mitt slaps onto Beau's shoulder, as you glance over to see the large, well-groomed half-orc man standing there. "I'm terribly sorry, but we've got it taken care of. If you wish to pay entry, you can, but the rules are the rules. So sorry."
+Liam: Do they get stored in some sort of locker or something?
+Ashley: I hold them. And if you want, I can stand right next to you guys. You can keep your eye on me the whole time.
+Taliesin: She's very trustworthy.
+Liam: That seems fair-ish to me.
+Matt: "Yasha, does that seem-- all right."
+Marisha: I look at him as I take his hand off. What's your name, by the by?
+Matt: "Bo."
+Marisha: Good name.
+Matt: "Thank you."
+Liam: Well, that's funny, because your name is also Beau.
+Matt: "Really?"
+Marisha: You didn't have to-- maybe let me choose when to tell people--
+Matt: "No, no, I'm curious about this. How do you spell your name?"
+Marisha: Well, it's short for Beauregard.
+Matt: "Oh, mine's just B-O."
+Marisha: That's unfortunate. I mean, it's great. Did kids make fun-- never mind.
+Matt: "It's not inaccurate." And he flicks the side of his mustache. (laughter)
+Laura: Like, is his mustache especially B.O.-y? Like, what? That's really gross.
+Matt: Make a perception check.
+Laura: Ew. I don't want to perceive this. I'm glad I didn't roll very well.
+Marisha: Can I make an insight check? Is he a creep or is he just--
+Matt: Make an insight check. Eight? Thankfully, you're not in proximity enough to catch a whiff of his mustache.
+Marisha: Natural 20.
+Matt: Okay. Interestingly enough, he seems very well put-together. And he seems like he's just fucking with you. He's having fun, and he's messing with you, and he's just casual and competent and actually pretty well-groomed. He doesn't smell. And he seems more just enjoying the discourse.
+Marisha: It's funny, see, my name's Beau because my parents wanted a son.
+Matt: "Well. If it helps with any other confusion, call me the Breaker. Well, if you see the rest of the show, perhaps you'll see why I got my name."
+Laura: Are you in the show, too?
+Matt: And he cracks his arms. "I am. Towards the end."
+Travis: Now I want to see the show.
+Matt: "Well then. May I?" You can see now the crowd's starting to queue up behind you pretty heavily. "Besides, if you're going to enter, we've got to get through the rest of this riff-raff. Do you wish to join in?"
+Liam: I pull-- all I have is a dagger, but I just hand it to Yasha.
+Laura: Just one dagger?
+Ashley: I promise you I will give it back.
+Liam: Yes, here you go.
+Ashley: I promise you I will give you all of your weapons back.
+Laura: Pinky-swear me, Yasha.
+Ashley: Ugh. I don't like--
+Laura: Yeah! Now we're best friends. Here's my sickle.
+Marisha: I have a staff, but I also use it as a walking stick, so I like to keep it on me.
+Taliesin: Can you not walk around without it or something?
+Laura: She has a really bad limp.
+Marisha: Sometimes I get a little twinge, a little disc issue.
+Taliesin: Can you hand me your staff so I can watch this? I want to see this limp of yours. Purely for my own entertainment.
+Marisha: Are you patronizing me, Mollymauk?
+Taliesin: No, I'm hoping that you're going to patronize us. (laughter)
+Marisha: Can I keep my stick? (laughter)
+Ashley: How about this? I'll take it, and I can just carry you to your seat.
+Marisha: Deal.
+Laura: How are you carrying all of these weapons?
+Ashley: Because I'm really fucking strong. (laughter)
+Ashley: You. Can I give him a pat-down, because you're--
+Matt: Sure, roll an investigation check. I'll give you advantage because you're really good at this.
+Liam: I open up the coat just so she can see the books.
+Ashley: I don't think I find anything. 12.
+Matt: You find two books and a modicum of change and nothing else on him. He's actually pretty sparse as far as collectibles and keepsakes.
+Ashley: I just thought your chest looked rather square, so I wanted to see what was happening.
+Liam: I'm practically concave. Is it concave or convex, I forget?
+All: Concave.
+Marisha: Convex would be funny. (laughter)
+Sam: I'll hand her my shortsword, but not my little crossbow.
+Matt: Okay, make a sleight-of-hand check to try and hide that.
+Sam: Four. Oh, wait. 12.
+Matt: You have advantage on that, technically, right? Dexterity checks?
+Sam: Well, did you give me dexterity or just stealth? How does that work?
+Laura: I think it's just stealth checks with the blessing.
+Matt: Let me double-check that real fast.
+All: Going to the book.
+Matt: What the heck!
+Sam: We're playing First Edition, right?
+Matt: No, it is stealth. You're correct. Yeah.
+Laura: Sorry, I wish I wouldn't have said it and then you could have had advantage just then, but I'm not a cheater.
+Sam: No, you're not.
+Liam: Out of game.
+Matt: You see him slowly pocketing this crossbow.
+Ashley: No, no, no. Little girl.
+Sam: I'm just a little girl.
+Ashley: Give me your other weapon.
+Sam: This is a toy for little children. All right, here. I'm sorry.
+Laura: Are you keeping track of what goes with what person? Because it's a lot.
+Taliesin: She's very good at this.
+Ashley: I'm very good.
+Liam: I just drag Nott five feet over. That is two strikes against you. I think we should really just sort of enjoy the show tonight.
+Sam: All right. But what if someone attacks us?
+Liam: Well, I'll handle that for you, okay?
+Sam: All right.
+Marisha: Also, little girls don't tend to tell people they're little girls.
+Sam: This is my first time. (laughter)
+Liam: When someone is a goblin in the middle of a town where people hate goblins--
+Laura: Stop saying the word 'goblin'. People are going to hear you.
+Sam: I mean, she's kind of right. (laughter)
+Liam: Technically, I dragged her away, but you know, D&D is funny with what is known and not.
+Taliesin: I heard you over the earring.
+All: Aww.
+Liam: RIP.
+Ashley: Wait, I didn't get your weapon.
+Travis: Hah.
+Ashley: Do you want to stare at me all day, or do you want to give me the weapon so you can go watch the show?
+Travis: That's an interesting choice.
+Ashley: It's not really a choice.
+Travis: Sure.
+Matt: What do you pull out?
+Travis: My falchion.
+Sam: Your what?
+Matt: A falchion, a large, curved sword, emerges from a sheath on his back.
+Sam: What is that?
+All: It's a large, curved sword. (laughter)
+Ashley: I twist it around a little. Play with it. This is nice.
+Taliesin: Very nice.
+Ashley: I like it.
+Sam: It's a falchion!
+Laura: You're going to hang out with us the whole night?
+Ashley: I'll hang out beside you so you can watch.
+Matt: Make a perception check.
+Travis: 11.
+Matt: 11, that's enough. As she spins the falchion around, you notice that, affixed to her back, in uncharacteristically clean leather towards the rest of her outfit, what appears to be a slung-over sheath and a very large bladed weapon, larger than your falchion, affixed to her back.
+Marisha: I just like how everyone says 'falchion'.
+Liam: It's pronounced 'felching'. (laughter)
+Taliesin: I'm going to pick up my cards in a very specific order very quickly and start stacking the deck.
+Ashley: All right, well. If you want to follow me, I'll take you to your seats and I'll stand beside you the whole time.
+Travis: Fucking lead the way.
+Taliesin: Hey, Jester. Before you go. Tiefling to tiefling, and thank you for keeping this rabble in check.
+Laura: Of course, you know, they're a lot to handle.
+Taliesin: One on the house. And I pull two cards.
+Laura: Yes? What are you telling me?
+Taliesin: I pull the Moon and I pull the Shadow. Does this mean anything to you?
+Laura: Oh, yes.
+Taliesin: Well, think about it. Put it away.
+Ashley: Beau.
+Matt: Both her and the half-orc turn to you.
+Ashley: Little one. I just go over and I fireman-style over my shoulder. Since you can't walk.
+Marisha: Oh. (laughter)
+Matt: Just carries her right in. Perfect.
+Marisha: I turn back to the rest of them.
+Taliesin: Such grace! Such form! Such dignity!
+Travis: The birds are out already.
+Matt: At which point, the other Bo, Bo the Breaker, goes ahead and collects five copper from each of you as you pass through, so mark off five copper, except for the two of you, you guys are part of it.
+Laura: If I skip around, will I be part of the show and then I don't have to pay?
+Taliesin: Weirdly, being part of the show means you strangely pay more. I'm not entirely sure how that works.
+Liam: Nott, do you have five copper?
+Sam: For you, Caleb, I do.
+Liam: No, I'm not asking. I was going to help you, but if you have it, you're good.
+Sam: No, you've been spotting me all day, I'll take care of both of us.
+Ashley: Mollymauk. That Jester's adorable.
+Taliesin: I know. Highly entertained.
+Ashley: I like her.
+Taliesin: I do too.
+Matt: So, stepping into the interior of the tent, the rocky floor filled with grass and dirt and various flattened groundscape on the outskirts of the Ustaloch, you can see a thick, heavy tarp-like material hitting the very edge where the heavy dark blue cloth hangs from the sides of the tent you're within. You can see where the seating is guided across the floor, and there, already in a very packed room, you see a few dozen townsfolk that have begun to gather in a semicircle. There is the entrance flap of the tent where you guys are walking in. As soon as you walk in, you can see a central pillar, a heavy column of wood, a tree that has been completely rounded off on all sides, held aloft to carry the top of the canopy of the tent itself. And across the way, you can see a larger flap tent that is currently closed that appears to be probably the performers' entrance. You can see above you four hanging lanterns that glow with what seems like a flicker of light, but the pattern to them is consistent, meaning it's not probably natural flame. Children and people are beginning to mash around the sides, and the space along the edges of the interior of this tent is starting to get a little cramped. Where do you guide them, Yasha?
+Ashley: Did you guys want to sit in the front row?
+Sam: That's what we were told is the best seat in the house.
+Ashley: We want to sit in the front row.
+Matt: So there's-- if you consider a semicircle pattern here, there's-- if you're entering, you can go front to the right, front to the left, front to the center, anywhere in between. Where would you like to be currently sitting?
+Ashley: Front and center? Or do you want to be on the sides?
+Laura: Front and center!
+Ashley: I take them to the front and center.
+Matt: Front and center, okay.
+Liam: I'm going to keep my hand on my meager purse for the evening.
+Matt: Okay.
+Laura: As soon as I sit down, I'm going to pull out my sketchbook and draw the moon and the shadow card that Molly showed me.
+Marisha: As we're walking over, I say, hey, Yasha, 'cause I was totally on your shoulder, heard you talking about my friend, Jester.
+Ashley: Ah, shit.
+Marisha: Yeah.
+Ashley: I didn't mean anything by it. I just--
+Marisha: No, dude. No, she's never mentioned a significant other, so, I mean.
+Ashley: Oh, I'm not looking for anything, I just--
+Marisha: Will you hold me through the show? (laughter)
+Marisha: Like, cradle me?
+Ashley: That's an extra charge. We do do that, though.
+Marisha: How much?
+Ashley: Well, it's an extra five gold pieces.
+Marisha: Five gold?
+Ashley: These arms are worth a lot.
+Taliesin: It's a very swaddling hug. You've never experienced anything like it.
+Ashley: It's the best way to see the show, if that's how you want it.
+Marisha: I'll give you five silver just to have your shrug to sit on so my butt's not on the floor.
+Ashley: I don't take off my shrug.
+Marisha: Oh, sorry.
+Ashley: How about you just keep your money and I'll put you in a chair and I'll just watch over your weapons.
+Marisha: Okay.
+Matt: So she places you on the ground, as there are no chairs.
+Ashley: On the ground, I mean, because there's no chairs.
+Laura: Oh, there's no chairs? Aw. I was picturing benches. That's okay.
+Travis: There's no benches? Oh, fuck.
+Matt: Where are they going to transport benches from place to place?
+Ashley: That's a good point.
+Travis: Carnival? I don't know. (laughter)
+Matt: Well, sorry, you have Fletching and Moondrop to deal with.
+Taliesin: Bring a cushion from home like a regular person.
+Matt: So, as the music has died down and everyone begins to crowd in and whisper to themselves, eventually it begins to quiet a bit, everyone having their seats. The familiar sound of the fiddle begins to play, and everyone quickly gets quiet, down to a hush. The music seems sourceless in the interior of the tent. Everyone begins to look around to see where it may come from. You hear points of hushed "look"s, pointing off in different areas, and at the top of the tent, you see, seeming to stretch and fall, like a slow drop of water, the man in red you saw earlier descends from the top of the tent, but now dressed head-to-toe in a matching deep blue outfit and full makeup, to where he appears out of the canopy of the tent. He hangs from a rope by one foot, it's wrapped around and clutched as his foot catches the edge. Playing his violin ever-so-slowly as he carefully descends, and then at the last moment releases the rope and lands on his feet, continuing the music he's playing. He slowly spins as the longer-haired elf leader of the earlier parade that you saw, the one that had marked back briefly to your two new friends over here, enters the tent from the distant flaps, the performers' entrance, his head now sporting that same tall hat, flopping backwards at the apex. He extends his arms, removing the hat, and takes a deep bow as the crowd begins to clap. (applause)
+Matt: "Ladies and gentlemen of Trostenwald, I am Carnival Master Gustav Fletching, and allow me to welcome you to the Fletching and Moondrop's Traveling Carnival of Curiosities." (applause)
+Matt: "I ask you, each and every one of you--" You hear some children giggle as he makes eye contact. "--grant us your imaginations this eve but a trifle bit of time, and allow us to reveal a realm of laughter, mystery, danger, and beauty. I see you've already met Desmond." And he gestures towards the man in all blue who's playing the fiddle. "He'll be part of our story tonight, so keep a wily eye for the shifting fool. But first, I tell you a tale of two sisters of the Fey." And as Desmond slowly leaves the tent, you see two armored guards by where he is now have entered, two of the Crown's Guard are stepping by the entrance where he walked in, watch him pass. "Lost without form into the mazes of the underworld. There, where the body would break, they found a teacher in a mystical serpent, and the gift they received was the ability to bend with this maze that captured them and slither their way back to the surface to reclaim their place in the world. May I present to you Mona and Yuli, the Knot Sisters." As he slowly backs through the performers' entrance, the two halfling dancers you saw earlier, in the full bodysuits, emerge from behind the Carnival Master as he discreetly exits. They sport serpentine makeup, scales affixed to the sides of their face and arms. Approaching the central spire, the pole that holds the tent up, one immediately leaps onto the shoulders of the other, bending her back a near-impossible amount, creating this humanoid sculpture that you see the front row cringe at the idea of the pain that would cause an average individual. But these halflings are very nimble and able to create almost a single form out of two bodies. Their rigid form becomes fluid to the eye as they move and shift to the music, the violin now sourceless once again, not seeing where this Desmond is placed, but they seem to move as it picks up speed.
+Laura: (whispers) It's like the serpent we fought, you guys!
+Sam: I was expecting more Ringling Brothers, actually. (laughter)
+Matt: Suddenly, the top one folds over and slams into the ground, tumbling across the center in a wild display of physical control. The two of them begin to tangle and wrap like two battling snakes, their bodies seemingly disconnecting from the rigid halfling forms you had seen, and you swear, for a moment, becoming serpentine-like as they intertwine around the base of this pole. It's beautiful and violent at the same time. It's off-putting. And watch as they curl around the base of this pole, the lights above begin to become a dull greenish-blue, and get darker and darker, presenting this imagery of the underworld. One by one, they silently tell a tale of struggle, crawling across one, then the other, one at a time, using their serpentine-like forms as an extending ladder, folding over each other as they use every muscle in their body to cling around this pole and ladder-step up like a snake. It's a very strange but alluring sight, and you can't help but notice that you forget that these are two halfling girls, and you find yourself pulled into this wordless story they tell of climbing back to their place, to the surface, towards the dark sky of lightless blue cloth. As the baubles that contain the interior light of the tent begin to glow brighter and brighter, their climbing becomes more fevered. The two of them, arm into arm, leg into leg, rolling up and swirling, until eventually at the apex they grab each other's arms around the pole before spinning downward, back-to-back, legs outward, with a rapid pace, the music coming to a full crescendo. Like a Maypole, they both curl and twirl and then tumble to the ground before the audience with a flourish, arms in the air, and the audience erupts in applause. (applause)
+Matt: As they both begin to back away, smiles on their faces, nodding to each other, Gustav emerges once more from the performers' flap. The fool appears at the back entrance again, taking an ominous tune with his violin this time, his outfit no longer blue but deepset black. The hanging lights darken once again as Gustav takes the center stage. "In a flash, beyond the ash, the gods all went and gone. The darkness came to grasp, reclaim, and suffocate the dawn." Suddenly, out of the darkness behind him, a burst of flame lights the room. "But from that night, a burning light doth keep back shadows' bane. The strength to fight will set alight the morning sun again. Ladies and gentlemen, I present to you Ornna the fire fairy." And Gustav leaves the tent once more. As you watch, a pair of metallic fans, alight with flame, now frame the beautiful woman of short red hair you had seen before in the procession. Gustav slinks into the darkness and vanishes as Ornna spins in hypnotic twirl, her simple dress of golds and reds almost glowing in the firelight around her, the flickering of the flames giving her the visage of a warrior-goddess battling the dark that surrounds. The frenzied fiddle of the fool picks up as she twirls the fans in her grasp, her face stoic and graceful simultaneously. The hushed awe of the audience fills the air, watching this magnificent warrior strike at the shadows, the lights above flickering brighter with each spin and dive, banishing the shadows from the room. She matches the pace of the music, drawing to a crescendo, and leaps, and barrel-turns and climaxes with her striking a powerful pose as the lights rocket to a victorious luminescence. Once again, the crowd goes crazy. (applause)
+Laura: This is really different than most carnivals that I've gone to.
+Sam: It's very artistic, yeah.
+Matt: Gustav enters as she exits with a bow, the fans flickering out. He enters clapping at Ornna. A low drumbeat begins to beat in the distance as the fiddle grows tense once more. "Even as the sun would rise anew, bellowing roars will quake the lands of Xhorhas and beyond. Terrible beasts, now freed from their dark masters, scattered into our world." (roars) A terrible, guttural roar shakes the room, followed by the sounds of grinding and dragged chains. From behind the performers' flap, the half-orc, Bo, who you'd met earlier, the Breaker, and the fool, who is now still playing the fiddle, yet the bow of it continues to go on its own as he drags the other chain with his arm, wrapped around his forearm. The two of them pull something through the flap. It swells, and from beneath it is revealed an enormous creature of green scales, slimy-looking skin, and a corpulent form, large toad-like legs frame a rotund torso, and muscular arms that are manacled and pulling him in. It fights and wrestles against the taut chains as it's pulled further and further towards the center of the tent, but is held in place by the two men. It roars a second time. (roars) The front row immediately pulling back and screaming. You hear kids begin to cry. A handful of townsfolk shoot to their feet, grasping the children in fear, preparing to run.
+Laura: Have we ever seen anything like this before?
+Marisha: Yeah, what's it look like?
+Laura: Well, he just described what it looked like.
+Marisha: By name.
+Matt: You have not seen this creature. Gustav continues, seemingly unflinched by its approach. "The devil-toad crawls hungrily--"
+Sam: But what does it look like? (laughter)
+Matt: "--into the land of the free folk, lording over nightmares as they say, and what truth lies behind the eyes of this beast? What would be learned when the guiding heart of innocence pierces the hateful soul and brings it to see beauty for the first time? I present to you the vivid voice of Toya." And as Gustav backs away, the devil-toad struggling against the chains, a soft, faint voice begins to slowly emanate from the air-- (a voice appears in the background music) (exclamations)
+Matt: Eyes previously locked on the frightening creature now seek a source and find, atop a platform within the chamber, high up on a small platform set against the apex of the pole, a young dwarven girl, maybe 12 years of age, her braided golden hair clasped and her hands at her side, a white dress obscuring her feet. She sings with a mystifying, mature voice that pierces your hearts with joy, unexpectedly and uncontrollably. The crowd audibly gasps as one, the entrancing song of this girl bringing every person into this music. The devil-toad stops struggling against the chains, seemingly caught by the sound of her voice. Its face drops into a soft smile as it slowly walks towards the base of the pole and sits. The half-orc and the fool drop the chains and back away, leaving the beast free in its rapture. Her voice almost begins to summon a chorus from the ether, magical in nature, as there are no others but her joining into this piece. Her smile is infectious, and you can't tear your eyes away. You only now realize the tears down your cheeks, but you cannot break your gaze. From the front row of the audience, on the left, a man stands up, his arms outstretched towards her. His dirtied cloak falls away, his face and skin wracked with age. You see his legs shaking as he stands, his cheeks wet with tears. He shouts (exclaims). His arms drop and clutch his chest. Gurgles a burst of vocal pain once more, and folks nearest to him begin to lean away as he begins to shake. You glance over as the old man yells out once more, as the skin on his arms suddenly begins to tear, the bones splitting from the flesh, writhing, cracking. Dust and blood shake from his wounds as his form swells. Screams begin to ring out from the audience around him, people rising up and running for the exit. Chaos breaks into the room around you. Toya's song abruptly ends, the little girl looking down with fright in her eyes, the devil-toad glancing about worriedly, the half-orc and the fool rushing up beside him to look at the transforming man. The half-orc yells, escorting patrons to the exit, "Everyone! Leave the tent now! Kylre--" As he points to the devil-toad. "--get her to safety." The devil-toad glances up and leaps with a sudden gust of strength to the top and grabs the center pole of the room as it begins to almost quiver to his weight. He grabs the little girl safely under his arm and leaps back down. What are you all doing?
+Laura: I invoke Duplicity.
+Matt: You watch as her form suddenly dissipates into multiple seemingly copies of her form as Jester.
+Travis: Yasha? We're going to need those weapons back.
+Marisha: I turn to Mollymauk and go, man, I thought it was kind of lame at first, but this is awesome!
+Taliesin: Everyone get out right now.
+Marisha: This isn't part of the show?
+Travis: Not part of the show.
+Sam: It's too artsy.
+Matt: The old man's body stops quaking, his flesh now grey and mangled like an ancient tree trunk. He turns, his eyes blood-red and bulging, his lips curled into a horrifying grimace. The two Crown's Guard begin to try and make their way through the panicked crowd, but the people, like a wave of chaos, are keeping them at bay. I need everyone to roll initiative. (yelling)
+Liam: The miniatures come out, guys!
+Travis: First map! (yelling)
+Marisha: I rolled a natural one.
+Sam: That bodes well.
+Matt: So you guys, this guy is actually over here. You guys are all up here in the front.
+Laura: Oh yeah, we were right in the fucking front row. Look at us! We're so cute!
+Taliesin: Oh my god, it's so pretty.
+Sam: We're all going to die.
+Liam: Probably. But then the third campaign begins.
+Laura: Yay.
+Sam: I like the tents and donkeys outside. Amazing.
+Marisha: Look, Taliesin, it's a bardo. Oh my god!
+Taliesin: No, go for it. Oh boy.
+Matt: All right, so. 20 to 15?
+Laura: 21.
+Matt: All right.
+Laura: Oh, wait, 22.
+Matt: Nice. 15 to ten?
+Taliesin: Ten.
+Sam: Ten.
+Travis: 12.
+Ashley: 13.
+Liam: 11.
+Matt: So 13 and then ten and ten? Sorry, 12. So Yasha got 13, then we have Fjord. And then 11. And then we have Nott at ten. And what'd you get?
+Marisha: Five. Rolled terribly.
+Matt: There we go. Okay, so. Top of the round, as this creature turns and glares about in the area, this swollen form over here to the side, that's what remains of the old man who had stood up in the center of the chamber. Jester, you're up first.
+Laura: Okay. Well, I'm just going to go for it, all right? I'm going to cast Guiding Bolt on the monster that just appeared.
+Matt: Okay, as it turns towards you. It's a saving throw, correct?
+Laura: Let's find out. You make a ranged spell attack.
+Matt: Go ahead and roll on that.
+Laura: Okay, okay.
+Sam: Magic, you're using magic.
+Laura: Well, it's cocked. It was 20 and then it rolled.
+Sam: You said cocked.
+Liam: You're a cock.
+Laura: That's 11 plus-- what do I add to my-- Guiding Bolt, plus five. So 16.
+Matt: 16 hits. Go ahead and roll damage.
+Laura: Yay. 4d6.
+Matt: Yasha, you're almost on deck.
+Laura: Ten, 16, 18, and then any attacks in the future-- the next attack has advantage.
+Matt: How much damage was that? 2d6, 18?
+Sam: 4d6, you said.
+Laura: Yeah, it was 4d6 radiant damage. So yeah, it was 18. And then I'm going to run the opposite direction away from him, but I'm going to keep my duplicate up there.
+Matt: Okay, which, for your duplicate, I should go ahead and grab something.
+Taliesin: Oh, you've got toys.
+Laura: That backpack's almost as big as my dice bag.
+Matt: Almost. I was like, that's right, you can do this, so I need to pull out-- we'll say for the purposes of this, you're-- we'll put you-- this will be your duplicate, wherever you want to move it from where you are, so she moves there.
+Laura: So she's going to stay here. I can't reach that far, but. Oh, shit, sorry.
+Matt: Just let me know where. There?
+Laura: Sorry, I didn't realize it was--
+Matt: You can get there.
+Laura: Okay, sounds good.
+Matt: Okay, so that ends your turn. At the top of your turn, this creature closest to one of the people nearby screaming, this young woman who's trying to back away, it just turns toward her and grabs and tries to tear into her with two strikes. The first one, that is actually going to miss. She ducks out of the way and begins crawling across the ground as it goes for a second attack. That, however, does hit, it's a 16. That'll do it. So with eight points of bludgeoning damage, it reaches down and slams its fist into her chest, and as it does, she gives out this horrible yelp as it rips into her and begins gnawing into her flesh and pulls away with a mouthful of it and stands up, its eyes scanning the room for the next possible victim. It's going to begin to stalk forward, coming up to that guy. All right, Yasha, your turn.
+Ashley: Okay. How close am I to them-- I want to give them their weapons.
+Matt: You're right there. You'd have to-- You're pretty close to everybody. You could distribute-- you could use your action to toss the weapons out to everybody this turn, I'll say.
+Ashley: Okay. I'll pass my weapons out this turn.
+Matt: Okay, so you'll spend your action throwing them out to the individuals. So your shortsword and crossbow clatter to the ground, and you quickly scramble to grab them. Caleb's dagger falls at his foot. Your staff gets tossed quickly from behind you. Your falchion meets your arm.
+Sam: Falchion.
+Marisha: Falchion.
+Matt: All right. That ends Yasha's turn. Fjord, you're up.
+Travis: Can I run up with the falchion within melee?
+Matt: You actually rush through Jester's form. You watch the image dissipate as you charge through it and meet up, face-to-face, with this large, gnarled, horrible-looking creature. What are you doing?
+Travis: Ripping the falchion, can I swing it into the creature?
+Matt: You may.
+Laura: And you get advantage.
+Travis: I do? Thank god, because that was a one. 18.
+Matt: 18 hits. Go ahead and roll damage.
+Travis: Nice.
+Sam: It's a real fight!
+Matt: Yeah.
+Travis: 11.
+Sam: We've got like a dozen hit points, we'll be okay.
+Matt: All righty. That ends your turn? All right, you're done. That brings us to Caleb.
+Liam: I would like to use my movement to push as far into the crowd as I can.
+Matt: Okay, going through the crowd is--
+Liam: Half-movement? That's fine, sure. I just want people in front of me.
+Matt: Push through to about there. You end up pushing a kid out of the way.
+Liam: That's great. That's exactly fine with me and I will pull out the diamond and cast Chromatic Orb, and I will send a ball of cold at the creature that Fee-ord-- Fjord--
+Matt: All right, go ahead and make a spell attack.
+Liam: Yes, here it comes.
+Sam: Watch out for Fee-ord. (laughter)
+Liam: My goodness. That is a 17.
+Matt: 17 hits. Go ahead and roll damage.
+Laura: Isn't Chromatic Orb like a really strong spell?
+Liam: No.
+Matt: There's Prismatic Spray. Chromatic is the starter version.
+Liam: That is nine.
+All: Nein!
+Matt: (German accent) All right, very well done, Caleb.
+Liam: (thicker German accent) Now is the part where we dance.
+Matt: So as you push the child out of the way, turn, putting your pocketed diamond out in front of you, you focus and you watch as this beam of light blue energy streaks past, just barely coasting between a few heads. It slams into this creature, as crystals form where the wound and impact was. It cracks back into place where it was. End of your turn? All right. Nott, you're up.
+Sam: Okay. Having seen the beautiful dwarven-- girl, was it? Who sang and soothed a monster earlier in the show, I'm going to attempt to sing and soothe this monster. So I step forward and I open my mouth, and I sing, (singing badly) And I will always soothe you!
+Laura: Can I shoot an arrow at Nott?
+Liam: He's killing the memory of Scanlan.
+Marisha: I know, can't let that go.
+Matt: Make a performance check.
+Sam: Performance check. Ooh, it's really good. 18, minus three, so that's 15.
+Matt: Okay. As you're singing out this discordant sound, folks nearby are covering their ears and glancing back and looking in surprise at this strange creature giving off this--
+Sam: Does it die?
+Matt: No. However, it now, after taking a few hits nearby, its red eyes-- or at least one red eye slips over to look in your direction. That's as much of an effect.
+Sam: Fuck! (laughter)
+Matt: Do you want to move, or are you going to stay there?
+Sam: Yes, I'm going to move, and I'm going to dash behind somebody in the crowd, some weak-looking individual.
+Matt: Okay. You can get behind there. Okay. All right, that ends your turn?
+Liam: That's our M.O., baby!
+Matt: Beau, you're up.
+Marisha: Oh shit, okay. To RP my tragic one on the first fucking battle a little bit, I'll turn to everybody and go, guys, no, it's part of the show. Molly said that people die. She was just a claque. Okay. And then I run and I'm going to tackle the zombie guy. Can I see if I can grapple him?
+Matt: You can certainly, on the first attack. Go for it. Make an athletics check.
+Marisha: Just straight athletics. Oh god. Do I keep that? It's not good. (laughter)
+Marisha: Seven.
+Matt: 17. You attempt with your first strike, and the creature just breaks away. Its strength is far more than you imagined it would be from what was originally an elderly-looking frame.
+Marisha: I go, oh, fuck that. I don't know if that's true, and I'm going to do a flurry of blows and do two, pop-pop. That's unarmed, right? Pop-pop.
+Matt: That is correct.
+Marisha: I do two, right?
+Matt: Yes, if you're using your ki point to do that, yes.
+Marisha: Yes, I am. So first one, it's plus six? Okay. First one is 19. No, 20. First one is 20 total, and then the second one is 15 total.
+Matt: Both hit. Roll damage for each.
+Marisha: Okay. Not great.
+Sam: What are those dice?
+Marisha: They're d4s, they're just fancy d4s. Yeah. That is four, eight, 11 points of damage.
+Matt: Between both? Great. So after the grapple fails and it pushes you away, you go ahead and pull back and then leap, kick it in the chest and then uppercut it in the chin.
+Marisha: Yeah, that's cool.
+Matt: Looks back towards you. So that would be putting you up base-to-base with it there. All righty. Ending your turn? Okay, at that point, the crowd is now screaming and begins to swell and push in this direction. These folks all begin to run back and around this way. This crowd begins to push, the guards are trying to push forward, and they can only get a little ways forward to there and there. Everyone just shifts out this direction.
+Laura: God, somebody's going to get trampled.
+Sam: It's really a hazard. They should have had more exits.
+Laura: I mean, it's a fire hazard, for sure.
+Matt: Caleb and Nott, I need you both to make dexterity saving throws.
+Sam: 15.
+Liam: Oh, pretty good. That is 17 for me.
+Matt: All right. You both manage to just bob and weave through the crowd to prevent being trampled and backing away from the chaos as people are pushing through. The entrance is too small for everyone to leave, and there's now a giant bottleneck that's beginning to push up as people are now screaming and trying to get out. They're crying, and the chaos is just swelling into this absolute cacophony. As soon as that finishes, the devil-toad carrying the dwarven girl, who was given a decree, exits out back with her to get her to safety. These two begin to slowly back away, seeing that things seem to be handled? And the guards making their way in are looking scared at each other, not really knowing what to make of the current chaos. At that point, you watch as the woman whose chest was torn into by this creature suddenly-- (groaning)
+Matt: --snaps up into place.
+Laura: Oh, shit. Okay, we have to keep them from being dead.
+Matt: Top of the round. Jester, you're up.
+Laura: Oh, god.
+Matt: What was your initiative again?
+Taliesin: Ten.
+Matt: Ten, oh, shit. That's right, you're with Nott, that's what happened. So Molly, you go ahead and go for your turn as well. My apologies.
+Taliesin: I'm going to yell to the back, open the tent wide! And I'm going to pull-- how far away am I?
+Matt: You're right there. You're in the middle of the crowd as it's swarming around you and Yasha.
+Taliesin: (sighs) I'm going to run around and see if I can flank that creature, if I can move towards flanking that creature with the other two.
+Matt: You can't really flank it, but you can get next to it.
+Taliesin: All right. Can I get close enough to take a shot?
+Matt: You can, yeah.
+Travis: Take a shot?
+Sam: You have guns?
+Taliesin: Well, old habit. (laughter)
+Taliesin: As a bonus, I'm flipping it out, and I'm going to activate the first sword.
+Matt: Okay, so you watch as Molly pulls the scimitar out, and as he unsheathes it, draws it across the side of his exposed chest, causing a little bit of blood to spill out, and as it does, he pulls the blade out, and you watch as the edge, suddenly, ice crystals begin to build on the outside of the blade.
+Taliesin: And I'm taking a shot at the creature.
+Sam: Taking a shot?
+Taliesin: Taking a slice.
+Laura: Taking a stab.
+Sam: But with bullets.
+Taliesin: That's 21 to hit.
+Matt: That hits.
+Taliesin: That's not bad. That's eight points of damage and one point of ice damage.
+Matt: Okay, so nine points of damage on the first strike.
+Taliesin: No, that was my bonus.
+Matt: That was your bonus, that's all you've got. Okay. So one strike, you cut across, and you watch as you cut this wide wound open, exposing the fleshy organs' interior, but they're frozen where the wound cut through, and it's still holding it together. It's looking like it's starting to hurt a bit and fall apart slightly.
+Sam: This is the bigger monster?
+Marisha: So it's the one I'm fighting?
+Matt: Yes. So that ends your turn, Molly? Brings us to the top. So Jester, sorry, back to you.
+Laura: Oh, now I'm worried. I'm worried about the undead. I don't know. Well, I don't think I would know this, so it's okay. I'm going to say to the air and say, dude, are you here, because this is like the coolest shit we've ever seen! And then I'm going to cast Toll the Dead on the first zombie creature guy. And there's a bell that tolls.
+Matt: Toll the Dead.
+Marisha: Oh, that's fucking rad, dude.
+Laura: He has to make a wisdom saving throw or take 1d12 necrotic damage.
+Matt: Natural one. Go ahead and roll a d12.
+Laura: Oh, three. That's lame.
+Matt: Three points of necrotic damage. So as this deep temple bell rings out in the air above, you watch as this creature who has turned and is beginning to just whale upon the surrounding allies that are curling at its sides, it seems to retract from the sound and cover its ears briefly before angrily lashing out.
+Laura: And I made that sound like it was coming from my duplicate, and my duplicate's going to run back a little bit and stand next to the pole. Yeah.
+Matt: Cool. Is that your turn? All right. The standing creature that's now been sliced, bludgeoned, and wounded by all three of you, is going to go ahead and make two strikes at-- roll randomly to see who it goes for. That's going to be at Beauregard. It swings at you twice, both with its giant massive clawed fists, just striking out towards you. First one is 17 to hit?
+Marisha: My armor class is 17.
+Matt: Nine points of bludgeoning damage as the first one just slams you in the chest. You feel the wind knocked out of you for a brief second. The second swing's going to come at you. That's going to be a 20 to hit.
+Marisha: Yup, yup, that hits.
+Travis: This thing's swinging hard. Holy shit.
+Matt: And that's going to be six points of bludgeoning damage to you.
+Liam: What are you at, girl?
+Marisha: Don't worry about it. I'm bad.
+Matt: It slams into you once with the fist, and the other one grabs into your stomach, abdomen region, and the claws dig in, and its jaw unhinges and drops like a snake's.
+Marisha: I turn to Fjord and I go, I'm not a claque, this show's bullshit.
+Matt: The other one is going to rush over towards you, Mollymauk, as you're the closest one to it, and is going to take one swing at you.
+Taliesin: Yeah, no. I'm going to use Blood Maladict.
+Matt: Okay, so you're using a reaction? You don't have to roll anything for it. He just has disadvantage on the strike.
+Taliesin: Oh, that's right, because I'm not doubling it up.
+Matt: That'll do it. He rolled a 16 and then a four. So as it swings towards you, you watch as suddenly the reddish burning eyes of the second creature go black, and it goes way too wide and misses you. You easily duck out of the way of its first strike. As it runs past, towards you this way, you get an attack of opportunity as it leaves your attack range to attempt to swing around Molly for a second strike. Go for it.
+Travis: That is 16.
+Matt: 16 hits! Go ahead and roll damage.
+Travis: Nice. That is 12 points of damage.
+Matt: With this brief opening as it rushes past Mollymauk, after its eyes go black, you watch as it stumbles, its vision ruined. With that moment, you swing out with your-- falchion, thank you. Yeah, it's falchion, that's right-- and strike across the back of its shoulder. You see what once was this beautiful young woman is now this swollen, horrible undead form lumbering past, and you cut a heavy chunk of meat off of its shoulder. It curves around and makes a second strike at you, Mollymauk. This one without advantage. That's a natural 19. Yeah, that's a 24 to hit. All right. You take eight points of bludgeoning damage, as the first one, you manage to move out of the way, and as you spin your scimitar around, you glance over just in time to have it clock you right across the jaw. Your vision blurs and doubles for a second. That's going to end their turn. Yasha, you're up.
+Sam: All right, Yasha!
+Ashley: Can I get to the big beast? Beast number one? Okay, so this is the first time I've done this, so hopefully I won't do this wrong. I would like to rage. (cheering)
+Ashley: I'm going to workshop it, I'll make something later. For now, it's a placeholder. Okay, I would like to rage, and reckless attack?
+Matt: Yeah, you can reckless attack any of your attacks.
+Sam: Is that something you can do right away? That sounds like a later thing.
+Ashley: Is that something you do later? Okay. I didn't get a practice shot at this. Okay. So I just roll.
+Matt: You roll at advantage.
+Ashley: I don't know how to play D&D anymore! I just forgot how to do it.
+Laura: Okay, but roll again, you have advantage.
+Ashley: Oh, reckless. Okay. 17?
+Matt: That hits. Go ahead and roll damage.
+Ashley: I take out my beautiful greatsword.
+Matt: Freshly purchased. In fact, this is the first time it's seen battle.
+Ashley: It is the first time it's seen battle.
+Sam: Google reported a weird influx of 'falchion' searches. (laughter)
+Ashley: 13.
+Matt: On the one that's already been damaged?
+Ashley: Yeah. The first guy.
+Matt: Yeah, all right.
+Ashley: Get the fuck out of my tent! (laughter)
+Matt: Yeah, no, it does not make the save-- it rolled-- yeah. So as you come down with your blade and carve through its body, you watch as it curls back, trying to reform and hold itself, but your blow was too strong, and its zombie-ish form cannot maintain a cohesive hold on its form, and you watch as it just crumbles to the ground, no longer moving. (cheering)
+Sam: Yasha!
+Ashley: Okay, okay, okay.
+Matt: Okay, that ends your turn. As you're there, growling animalistically towards the creature.
+Ashley: Ooh, that feels fun.
+Matt: You have about five more feet of movement, if you wanted to move.
+Ashley: Okay, so I'm going to go a little bit closer to-- wait, how many more are left? Just the other one? Yeah, so I'll get ready for the other one. So a little bit closer to it.
+Matt: All right. That ends your turn, Yasha. Fjord, you're up.
+Travis: Shit. I'll turn and head towards other tree-zombie fuck. I would like to use my bonus action to cast Hex on it.
+Matt: Okay. So you watch as Fjord lumbers towards it, his large, armored half-orc form holding the blade in his hand. Puts his hand out, and the shadows suddenly swirl and gather around this zombified woman's form and cling to it, like it's holding it in place. So with it now hexed, what would you like to do?
+Travis: I would like to use my falchion to open it the fuck up.
+Matt: All right, go for it.
+Travis: 21.
+Matt: That definitely hits. Go ahead and roll damage.
+Travis: That's 12 points of damage, plus five points of necrotic damage.
+Matt: 17 points of damage.
+Liam: Level two, that's major.
+Matt: So, as you rush up, after the shadows gather around it, it looks up to you, and it pulls back, ready to strike, and you just shake your head, and one large swipe of your falchion carves this giant mark across its chest. Where the cloth and flesh opens, you can see this blackened interior, where the muscles are trying to move, almost like worms, to regather and tighen. All right, that ends your turn. That brings us to Caleb.
+Liam: All right, I know that it's restricted movement, but I will push this way through the crowd so that I have a clearer shot, as far as I can, and then I will re-up with Chromatic Orb.
+Matt: You can push right about there. You just barely pull through the crowd to the front to get a clear--
+Laura: Hi, Caleb.
+Liam: I certainly don't want to do that. I want to stay in the crowd, behind people, and I will do Chromatic Orb again, but this time, I'm going to set it to acid, so see if it hit. Oh, that's not good, it's 11.
+Matt: 11 unfortunately does not hit. So as you pull it out a second time, you're pushing through the crowd and you pull up your diamond, and right as you're about to release the spell, one of the people in the crowd slams into you with her shoulder and you get jarred off to the side. The acid bolt of the Chromatic Orb flies off and actually burns a hole through the distant tent and then vanishes into the night sky.
+Liam: Hope that didn't hit anyone.
+Matt: All right, that ends your turn, Caleb. Nott, you're up.
+Sam: Do I have eyes on the biggie? Is Fjord right next to her?
+Matt: Fjord and Mollymauk are both next to it, yes.
+Sam: All right. I'm going to peek out behind whatever patron I'm next to, take out my little crossbow and just shoot a little shot.
+Matt: All right, go for it.
+Travis: Is it made of piano wire? (laughter)
+Sam: 16.
+Matt: 16 hits.
+Laura: I like how every time you roll it comes out.
+Sam: It does. This is very bouncy. Okay, so 1d6, that's a four, plus four is eight, plus I get sneak attack damage, 'cause I'm a rogue. Another four, so that's 12. Is the creature bigger than me? I will use Fury of the Small. (cheering)
+Sam: To inflict another two points of damage, so that's 14 points of damage.
+Matt: Okay. As you pull around the corner and release your one crossbow bolt, it hits the bottom of the chin and pokes out one of the eyes. The eye goes flying off into the distance as the bolt is now jammed outside of the socket. The creature turns, glancing your direction. It looks pretty hurt, but it's still standing.
+Sam: Can I use the rest of my action-movement-whatever bonus to look at the patron I'm next to. Do they have any baubles or jewelry on them?
+Travis: In this moment?
+Matt: I'll say you can use your bonus action to just look. There's nothing you can do this turn, but next turn, you could. So make a perception check.
+Sam: Oh, it's just nine.
+Matt: Nine? It's hard to look. You see this what looks to be late-30s woman dressed in some sort of general workers' clothing with a loose apron, and she's just running and scrambling to get towards the exit. You don't see anything of worth on her, unfortunately. Sorry. All right, Nott, that ends your turn. Molly, you're up.
+Taliesin: I'm still engaged with it, right? Okay, I'm going to take two swipes.
+Matt: Okay, so you spin around. You pull your second scimitar out, as part of the strike, one of them encased in ice crystals. So the first strike-- make sure you mark which one's which.
+Taliesin: Purple's the ice. That's-- the purple is 12 to hit?
+Matt: 12 just barely hits.
+Taliesin: Ooh. So they both hit, so that's good. So that's going to be-- or all three, then, because the other one is 21 to hit.
+Matt: That hits, yeah.
+Taliesin: The first one is four points of damage.
+Matt: Four points of damage?
+Taliesin: I'm sorry, the magic one is six points plus three ice, so nine points.
+Matt: Nine points of damage, all right.
+Taliesin: The other one is four points of damage.
+Matt: Okay. So the first strike hits, and as the scimitar carves through, the body snaps and opens, and it snaps back into place, the torso locking back in. The second strike does how much damage?
+Taliesin: Four points of damage.
+Matt: Yeah. The second one hits again, and you watch as the torso spins off. It looks like only the spinal column is holding it in place, but it's managing to maintain its structure as it (snarls). That ends your turn.
+Taliesin: Someone, anyone? Yep.
+Matt: All right, ending Mollymauk's turn, that brings us to Beau.
+Laura: Beau, you got this.
+Marisha: In response to him, I say, I thought you said you didn't let in the sick!
+Taliesin: Just kill it!
+Marisha: I come up and I want to do a flying Superman (impact).
+Matt: Wham! Go for it.
+Marisha: First one. Okay. 16?
+Matt: That'll hit. Damage.
+Marisha: I had my staff-- oh, I had my staff, but I said--
+Liam: You said Superman punch, man.
+Marisha: It's fine, it's fine. Six damage.
+Matt: Six points of damage. Natural 20. You watch as you sock it in the face and the jaw breaks and then snaps back into place. As you land, pulling it back, you can see some of the teeth are actually stuck in your fist as you pull back, they've broken off into your knuckles.
+Marisha: I go, oh, come on. I'm going to use my other ki point to do flurry of blows again, and I'm going to try and punch him in the bridge with the remainder of his teeth.
+Matt: Her teeth, technically, this is the woman that was killed originally.
+Marisha: Oh. I'll be like, you were so pretty, too.
+Matt: Go for it. Two more strikes.
+Marisha: 19 and 18. Natural. And then, okay.
+Laura: That's a really pretty dice.
+Marisha: Eight, 12, 13 damage.
+Matt: Natural one, no. So the second punch, you swing wide and hit the side of the head, and the neck snaps, and it's now stuck in a sideways position. As it turns, the jaw, it pulls back one of its weirdly swollen clawed hands, ready to go for that open wound in your gut, and as it does, how do you want to do this? (cheering)
+Travis: First one!
+Sam: First blood.
+Marisha: I'll do the uppercut with the other one, and the one that has its teeth in it, I want to go right between the bridge of the nose and get the teeth right in the eyes and break the nose bridge into the brain. You know that thing? Yeah.
+Matt: And as you do that, you slam into its face. You watch as the skull caves in, the teeth piercing both of the red, bulging eyes. And with this horrible sucking, sighing sound, it falls onto its back, no longer moving, the shadows released.
+Marisha: I grab my gash and fucked-up ribs and immediately turn over me. Can I do a perception check or an insight check on any of the ringleaders? On any of what was going on? The ringleader or the jester?
+Matt: That was your turn, unfortunately. That's your turn. At this point, the current threats are down, and the crowd is screaming and rushing. The two members of the Crown's Guard are rushed to the front, weapons ready, and they see both of these creatures bloodied and ruined across the base of this. In the midst of the chaos, one of them points and goes, "You, you! Stay where you are!" And you watch as the rest of the crowd slowly pushes through, you see as Gustav manages to make his way in. "Dear god, what's happened here?" Looks over toward Bo the Breaker, the half-orc who's now joined the rest of you. "Sir, I don't know how he got in here." And everyone looks around back at you. Bo looks at you, Gustav looks to you, Molly. "What happened?"
+Taliesin: One of them turned. I don't know what happened.
+Laura: There was a sick guy! There was an old sick guy and he turned into a zombie! And I run over and I cast Cure Wounds on Beau.
+Marisha: Oh, thank you, man. I'm really down.
+Laura: Are you sick too? Did you get hurt? Hold on two seconds. I'm going to cure her and then I'll cure you too.
+Travis: Yasha, have you ever seen anything like this happen before?
+Ashley: No. Never.
+Laura: Seven points, that's all I could cure.
+Marisha: That's amazing. That's great.
+Taliesin: I'm going to drop my sword.
+Laura: Oh, that's better for you, ten for you.
+Matt: Okay. At this point, the two Crown's Guard that are there are trying desperately to maintain control. You can see they're visibly shaken, and they glance at each other like they're a little out of their depths at the moment. "Stay where you are. Don't go anywhere."
+Taliesin: Oh, wherever will I go.
+Matt: And he turns to the one who's in the front, looks to the other one who just made his way through, and goes, "Sivelmen, find someone. Bring the rest of the guard. Please!" "Right now, sir." And he pushes his way towards the back as the rest of the crowd runs out. Now everyone in the crowd has mostly pushed out of the tent, the last few dregs pushing through. Children crying, people of Trostenwald just exiting out the flaps as they close, and you're all standing there, weapons in your hands, wondering what to do.
+Travis: What are the corpses doing now that they've fallen?
+Matt: They're both unmoving, ruined, torn apart.
+Laura: Can I search the corpse of the woman?
+Matt: You can. As you go to move to it, both of your forms merge. The Crown's Guard goes like, "Don't move."
+Laura: Which one?
+Matt: "Both? Uh." He looks genuinely confused.
+Laura: When I'm going "which one?" I make my second form just dart forward and start searching the body.
+Matt: Okay. It mimics searching a body. It's not actually you. Begins rifling imaginary things out of the pockets.
+Laura: Look at all the stuff that that one's finding over there! (laughter)
+Laura: Can he turn and look and I try to search the other guy?
+Matt: Make a deception check to try and deceive him to glance over.
+Laura: Not bad. 19?
+Matt: (laughs) He goes, "What, over there?" Looks over as you jump over quickly and begin searching through it, and you guys watch her do this, and there's a clear line of sight. As soon as he turns back, he's going to notice her rifling through the other corpse.
+Ashley: Is Gustav still in here?
+Matt: Gustav is now walking up, and he's hands up in the air. "I'm terribly sorry. I-- this has never happened. I don't know what happened. What happened?!"
+Taliesin: We've never seen anything like it before. He just-- he gripped his heart and fell over and turned into that thing.
+Ashley: It was when Toya started singing.
+Marisha: Yeah, what's with the dwarven girl? Why--
+Taliesin: Nothing like this.
+Matt: "She's been singing with us for over two years, now."
+Marisha: How'd she come to you? She's a pretty young girl.
+Matt: "She had no family and she was singing in the street for change. There was an opportunity. We seized it. We gave her a family she didn't have."
+Travis: Put your hands down.
+Matt: The Crown's Guard goes like (grunts). "It's fine, just don't move."
+Laura: Did I find anything?
+Matt: Make an investigation check.
+Sam: She uses a different dice for everything, Travis?
+Laura: Shut up.
+Sam: Is that what I'm dealing with now?
+Travis: You're not even ready.
+Laura: 14?
+Matt: You manage to rifle through the old man's body, through the stringy bits of gore, and you do find three pieces of silver that are just coated in blood. A few moments pass. The rest of the people are gone, and it's just this awkward quiet, and at this point you watch as Ornna, the fire fairy who had previously performed, walks in and is like, "I'm sorry. What has happened here?"
+Laura: Your little dwarf girl was singing, and she turns people into zombies.
+Taliesin: I feel that that was entirely coincidental. I'm really not sure that the two things were related. Something was wrong with this man.
+Marisha: See, it's interesting, because I would say the opposite. I would say it wasn't that coincidental, because--
+Liam: I would agree, it seemed to happen with this--
+Taliesin: We've seen her sing dozens, hundreds of times. Nothing like this has ever happened. I've seen people sit in the front row hundreds of times. Nothing like this has ever happened.
+Liam: Have you had the elderly or the sick in these tents before?
+Marisha: Yeah, you also happen to be very explicit on your page that you don't want the sick, so.
+Taliesin: Gustav.
+Matt: At this motion, Gustav goes, "It's generally just because we want to promote a space of welcoming cleanliness. When we're working amongst the outskirts of the Empire, we don't want to bring an element that reminds you of death and--"
+Sam: You hate old people so much.
+Matt: "Well, we're in entertainment. We have to be cautious." The single Crown's Guard guy who's sitting there with his weapon out, you can see him shaking almost, he's never had to deal with anyting like this before.
+Taliesin: Hold up. I've never seen that one before. He looks really suspicious.
+Matt: Towards him?
+Taliesin: No, the guy behind him.
+Laura: (gasps) He does look suspicious.
+Matt: Make a deception check.
+Taliesin: Sure. Eight.
+Matt: He goes, "Don't try that on me. I've been doing this for over ten years."
+Ashley: Oh wait, look at him!
+Laura: I cast Thaumaturgy and make it sound like there's a sound coming from behind him, too.
+Matt: Make a sleight-of-hand check to see if you can cast this spell subtly enough or not.
+Sam: This poor guard. Ooh! (groaning)
+Laura: Natural one.
+Matt: As you attempt to cast this spell, a little bit of spittle gets caught in your windpipe, and you begin to cough uncontrollably. Yeah, it just falls away.
+Laura: (coughing) There was some popcorn that I ate earlier.
+Travis: You should know that whatever happened to that first man when he attacked the woman, she caught whatever he had.
+Matt: "And that is extremely worrying. Nobody touch that body." And he looks back and sees you coughing over the corpse, and the guy's like, "Don't you touch that body! Are you sick?"
+Laura: (coughing) I have bloody fingers.
+Matt: "Someone hold her down. If she's sick and turns into one of these, I will not--"
+Ashley: She's fine. Just calm down.
+Taliesin: Well, we've already killed two of them.
+Sam: She's definitely sick.
+Matt: Make a deception check.
+Laura: That was cocked, unfortunately. That was a good one. Oh, well. 16?
+Matt: 16? His face goes white and he goes, "Kill the thing!" And rushes forward, blade held above.
+Ashley: I take out my greatsword.
+Sam: What, you're going to kill a guard?
+Ashley: Stop, stop.
+Matt: He holds back. He turns to you and sees you standing a full four inches taller than him with a much larger blade, with one hand, and he goes, "Look, if she's going to become one of these things, we have to stop her now."
+Laura: Yasha will totally kill me. Don't worry, you can leave.
+Marisha: Jester. Jokes are great until they get you killed, man. She's joking.
+Laura: (weak laughter)
+Sam: Poor guard.
+Matt: Immediately rubs his eyes. You can see him, now that he's closer to you, you can see he's sweating, he's scared, he's generally trying the best he can to use whatever training he's received to deal with a scenario he was not trained for.
+Marisha: This is the King's Guard guy?
+Matt: One of the Crown's Guard. The Crown's Guard are all generally hired and trained militia that are sent amongst all the cities to keep the peace.
+Marisha: What's your name, man?
+Taliesin: Wow, he's really shook up.
+Sam: Jamieson.
+Matt: "Flynn."
+Marisha: Flynn. How long you been doing this, you said ten years?
+Matt: "Ten years two months ago."
+Marisha: Oh. Happy ten year-i-versary. Yeah, congrats. Did you get a nice watch or like a commemorative tankard?
+Travis: They don't have watches yet.
+Marisha: Shit. Did you get a commemorative tankard? Forget the watch part.
+Matt: "No. Don't move."
+Marisha: I'm not moving, man. Hey. Hey, Flynn. Hey, man. How about first we put the swords down, because we helped? Yeah.
+Sam: Are any of us high charisma? 'Cause it don't seem like it.
+Matt: At this point, the flaps at the front of the tent, the entranceway, fold in and you watch as one, two, three, four, six, ten Crown's Guard begin filtering into the chamber. You watch as one man, the one who has his helmet off and under his shoulder, he's maybe in his early 40s or so, short brown hair with patches of grey. Somewhat jaundiced skin. Molly, you've encountered this man once before when you entered the city. He approaches Gustav right now with a commanding voice. "I had a gut feeling that you were nothing but trouble when you came into our town." Gustav turns around. "I guarantee to you, my friend, I have no idea--" "What happened here?" The Crown's Guard who's been shaken turns around and goes, "Sir, Flynn. There was a creature. This carnival seemed to create some sort of terrible entity that killed and then created a secondary beast. I watched it with my own eyes from the back row." And the man turns back towards Gustav and the rest of you. "And who else saw that?"
+Travis: We did.
+Laura: Well, we saw an old guy turn into a zombie. But it's possible that he just died because he was old, and then he had the zombie curse on him and just turned, you know? Because that happens a lot.
+Taliesin: (deadpan) Gustav, it's no use, we've been found out. Our terrible plot to make a zombie rampage through our carnival has been discovered. Whatever will we do now that we've been discovered for our brilliant plot to make a zombie ruin our circus. My god.
+Matt: Flynn turns to you and goes, "Put your weapons down or we'll arrest you immediately!"
+Taliesin: I'm literally holding nothing but my hands.
+Liam: I mean, I'm sorry, but we're basically a group of strangers. Most of us don't know each other. We all have the same story. There was a show, an old man became a thing, and we helped destroy it. This one destroyed it. What more do you want from us?
+Taliesin: It ruined our show.
+Matt: Flynn turns back and says, "Watchmaster, what should we do?" And the man with the helmet under his arm walks forward, walks to Gustav, gives him one look over, still a few inches shorter than him. Looks at him with a sense of purpose and social status that has a sense of disinterest and disrespect. "You, sir, and your orc, and your circus, are considered currently under arrest. Who else belongs to your merry band?" He looks about the rest and Gustav goes, "The orc." Glances back at the two of you and goes, "The rest of them are just purveyors of our performances. He was just joking earlier, right?" Make a deception check.
+Sam: Oh boy.
+Taliesin: Nope.
+Matt: "And you are also under arrest. The rest of you, what are your names?"
+Laura: Shirley.
+Sam: Temple. (muffled laughter)
+Liam: Caleb Widogast.
+Marisha: Beau, same as him.
+Travis: Bo. (laughter)
+Sam: I am Bo!
+Travis: You pointed at me.
+Marisha: I meant the NPC Bo! But it works!
+Ashley: Here's the thing. Oh, it's Mary by the way, but I think I know who might know what has happened here.
+Matt: "Do you? Tell me."
+Ashley: I'll have to go get her.
+Matt: "Who is this?"
+Ashley: She is the singer that made this all happen.
+Matt: "Flynn, escort this woman to retrieve this individual she speaks of." Flynn nods and walks over towards you.
+Laura: She's really shy, though, and I hear she only talks to tieflings, so you should probably send--
+Matt: "Stay where you are."
+Laura: --my brother along, because he's really good with that stuff.
+Taliesin: Try not to stab any random people on your way there, Flynn. You're doing good.
+Matt: "My men tell me that the rest of you helped destroy these fiends. Is that correct?"
+All: Yeah.
+Matt: "Then on behalf of the Starosta, I appreciate your aid. But until this investigation is complete, you are all under investigation from us. Where are you staying?"
+Travis: The Nestled Nook Inn.
+Sam: Nested Nook.
+Matt: Nestled. He got it right.
+Sam: Oh, shit. One letter. God damn it.
+Travis: I have an intelligence of 14. I know what I'm doing.
+Matt: "Do not leave this city unless you are told otherwise. Should you do so, I have your names, and I can have the full might of the Cerberus Assembly track you down. You. Flynn. Free this girl." While you all stand in the tent, Flynn approaches you and walks a little bit behind you, weapon drawn but at the side. Do you lead him out of the tent? Okay. So you walk through the performer's flap, and as you walk out, you can see backed up into the number of tents that are set up, and some of the carts, other members of the circus are hiding, and as soon as you exit out the front and they see you before the Crown's Guard, they all immediately scatter and vanish to the nearby shadows, out of sight. The two of you walk out into the center, the fire crackling in a small pit off to the side. "All right, where is this girl you speak of?"
+Ashley: She's in the back in the tents.
+Matt: "Show me."
+Ashley: Follow me.
+Matt: He follows you. Which tent do you lead him to? Over here? Okay, there's a larger tent, as he walks by your side, there's the flap that's slightly open.
+Sam: God, you could seduce him.
+Ashley: Go get her. She won't talk to me. She's too scared of me.
+Matt: "All right." Gets his weapon ready and walks into the tent.
+Ashley: I close the tent and I take off.
+Matt: Okay. There's a few moments before, in the distance, you hear a voice say, "The tent is empty. What are you talking about? Hello? Helloooo?" (laughter)
+Matt: And you don't look back, and you just run into the darkness of night, into the Marrow Fields and disappear.
+Sam: But that's so mysterious.
+Liam: While that was happening, I'm close to the edge of the tent, and at some point I just (snap) and summoned Frumpkin. I have a 30-feet outside the tent, so Frumpkin's out there.
+Matt: Okay. Frumpkin keeps watch. The Watchmaster, as you heard him notified earlier, turns to the rest of you. "So. The investigation will begin. If any information comes to light that could alleviate you of the charges brought to this carnival, come to me and let me know. If you have no answers before we complete this investigation, then I believe you all will fall into the judgment."
+Laura: Next time we don't help. That's what it comes down to.
+Marisha: I know, we got paid the first time we helped, and then we got arrested the second time. I don't know what lesson to learn here.
+Sam: Just say okay and let's leave.
+Liam: Yeah, yeah.
+Matt: So the guards escort you out of the tent. Molly, you're stuck behind with Gustav and Bo the Breaker, with a guard of five Crown's Guards set to keep watch. As the rest of you are sent to the city, the Watchmaster turns once more and says, "Remember, you flee, I'll find you." And that's where we'll end tonight's session.
+Sam: No way! What? No! I want to keep playing.
+Taliesin: I'm so excited, this is great.
+Liam: It's a good spot.
+Ashley: We did it, we did it.
+Travis: Holy shit.
+Laura: We have to get Molly out!
+Sam: (sighs) Everything's better with Molly. (laughter)
+Taliesin: Truer words were never spoken.
+Matt: Well, guys, welcome to the new campaign. Season two, I guess.
+Liam: Oh my goodness.
+Marisha: It feels so weird.
+Sam: Look at these cool Wyrmwood cases that we have!
+Matt: Fucking Sam. I swear to god.
+Marisha: I used 100% new dice. No repeats from Keyleth.
+Travis: Yeah, totally new dice.
+Taliesin: I kept the Gil die.
+Laura: I used some new dice.
+Travis: What are you talking about?
+Laura: Some new dice.
+Matt: I used this beautiful little--
+Taliesin: Fuck you.
+Matt: The Snitch is mine now.
+Liam: Look at all the 20s Taliesin rolled tonight.
+Matt: I know. Oh man. I'm excited.
+Sam: Such cool characters, guys!
+Matt: I'm excited to see where this goes.
+Sam: I still don't know what half of you guys are. What's Travis?
+Matt: Everyone did something that revealed them tonight.
+Sam: I don't know nothing, I don't know how to play D&D.
+Marisha: Should we all say in case you're Sam and you don't know?
+Travis: I'm a ballerina.
+Marisha: He's a prima.
+Matt: Well, guys. Happy New Year. Welcome back, Happy New Year to you guys. Thank you for coming along with us on this first episode of a new journey. Thank you, Backblaze and DnD Beyond, for being awesome sponsors partnered with us going forward. Thank you, Wyrmwood, for this amazing table. Thank you guys for coming along with us this evening for our first dive into this new venture. Hope you enjoyed it. We did.
+Marisha: Thank you to our amazing crew.
+Sam: Thank you, Matt Mercer, for this amazing new campaign! Welcome to Wildemount.
+Matt: I'm excited.
+Sam: Thanks, Yev.
+Matt: Guys, have a wonderful evening. We'll see you next week. See where this next stage in the story takes us. Ashley, I'm glad you could make it for this first episode.
+Ashley: Yeah, me too.
+Matt: Until then, have a wonderful night, sleep well, and is it Thursday yet? Good night! (cheering) [music]
+
+[END OF EPISODE]
