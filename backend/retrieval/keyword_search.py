@@ -177,7 +177,6 @@ class BM25KeywordSearch:
         self,
         query_terms: List[str],
         k: int = 10,
-        selected_files: Optional[List[str]] = None,
     ) -> List[SearchResult]:
         """Search documents using BM25 algorithm with pre-processed query terms"""
         if not query_terms:
@@ -188,21 +187,11 @@ class BM25KeywordSearch:
             return []
 
         logger.info(f"🔍 Keyword search for terms: {query_terms} (limit: {k})")
-
-        logger.info(f"Selected files: {selected_files}")
-        logger.info(f"Length of Documents: {len(self.documents)}")
+        logger.info(f"Searching through all {len(self.documents)} documents")
 
         # Calculate scores for all documents
         scores = []
         for doc_id in self.documents:
-
-            # Filter by selected files if specified
-            if selected_files:
-                doc_metadata = self.documents[doc_id]["metadata"]
-                file_name = doc_metadata.get("file_name", "")
-                if file_name not in [selected_file.split(".")[0] if "." in selected_file else selected_file for selected_file in selected_files]:
-                    continue
-
             score, matched_terms = self.calculate_bm25_score(query_terms, doc_id)
             if score > 0:
                 scores.append((doc_id, score, matched_terms))
@@ -398,7 +387,7 @@ def get_keyword_search() -> BM25KeywordSearch:
 
 
 def keyword_search(
-    query_terms: List[str], k: int = 10, selected_files: Optional[List[str]] = None
+    query_terms: List[str], k: int = 10
 ) -> List[Dict[str, Any]]:
     """
     Perform keyword search and return results in the same format as vector search
@@ -406,13 +395,12 @@ def keyword_search(
     Args:
         query_terms: Pre-processed search terms
         k: Number of results to return
-        selected_files: Optional list of files to search in
 
     Returns:
         List of search results compatible with existing retrieval system
     """
     search_engine = get_keyword_search()
-    results = search_engine.search(query_terms, k=k, selected_files=selected_files)
+    results = search_engine.search(query_terms, k=k)
 
     # Convert to format compatible with existing retrieval system
     formatted_results = []

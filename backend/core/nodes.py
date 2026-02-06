@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Literal
+import os
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
@@ -17,9 +18,12 @@ from backend.core.prompts import (
     RESEARCH_SYSTEM_PROMPT,
 )
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
-from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
+from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST, UPLOADS_PATH_STR
 from backend.core.tools.rag import search_specific_document_for_research
 from backend.core.tools.api import web_search_tool
+from backend.shared.logger import get_logger
+
+logger = get_logger("NODES")
 
 
 def get_today_str() -> str:
@@ -32,6 +36,56 @@ def format_todos_as_string(todos: List[TodoItem]) -> str:
     if not todos:
         return "No tasks defined yet."
     return "\n".join([f"- {t.task} [{t.status}]" for t in todos])
+
+
+def load_uploaded_documents_node(state: AgentState) -> Dict[str, Any]:
+    """
+    Automatically loads all uploaded documents from the uploads directory.
+    
+    This node runs early in the workflow to populate selected_documents
+    with all available files, eliminating the need for frontend file selection.
+    
+    Args:
+        state: Current agent state.
+        
+    Returns:
+        State update with selected_documents populated from uploads directory.
+    """
+    try:
+        if not os.path.exists(UPLOADS_PATH_STR):
+            logger.warning(f"⚠️  Uploads directory not found: {UPLOADS_PATH_STR}")
+            logger.warning(f"⚠️  No documents will be processed")
+            return {"selected_documents": []}
+        
+        logger.info(f"📂 Scanning uploads directory: {UPLOADS_PATH_STR}")
+        
+        # Get all files from uploads directory
+        all_files = [
+            f for f in os.listdir(UPLOADS_PATH_STR) 
+            if os.path.isfile(os.path.join(UPLOADS_PATH_STR, f))
+        ]
+        
+        if not all_files:
+            logger.info("⚠️  No documents found in uploads directory")
+            logger.info("💡 Upload some documents to process them")
+            return {"selected_documents": []}
+        
+        # Remove file extensions for consistency with document IDs in vectorstore
+        doc_names = [os.path.splitext(f)[0] for f in all_files]
+        
+        logger.info("")
+        logger.info(f"✅ Found {len(doc_names)} document(s) to process:")
+        for idx, doc in enumerate(doc_names, 1):
+            logger.info(f"   {idx}. {doc}")
+        logger.info("")
+        logger.info(f"📋 These documents will be processed in parallel by sub-agents")
+        logger.info("="*80)
+        
+        return {"selected_documents": doc_names}
+        
+    except Exception as e:
+        logger.error(f"Error loading uploaded documents: {e}")
+        return {"selected_documents": []}
 
 
 class WriteTodos(BaseModel):
@@ -131,6 +185,8 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
 
     doc_name = input_data["document_name"]
     todos_list = input_data.get("todos", [])
+    
+    logger.info(f"🔎 Sub-agent analyzing document: '{doc_name}'...")
 
     # Format TodoItems into a string list for the prompt
     # todos_list is a list of TodoItem objects (or dicts if not pushed as objects)
@@ -184,12 +240,30 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     else:
         pass
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(Summary)
-    summary = await extractor.ainvoke(messages)
+    # Extract structured summary with better error handling
+    try:
+        extractor = RESEARCH_LLM_FAST.with_structured_output(
+            Summary,
+            include_raw=False,
+            strict=True
+        )
+        summary = await extractor.ainvoke(messages)
 
-    summary.document_name = doc_name
+        summary.document_name = doc_name
+        
+        logger.info(f"✅ Sub-agent completed analysis of '{doc_name}' (Relevance: {summary.relevance_score:.2f})")
 
-    return {"global_context": [summary]}
+        return {"global_context": [summary]}
+        
+    except Exception as e:
+        logger.error(f"❌ Error extracting summary for '{doc_name}': {e}")
+        # Return a fallback summary
+        fallback_summary = Summary(
+            document_name=doc_name,
+            findings="Error processing document. Please try again.",
+            relevance_score=0.0
+        )
+        return {"global_context": [fallback_summary]}
 
 
 async def synthesis_node(
@@ -209,6 +283,10 @@ async def synthesis_node(
     """
     global_context = state.get("global_context", [])
     selected_docs = state.get("selected_documents", [])
+    
+    logger.info("")
+    logger.info("📦 SYNTHESIS PHASE - Combining all research findings...")
+    logger.info(f"   Processing {len(global_context)} document summaries")
 
     if len(global_context) < len(selected_docs):
         return Command(goto=END)
@@ -232,6 +310,10 @@ async def synthesis_node(
     response = await RESEARCH_LLM_REASONING.ainvoke(
         [HumanMessage(content=prompt_content)]
     )
+    
+    logger.info("✅ Final synthesis complete - generating response...")
+    logger.info("="*80)
+    logger.info("")
 
     return Command(goto=END, update={"messages": [response]})
 
@@ -249,6 +331,7 @@ async def summarize_conversation_node(
     Returns:
         State updates with new summary and removal commands for old messages.
     """
+    logger.info("📝 Summarizing conversation history...")
     messages = state.get("messages", [])
 
     # Check if we have enough messages to warrant summarization

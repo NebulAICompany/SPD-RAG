@@ -20,7 +20,6 @@ from backend.shared.logger import get_logger
 from backend.retrieval.retriever import load_vectorstore, close_vectorstore
 from backend.shared.constants import (
     VECTORSTORE_PATH_STR,
-    set_selected_files,
     set_original_user_query,
 )
 from langchain_core.messages import HumanMessage, AIMessage
@@ -31,7 +30,6 @@ logger = get_logger("RRM_API")
 class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = "default_session"
-    selected_files: Optional[List[str]] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -114,12 +112,10 @@ async def chat_endpoint(request: QueryRequest):
     try:
         query = request.query
         session_id = request.session_id
-        selected_files = request.selected_files
         
         logger.info(f"Received query: {query} (Session: {session_id})")
         
         # 1. Set global context for RAG tools
-        set_selected_files(selected_files)
         set_original_user_query(query)
         
         # 2. Manage Chat History
@@ -139,7 +135,6 @@ async def chat_endpoint(request: QueryRequest):
         result = await graph.ainvoke(
             {
                 "messages": messages,
-                "selected_documents": selected_files or [],
             },
             config=config
         )

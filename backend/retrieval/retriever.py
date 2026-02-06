@@ -76,7 +76,6 @@ def retrieve_top_k(
     client: QdrantClient,
     query: str,
     k: int = 10,
-    selected_files: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     try:
         logger.info(f"🔍 Retrieving top {k} documents for query: {query}")
@@ -88,30 +87,14 @@ def retrieve_top_k(
             f"📊 Searching through {client.count(collection_name='documents')} document chunks"
         )
 
-        if selected_files:
-            selected_files = [file.split(".")[0] for file in selected_files]
-            logger.info(f"🔍 Searching through {selected_files} document chunks")
-            docs_with_scores = client.query_points(
-                collection_name="documents",
-                query=embed_query(query),
-                query_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="metadata.file_name",
-                            match=models.MatchAny(any=selected_files),
-                        )
-                    ]
-                ),
-                limit=k,
-                score_threshold=0.2,
-            ).points
-        else:
-            docs_with_scores = client.query_points(
-                collection_name="documents",
-                query=embed_query(query),
-                limit=k,
-                score_threshold=0.2,
-            ).points
+        # Always search through all documents
+        docs_with_scores = client.query_points(
+            collection_name="documents",
+            query=embed_query(query),
+            limit=k,
+            score_threshold=0.2,
+        ).points
+        
         logger.info(f"✅ Retrieved {len(docs_with_scores)} documents from vectorstore")
 
         results = []
@@ -151,19 +134,18 @@ def retrieve_with_keyword_helping(
     query: str,
     query_terms: List[str],
     k: int = 10,
-    selected_files: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     try:
         logger.info(f"🔍 Vector + keyword search helping for: '{query}' (limit: {k}+3)")
 
         # Perform vector search
         vector_results = retrieve_top_k(
-            client, query, k=k, selected_files=selected_files
+            client, query, k=k
         )
 
         # Perform keyword search
         keyword_results = keyword_search(
-            query_terms, k=3, selected_files=selected_files
+            query_terms, k=3
         )
 
         # Combine results (handle None case)
