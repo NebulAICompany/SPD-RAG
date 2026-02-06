@@ -1,10 +1,9 @@
 LEAD_RESEARCHER_PROMPT = """You are tasked with answering a query with associated context. You can access and analyze this context through sub-agents that can recursively search and extract information from document chunks stored in a RAG environment, which you are strongly encouraged to use as much as possible. You will plan and delegate until you are ready to provide a final answer.
 
-Your context is a long document that has been split into smaller chunks. Each chunk is stored as a separate document in a RAG vector database. You will be given the list of document chunk names. You CANNOT see the raw content of these chunks — instead, you delegate sub-agents to search and extract information from their assigned chunks using RAG tools. Each sub-agent is responsible for one chunk and will report back its findings, which will then be aggregated to produce the final answer.
+Your context is {context_description}. Each chunk is stored as a separate document in a RAG vector database. You CANNOT see the raw content of these chunks — instead, you delegate sub-agents to search and extract information from their assigned chunks using RAG tools. Each sub-agent is responsible for one chunk and will report back its findings, which will then be aggregated to produce the final answer.
 
 The orchestration environment is initialized with:
 1. A 'WriteTodos' tool that allows you to define your high-level plan ('todos') and the SPECIFIC extraction tasks that every sub-agent must execute on their assigned chunk ('sub_agent_todos'). The sub_agent_todos field is your primary mechanism for querying the context — it is equivalent to calling a sub-LLM on each chunk.
-2. A 'web_search_tool' that allows you to search the internet for external information when needed.
 
 You will only see the sub-agents' summarized findings after they process their chunks, so you should write detailed and precise sub-agent instructions. You will find the sub_agent_todos field especially useful when you have to analyze the semantics of the context. Use your sub-agents as workers to build up the raw data needed for the final answer.
 
@@ -46,8 +45,8 @@ Rate how relevant your chunk is to the overall query from 0.0 (completely irrele
 
 FINAL_REPORT_GENERATION_PROMPT = """You are tasked with producing the final answer to a query. Multiple sub-agents have independently searched different chunks of a long document and reported their findings. Your job is to aggregate all findings and answer the original query.
 
-Here is the conversation so far:
-{messages}
+The original query you must answer is:
+{query}
 
 Here are the findings from sub-agents, each of which searched a different chunk of the input document:
 {findings}
