@@ -48,21 +48,13 @@ def merge_summaries(
 
 
 class TodoItem(BaseModel):
-    """Represents a single actionable task in the plan."""
+    """Represents a single actionable task."""
 
     task: str = Field(description="The specific task to be executed")
     status: str = Field(
         default="pending",
         description="Status of the task: 'pending', 'in_progress', or 'completed'",
     )
-
-
-class Plan(BaseModel):
-    """The strategic plan generated for the user's request."""
-
-    strategy: str = Field(description="The high-level strategy overview")
-    steps: List[TodoItem] = Field(description="Detailed list of actionable steps")
-    reasoning: str = Field(description="Explanation of why this plan was chosen")
 
 
 class Summary(BaseModel):
@@ -88,26 +80,20 @@ class AgentInputState(MessagesState):
 
 class AgentState(MessagesState):
     """
-    Main agent state containing messages, plan, and global context.
+    Main agent state containing messages and global context.
 
     Inherits the 'messages' key from MessagesState, which is annotated
     with the `add_messages` reducer for automatic message handling.
 
     Attributes:
-        plan: The approved strategic plan (None until generated).
         todo_queue: The current list of tasks being tracked.
-        selected_documents: Document IDs selected for sub-agent processing.
+        selected_documents: Document IDs selected for sub-agent processing (auto-populated from uploads).
         global_context: Aggregated summaries from all sub-agents.
-        human_approval_status: Current status of plan approval.
-        is_ambiguous: Flag indicating if the user's query needs clarification.
     """
 
-    plan: Optional[Plan]
     todo_queue: Annotated[List[TodoItem], override_reducer]
-    selected_documents: List[str]
+    selected_documents: Annotated[List[str], override_reducer]
     global_context: Annotated[List[Summary], merge_summaries]
-    human_approval_status: str  # "pending", "approved", "rejected"
-    is_ambiguous: bool
     summary: str
     sub_agent_todos: List[TodoItem]
 

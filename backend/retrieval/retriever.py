@@ -76,10 +76,11 @@ def retrieve_top_k(
     client: QdrantClient,
     query: str,
     k: int = 10,
-    selected_files: Optional[List[str]] = None,
+    file_name_filter: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     try:
-        logger.info(f"🔍 Retrieving top {k} documents for query: {query}")
+        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        logger.info(f"🔍 Retrieving top {k} documents for query: {query}{filter_msg}")
         if not client.collection_exists(collection_name="documents"):
             logger.info("No collection found")
             return None
@@ -88,30 +89,26 @@ def retrieve_top_k(
             f"📊 Searching through {client.count(collection_name='documents')} document chunks"
         )
 
-        if selected_files:
-            selected_files = [file.split(".")[0] for file in selected_files]
-            logger.info(f"🔍 Searching through {selected_files} document chunks")
-            docs_with_scores = client.query_points(
-                collection_name="documents",
-                query=embed_query(query),
-                query_filter=models.Filter(
-                    must=[
-                        models.FieldCondition(
-                            key="metadata.file_name",
-                            match=models.MatchAny(any=selected_files),
-                        )
-                    ]
-                ),
-                limit=k,
-                score_threshold=0.2,
-            ).points
-        else:
-            docs_with_scores = client.query_points(
-                collection_name="documents",
-                query=embed_query(query),
-                limit=k,
-                score_threshold=0.2,
-            ).points
+        # Build query filter if document name is specified
+        query_filter = None
+        if file_name_filter:
+            query_filter = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="metadata.file_name",
+                        match=models.MatchValue(value=file_name_filter)
+                    )
+                ]
+            )
+        
+        docs_with_scores = client.query_points(
+            collection_name="documents",
+            query=embed_query(query),
+            limit=k,
+            score_threshold=0.2,
+            query_filter=query_filter,
+        ).points
+        
         logger.info(f"✅ Retrieved {len(docs_with_scores)} documents from vectorstore")
 
         results = []
@@ -151,19 +148,20 @@ def retrieve_with_keyword_helping(
     query: str,
     query_terms: List[str],
     k: int = 10,
-    selected_files: Optional[List[str]] = None,
+    file_name_filter: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     try:
-        logger.info(f"🔍 Vector + keyword search helping for: '{query}' (limit: {k}+3)")
+        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        logger.info(f"🔍 Vector + keyword search helping for: '{query}'{filter_msg} (limit: {k}+3)")
 
         # Perform vector search
         vector_results = retrieve_top_k(
-            client, query, k=k, selected_files=selected_files
+            client, query, k=k, file_name_filter=file_name_filter
         )
 
         # Perform keyword search
         keyword_results = keyword_search(
-            query_terms, k=3, selected_files=selected_files
+            query_terms, k=3, file_name_filter=file_name_filter
         )
 
         # Combine results (handle None case)

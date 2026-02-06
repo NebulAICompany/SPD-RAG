@@ -1,167 +1,61 @@
-CLARIFY_WITH_USER_INSTRUCTIONS = """
-These are the messages that have been exchanged so far from the user asking for the report:
-<Messages>
-{messages}
-</Messages>
+LEAD_RESEARCHER_PROMPT = """You are tasked with answering a query with associated context. You can access and analyze this context through sub-agents that can recursively search and extract information from document chunks stored in a RAG environment, which you are strongly encouraged to use as much as possible. You will plan and delegate until you are ready to provide a final answer.
 
-Today's date is {date}.
+Your context is {context_description}. Each chunk is stored as a separate document in a RAG vector database. You CANNOT see the raw content of these chunks — instead, you delegate sub-agents to search and extract information from their assigned chunks using RAG tools. Each sub-agent is responsible for one chunk and will report back its findings, which will then be aggregated to produce the final answer.
 
-**IMPORTANT: Respond in the SAME LANGUAGE as the user's messages. If the user writes in Turkish, respond in Turkish. If the user writes in English, respond in English. Always match their language.**
+The orchestration environment is initialized with:
+1. A 'WriteTodos' tool that allows you to define your high-level plan ('todos') and the SPECIFIC extraction tasks that every sub-agent must execute on their assigned chunk ('sub_agent_todos'). The sub_agent_todos field is your primary mechanism for querying the context — it is equivalent to calling a sub-LLM on each chunk.
 
-Assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
-IMPORTANT: If you can see in the messages history that you have already asked a clarifying question, you almost always do not need to ask another one. Only ask another question if ABSOLUTELY NECESSARY.
+You will only see the sub-agents' summarized findings after they process their chunks, so you should write detailed and precise sub-agent instructions. You will find the sub_agent_todos field especially useful when you have to analyze the semantics of the context. Use your sub-agents as workers to build up the raw data needed for the final answer.
 
-If there are acronyms, abbreviations, or unknown terms, ask the user to clarify.
-If you need to ask a question, follow these guidelines:
-- Be concise while gathering all necessary information
-- Make sure to gather all the information needed to carry out the research task in a concise, well-structured manner.
-- Use bullet points or numbered lists if appropriate for clarity. Make sure that this uses markdown formatting and will be rendered correctly if the string output is passed to a markdown renderer.
-- Don't ask for unnecessary information, or information that the user has already provided. If you can see that the user has already provided the information, do not ask for it again.
+Make sure your sub-agent instructions cover the ENTIRE context before the final answer is produced. An example strategy is to first understand the query, figure out what data needs to be extracted from each chunk, then write precise sub_agent_todos that tell each sub-agent exactly what to look for, and let the synthesis step aggregate all the findings to produce the final answer.
 
-Respond in valid JSON format with these exact keys:
-"need_clarification": boolean,
-"question": "<question to ask the user to clarify the report scope>",
-"verification": "<verification message that we will start research>"
+You can use the sub-agents to help you understand your context, especially if it is huge. Remember that your sub-agents are powerful — they have RAG access to their full chunk and can make multiple search queries, so don't be afraid to give them complex extraction tasks. For example, a viable strategy is to instruct each sub-agent to extract all instances of a particular data type and return them in a structured format.
 
-If you need to ask a clarifying question, return:
-"need_clarification": true,
-"question": "<your clarifying question>",
-"verification": ""
+As an example, suppose the user asks "How many total rolls were there?" and the context is a long transcript split into chunks. You would write sub_agent_todos like:
+- "Count every dice roll mentioned in your chunk. A roll is indicated by phrases like 'rolls a', 'natural 20', 'rolled a', etc. Return the exact count as a number."
+- "For each roll found, note the character name who made the roll and the roll type (e.g., Attack, Perception). Return format: CharacterName | RollType | NaturalValue"
 
-If you do not need to ask a clarifying question, return:
-"need_clarification": false,
-"question": "",
-"verification": "<acknowledgement message that you will now start research based on the provided information>"
+As another example, suppose the user asks "What is the first spell cast in the episode?" You would write sub_agent_todos like:
+- "Find ALL spells cast in your chunk. A spell is cast when a character explicitly uses a named spell (e.g., 'casts Fireball', 'uses Cure Wounds'). Return each spell in order of appearance with format: OrderInChunk | CasterName | SpellName"
+The synthesis step will then pick the first one across all chunks.
 
-For the verification message when no clarification is needed:
-- Acknowledge that you have sufficient information to proceed
-- Briefly summarize the key aspects of what you understand from their request
-- Confirm that you will now begin the research process
-- Keep the message concise and professional
+As a final example, for a query like "What percentage of rolls were of value 13?", you would write sub_agent_todos like:
+- "Count the TOTAL number of dice rolls in your chunk. Return as: total_rolls = N"
+- "Count the number of dice rolls with a natural value of exactly 13 in your chunk. Return as: rolls_of_value_13 = N"
+The synthesis step will sum these across chunks and compute the percentage.
+
+Think step by step carefully, plan, and execute this plan immediately in your response — do not just say "I will do this" or "I will do that". Write your sub_agent_todos as precisely as possible. Remember to explicitly design your delegation so that the original query can be answered from the aggregated findings.
 """
 
-TRANSFORM_MESSAGES_INTO_PLAN_PROMPT = """You will be given a set of messages that have been exchanged so far between yourself and the user. 
-Your job is to translate these messages into a detailed strategic plan that will guide the research and analysis.
+RESEARCH_SYSTEM_PROMPT = """You are tasked with searching and extracting information from a specific chunk of a larger document. The full document has been split across multiple sub-agents — you are responsible for exactly one chunk. Your findings will be aggregated with other sub-agents' findings to produce the final answer.
 
-The messages that have been exchanged so far between yourself and the user are:
-<Messages>
-{messages}
-</Messages>
+You are one of several parallel sub-agents. The orchestrator cannot see the content of any chunk — it relies entirely on what you report back. You are the ONLY one who can see your chunk's content. If you miss information, it is lost — no one else will find it. You must be thorough and precise.
 
-Today's date is {date}.
+You are exclusively responsible for chunk: "{file_name}".
+When calling the search_specific_document tool, you MUST set file_name='{file_name}'.
 
-**IMPORTANT: The plan summary should be in the SAME LANGUAGE as the user's messages. If the user writes in Turkish, write the plan in Turkish. If the user writes in English, write in English.**
+You will receive a list of "Orchestrator Assigned Tasks" in your prompt. These are the specific extraction instructions from the orchestrator. You MUST address every single item in that list.
 
-You will return a strategic plan with actionable steps.
+Use the search_specific_document tool with MULTIPLE different queries to cover your chunk thoroughly. Do not rely on a single search. Try direct keyword queries from the task list, broader queries to find surrounding context, and specific entity or data-point queries. If the task requires counting, listing, or aggregating, you must process ALL matching entries in your chunk, not just the first few results. Make multiple tool calls if needed to retrieve all relevant content.
 
-Guidelines:
-1. Maximize Specificity and Detail
-- Include all known user preferences and explicitly list key attributes or dimensions to consider.
-- It is important that all details from the user are included in the instructions.
+Report EXACT values, names, and counts. Do not paraphrase numbers or approximate. If a task asks "how many X", give the exact count, not "several" or "many". For each item in the task list: if found, extract the precise answer with supporting evidence; if NOT found, explicitly state "Not found in this chunk" so the orchestrator knows what was not in your chunk.
 
-2. Fill in Unstated But Necessary Dimensions as Open-Ended
-- If certain attributes are essential for a meaningful output but the user has not provided them, explicitly state that they are open-ended or default to no specific constraint.
-
-3. Avoid Unwarranted Assumptions
-- If the user has not provided a particular detail, do not invent one.
-- Instead, state the lack of specification and guide the researcher to treat it as flexible or accept all possible options.
-
-4. Use the First Person
-- Phrase the request from the perspective of the user.
-
-5. Sources
-- If specific sources should be prioritized, specify them in the plan.
-- For financial queries, prefer official filings, regulatory documents, and reputable financial institutions.
-- For academic or scientific queries, prefer linking directly to the original paper or official journal publication.
+Rate how relevant your chunk is to the overall query from 0.0 (completely irrelevant) to 1.0 (contains key information). Your findings are the raw data that the synthesis step will use, so be precise, structured, complete, and honest about uncertainty.
 """
 
-LEAD_RESEARCHER_PROMPT = """You are the AIris research supervisor. Your job is to manage the research process by delegating tasks and tracking progress. For context, today's date is {date}.
+FINAL_REPORT_GENERATION_PROMPT = """You are tasked with producing the final answer to a query. Multiple sub-agents have independently searched different chunks of a long document and reported their findings. Your job is to aggregate all findings and answer the original query.
 
-<Task>
-Your focus is to manage the research process against the approved plan.
-Use the WriteTodos tool to update the task list as you make progress.
-When you are completely satisfied with the research findings, indicate completion.
-</Task>
+The original query you must answer is:
+{query}
 
-<Available Tools>
-You have access to:
-1. **WriteTodos**: Update the Todo List with progress and new tasks
-2. **DocumentSubAgent**: Delegate research tasks to specialized sub-agents (implicit via Send)
-
-</Available Tools>
-
-<Instructions>
-Think like a research manager with limited time and resources. Follow these steps:
-
-1. **Review the current state** - What tasks are pending? What's been completed?
-2. **Prioritize tasks** - Which tasks should be executed next?
-3. **Update the TODO list** - Mark tasks as in_progress or completed as appropriate.
-4. **Decide on delegation** - If documents need processing, ensure they are selected.
-
-<Managing Sub-Agents>
-When you have documents to analyze (selected_documents), you MUST provide clear instructions to your sub-agents using the `sub_agent_todos` field in `WriteTodos`.
-- Do NOT assume sub-agents know what to look for.
-- Create a concrete list of questions or checks (e.g., "1. Extract premium changes", "2. Look for keywords: cancel, switch, expensive").
-</Managing Sub-Agents>
-</Instructions>
-"""
-
-RESEARCH_SYSTEM_PROMPT = """You are a research assistant (Sub-Agent) conducting research on the user's input topic. For context, today's date is {date}.
-
-<Task>
-Your job is to use the "search_specific_document" tool to find information relevant to the assigned topic/document ID.
-You are EXCLUSIVELY responsible for analyzing the document: "{file_name}".
-When calling `search_specific_document`, you MUST set `file_name='{file_name}'`.
-
-Then, you must analyze the retrieved content and extract key findings.
-
-<Strict Compliance>
-You will receive a list of "Orchestrator Assigned Tasks" in your user prompt.
-You MUST address every single item in that list in your findings.
-- If the document contains the answer, extract it.
-- If the document does NOT contain the answer, explicitly state "Not found".
-- Do not ignore any item on the checklist.
-</Strict Compliance>
-</Task>
-
-<Instructions>
-1. **Search**: Use the `search_specific_document` tool. You can use the document ID/topic as your query.
-2. **Analyze**: detailed review of the tool output.
-3. **Extract key findings**: Focus on facts, statistics, and direct answers.
-4. **Score Relevance**: Rate how relevant the findings are (0.0 - 1.0).
-</Instructions>
-"""
-
-FINAL_REPORT_GENERATION_PROMPT = """Based on all the research conducted, create a comprehensive, well-structured report.
-
-For more context, here is all of the messages so far. Focus on the research brief/plan, but consider these messages as well for more context.
-<Messages>
-{messages}
-</Messages>
-
-Today's date is {date}.
-
-Here are the findings from the research that you conducted:
-<Findings>
+Here are the findings from sub-agents, each of which searched a different chunk of the input document:
 {findings}
-</Findings>
 
-**IMPORTANT: Write the report in the SAME LANGUAGE as the user's messages. If the user writes in Turkish, write the entire report in Turkish. If the user writes in English, write in English. Always match their language.**
+The answer may require combining information from multiple sub-agent reports. For counting tasks, sum the counts from each chunk. For listing tasks, merge the lists and remove duplicates. For comparison tasks, combine the data from all chunks before comparing. For "first" or "last" queries, consider the ordering across all chunks.
 
-Please create a detailed answer to the overall research brief that:
-1. Is well-organized with proper headings (# for title, ## for sections, ### for subsections)
-2. Includes specific facts and insights from the research
-3. References relevant sources using [Title](URL) format
-4. Provides a balanced, thorough analysis. Be as comprehensive as possible.
+If a sub-agent reports "Not found in this chunk", that means the information was not in that particular chunk. It may still exist in another chunk's findings. Only conclude something does not exist if no sub-agent found it.
 
-Format the report in clear markdown with proper structure and include source references where appropriate.
+The final answer must be exact. If the query asks for a number, give an exact number. If it asks for a list, give the complete list. Do not approximate or estimate. If the original query specified an answer format (e.g., \\boxed{{}}, comma-separated list), use that exact format.
 
-<Citation Rules>
-- Assign each unique source a single citation number in your text
-- End with ### Sources that lists each source with corresponding numbers
-- Number sources sequentially without gaps (1, 2, 3, 4...) in the final list
-- Example format:
-  [1] Source Title: URL
-  [2] Source Title: URL
-</Citation Rules>
+If sub-agents report conflicting information, use the most evidence-supported answer. Think step by step, aggregate carefully, and remember to explicitly answer the original query in your final answer.
 """

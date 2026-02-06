@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Any, Dict, List, Literal
+import os
 from langchain_core.messages import (
-    AIMessage,
     HumanMessage,
     SystemMessage,
     ToolMessage,
-    get_buffer_string,
     RemoveMessage,
 )
 from langchain_core.runnables import RunnableConfig
@@ -13,20 +11,17 @@ from langgraph.graph import END
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 from backend.core.prompts import (
-    CLARIFY_WITH_USER_INSTRUCTIONS,
     FINAL_REPORT_GENERATION_PROMPT,
     LEAD_RESEARCHER_PROMPT,
-    TRANSFORM_MESSAGES_INTO_PLAN_PROMPT,
     RESEARCH_SYSTEM_PROMPT,
 )
-from backend.core.state import AgentState, Plan, SubAgentInput, Summary, TodoItem
-from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
+from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
+from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST, UPLOADS_PATH_STR
 from backend.core.tools.rag import search_specific_document_for_research
+from backend.shared.logger import get_logger
 
+logger = get_logger("NODES")
 
-def get_today_str() -> str:
-    """Returns today's date as a formatted string (YYYY-MM-DD)."""
-    return datetime.now().strftime("%Y-%m-%d")
 
 
 def format_todos_as_string(todos: List[TodoItem]) -> str:
@@ -36,15 +31,54 @@ def format_todos_as_string(todos: List[TodoItem]) -> str:
     return "\n".join([f"- {t.task} [{t.status}]" for t in todos])
 
 
-class AmbiguityCheck(BaseModel):
-    """Model for structured output from ambiguity check."""
-
-    is_ambiguous: bool = Field(
-        description="True if the user request is vague or needs clarification"
-    )
-    clarifying_question: str = Field(
-        description="The question to ask the user if ambiguous, else empty string"
-    )
+def load_uploaded_documents_node(state: AgentState) -> Dict[str, Any]:
+    """
+    Automatically loads all uploaded documents from the uploads directory.
+    
+    This node runs early in the workflow to populate selected_documents
+    with all available files, eliminating the need for frontend file selection.
+    
+    Args:
+        state: Current agent state.
+        
+    Returns:
+        State update with selected_documents populated from uploads directory.
+    """
+    try:
+        if not os.path.exists(UPLOADS_PATH_STR):
+            logger.warning(f"⚠️  Uploads directory not found: {UPLOADS_PATH_STR}")
+            logger.warning(f"⚠️  No documents will be processed")
+            return {"selected_documents": []}
+        
+        logger.info(f"📂 Scanning uploads directory: {UPLOADS_PATH_STR}")
+        
+        # Get all files from uploads directory
+        all_files = [
+            f for f in os.listdir(UPLOADS_PATH_STR) 
+            if os.path.isfile(os.path.join(UPLOADS_PATH_STR, f))
+        ]
+        
+        if not all_files:
+            logger.info("⚠️  No documents found in uploads directory")
+            logger.info("💡 Upload some documents to process them")
+            return {"selected_documents": []}
+        
+        # Remove file extensions for consistency with document IDs in vectorstore
+        doc_names = [os.path.splitext(f)[0] for f in all_files]
+        
+        logger.info("")
+        logger.info(f"✅ Found {len(doc_names)} document(s) to process:")
+        for idx, doc in enumerate(doc_names, 1):
+            logger.info(f"   {idx}. {doc}")
+        logger.info("")
+        logger.info(f"📋 These documents will be processed in parallel by sub-agents")
+        logger.info("="*80)
+        
+        return {"selected_documents": doc_names}
+        
+    except Exception as e:
+        logger.error(f"Error loading uploaded documents: {e}")
+        return {"selected_documents": []}
 
 
 class WriteTodos(BaseModel):
@@ -58,195 +92,6 @@ class WriteTodos(BaseModel):
     )
 
 
-class PlanApprovalCheck(BaseModel):
-    """Model for structured output to detect plan approval from user messages."""
-
-    is_approved: bool = Field(
-        description="True if the user has approved the plan (e.g., 'yes', 'looks good', 'proceed', 'that's great')"
-    )
-    wants_changes: bool = Field(description="True if the user wants to modify the plan")
-    feedback: str = Field(
-        description="The user's feedback or requested changes if any, else empty string"
-    )
-
-
-async def clarify_intent_node(
-    state: AgentState, config: RunnableConfig
-) -> Command[Literal["generate_plan_node", END]]:
-    """
-    Analyzes the user's message to determine if clarification is needed.
-
-    If the query is ambiguous, pauses execution (END) and sends a clarifying
-    question to the user. Otherwise, proceeds to the planning phase.
-
-    Args:
-        state: Current agent state containing messages.
-        config: Runtime configuration.
-
-    Returns:
-        Command routing to either END (wait for user) or generate_plan_node.
-    """
-    messages = state["messages"]
-    selected_docs = state.get("selected_documents", [])
-
-    # Build file context info
-    file_context = ""
-    if selected_docs:
-        file_names = [doc.split("/")[-1].split("\\")[-1] for doc in selected_docs]
-        file_context = f"\n\n**Available Files:** The user has already selected these files for analysis: {', '.join(file_names)}. Do NOT ask for files - they are already available."
-
-    checker = RESEARCH_LLM_REASONING.with_structured_output(AmbiguityCheck)
-    prompt_content = (
-        CLARIFY_WITH_USER_INSTRUCTIONS.format(
-            messages=get_buffer_string(messages), date=get_today_str()
-        )
-        + file_context
-    )
-
-    result = await checker.ainvoke([HumanMessage(content=prompt_content)])
-
-    if result.is_ambiguous:
-        return Command(
-            goto=END,
-            update={
-                "is_ambiguous": True,
-                "messages": [AIMessage(content=result.clarifying_question)],
-            },
-        )
-
-    return Command(goto="generate_plan_node", update={"is_ambiguous": False})
-
-
-async def generate_plan_node(
-    state: AgentState, config: RunnableConfig
-) -> Command[Literal["human_approval_node"]]:
-    """
-    Generates a strategic plan based on the user's request.
-
-    Creates a Plan with strategy, steps (TodoItems), and reasoning.
-    Outputs a user-facing summary for approval.
-
-    Args:
-        state: Current agent state containing messages.
-        config: Runtime configuration.
-
-    Returns:
-        Command routing to human_approval_node with plan in state.
-    """
-    messages = state["messages"]
-    selected_docs = state.get("selected_documents", [])
-
-    # Build file context info
-    file_context = ""
-    if selected_docs:
-        file_names = [doc.split("/")[-1].split("\\")[-1] for doc in selected_docs]
-        file_context = f"\n\n**Available Files for Analysis:** {', '.join(file_names)}. Include steps to analyze these documents in your plan."
-
-    planner = RESEARCH_LLM_REASONING.with_structured_output(Plan)
-    prompt_content = (
-        TRANSFORM_MESSAGES_INTO_PLAN_PROMPT.format(
-            messages=get_buffer_string(messages), date=get_today_str()
-        )
-        + file_context
-    )
-
-    plan = await planner.ainvoke([HumanMessage(content=prompt_content)])
-
-    # Format plan summary for user approval
-    steps_str = "\n".join([f"- {step.task}" for step in plan.steps])
-    plan_summary_msg = (
-        f"**Proposed Plan:**\n"
-        f"**Strategy:** {plan.strategy}\n\n"
-        f"**Steps:**\n{steps_str}\n\n"
-        f"**Reasoning:** {plan.reasoning}\n\n"
-        f"Do you approve this plan? (yes/no)"
-    )
-
-    return Command(
-        goto="human_approval_node",
-        update={
-            "plan": plan,
-            "todo_queue": plan.steps,
-            "messages": [AIMessage(content=plan_summary_msg)],
-            "human_approval_status": "pending",
-        },
-    )
-
-
-async def human_approval_node(
-    state: AgentState, config: RunnableConfig
-) -> Command[Literal["orchestrator_node", "generate_plan_node", END]]:
-    """
-    Uses LLM to analyze user's response to determine plan approval.
-
-    This node uses conversation-based approval detection:
-    - If user approves (says things like 'yes', 'proceed', 'looks good'), routes to orchestrator
-    - If user wants changes, routes back to planning with feedback
-    - If this is the first time showing the plan (no user response yet), waits for input
-
-    Args:
-        state: Current agent state.
-        config: Runtime configuration.
-
-    Returns:
-        Command routing based on LLM's analysis of user's approval status.
-    """
-    messages = state.get("messages", [])
-    approval_status = state.get("human_approval_status", "pending")
-
-    # If plan was just generated and we haven't waited for user input yet,
-    # end and wait for the user's response
-    if approval_status == "pending":
-        return Command(goto=END, update={"human_approval_status": "awaiting_feedback"})
-
-    # We have user feedback - use LLM to analyze if they approved
-    checker = RESEARCH_LLM_FAST.with_structured_output(PlanApprovalCheck)
-
-    # Get the last few messages for context
-    recent_messages = messages[-4:] if len(messages) > 4 else messages
-    messages_str = get_buffer_string(recent_messages)
-
-    prompt = f"""Analyze the following conversation to determine if the user has approved the proposed plan.
-
-Conversation:
-{messages_str}
-
-Determine:
-1. Has the user approved the plan? (e.g., 'yes', 'proceed', 'looks good', 'that's great', 'go ahead')
-2. Does the user want to make changes to the plan?
-3. What feedback or changes did they request (if any)?
-"""
-
-    result = await checker.ainvoke([HumanMessage(content=prompt)])
-
-    if result.is_approved and not result.wants_changes:
-        return Command(
-            goto="orchestrator_node", update={"human_approval_status": "approved"}
-        )
-
-    if result.wants_changes:
-        return Command(
-            goto="generate_plan_node",
-            update={
-                "human_approval_status": "pending",
-                "messages": [HumanMessage(content=f"User feedback: {result.feedback}")],
-            },
-        )
-
-    # User hasn't clearly approved or rejected - ask for clarification
-    return Command(
-        goto=END,
-        update={
-            "human_approval_status": "awaiting_feedback",
-            "messages": [
-                AIMessage(
-                    content="I've proposed a plan above. Would you like me to proceed with this plan, or would you like to make any changes?"
-                )
-            ],
-        },
-    )
-
-
 async def orchestrator_node(
     state: AgentState, config: RunnableConfig
 ) -> Dict[str, Any]:
@@ -257,22 +102,31 @@ async def orchestrator_node(
     to the LLM and updates state based on the tool's output.
 
     Args:
-        state: Current agent state with plan and todos.
+        state: Current agent state with todos.
         config: Runtime configuration.
 
     Returns:
         State updates including messages and potentially updated todo_queue.
     """
-    plan = state.get("plan")
     todos = state.get("todo_queue", [])
     messages = state["messages"]
 
     llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
 
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
-    context_prompt = f"""
-Current Strategy: {plan.strategy if plan else 'N/A'}
+    # Build context metadata (RLM paper: root LM receives type, length, chunk info)
+    selected_docs = state.get("selected_documents", [])
+    if selected_docs:
+        context_description = (
+            f"a long document split into {len(selected_docs)} chunks: "
+            f"{', '.join(selected_docs)}"
+        )
+    else:
+        context_description = "not yet loaded into the environment"
 
+    system_prompt = LEAD_RESEARCHER_PROMPT.format(
+        context_description=context_description,
+    )
+    context_prompt = f"""
 Current TODO List:
 {format_todos_as_string(todos)}
 """
@@ -285,7 +139,6 @@ Current TODO List:
     updates: Dict[str, Any] = {"messages": [response]}
 
     if response.tool_calls:
-        tool_outputs = []
         for tool_call in response.tool_calls:
             if tool_call["name"] == "WriteTodos":
                 new_todos_raw = tool_call["args"].get("todos", [])
@@ -293,9 +146,6 @@ Current TODO List:
                 updates["todo_queue"] = [TodoItem(**t) for t in new_todos_raw]
                 if sub_todos_raw:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
-        
-        if tool_outputs:
-            updates["messages"].extend(tool_outputs)
 
     return updates
 
@@ -316,16 +166,21 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     Returns:
         State update with the Summary added to global_context.
     """
-    from langchain_core.messages import ToolMessage
-
     doc_name = input_data["document_name"]
     todos_list = input_data.get("todos", [])
     
+    logger.info(f"🔎 Sub-agent analyzing document: '{doc_name}'...")
+
     # Format TodoItems into a string list for the prompt
     # todos_list is a list of TodoItem objects (or dicts if not pushed as objects)
     todos_str = ""
     if todos_list:
-        todos_str = "\n".join([f"{i+1}. [ ] {t.task if hasattr(t, 'task') else t.get('task')}" for i, t in enumerate(todos_list)])
+        todos_str = "\n".join(
+            [
+                f"{i+1}. [ ] {t.task if hasattr(t, 'task') else t.get('task')}"
+                for i, t in enumerate(todos_list)
+            ]
+        )
     else:
         todos_str = "No specific sub-tasks provided."
 
@@ -333,12 +188,12 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         [search_specific_document_for_research]
     )
 
-    system_prompt = RESEARCH_SYSTEM_PROMPT.format(
-        date=get_today_str(), file_name=doc_name
-    )
+    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
     messages = [
         SystemMessage(content=system_prompt),
-        HumanMessage(content=f"Research Topic: {doc_name}\n\n**Orchestrator Assigned Tasks**:\nYou must address the following points about this document:\n{todos_str}"),
+        HumanMessage(
+            content=f"Research Topic: {doc_name}\n\n**Orchestrator Assigned Tasks**:\nYou must address the following points about this document:\n{todos_str}"
+        ),
     ]
 
     ai_msg = await model_with_tools.ainvoke(messages)
@@ -366,12 +221,30 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     else:
         pass
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(Summary)
-    summary = await extractor.ainvoke(messages)
+    # Extract structured summary with better error handling
+    try:
+        extractor = RESEARCH_LLM_FAST.with_structured_output(
+            Summary,
+            include_raw=False,
+            strict=True
+        )
+        summary = await extractor.ainvoke(messages)
 
-    summary.document_name = doc_name
+        summary.document_name = doc_name
+        
+        logger.info(f"✅ Sub-agent completed analysis of '{doc_name}' (Relevance: {summary.relevance_score:.2f})")
 
-    return {"global_context": [summary]}
+        return {"global_context": [summary]}
+        
+    except Exception as e:
+        logger.error(f"❌ Error extracting summary for '{doc_name}': {e}")
+        # Return a fallback summary
+        fallback_summary = Summary(
+            document_name=doc_name,
+            findings="Error processing document. Please try again.",
+            relevance_score=0.0
+        )
+        return {"global_context": [fallback_summary]}
 
 
 async def synthesis_node(
@@ -391,6 +264,10 @@ async def synthesis_node(
     """
     global_context = state.get("global_context", [])
     selected_docs = state.get("selected_documents", [])
+    
+    logger.info("")
+    logger.info("📦 SYNTHESIS PHASE - Combining all research findings...")
+    logger.info(f"   Processing {len(global_context)} document summaries")
 
     if len(global_context) < len(selected_docs):
         return Command(goto=END)
@@ -405,15 +282,26 @@ async def synthesis_node(
     else:
         findings_str = "No document findings available."
 
+    # Extract the original user query — the first HumanMessage in the conversation
+    messages = state.get("messages", [])
+    original_query = ""
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and msg.content:
+            original_query = msg.content
+            break
+
     prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
-        messages=get_buffer_string(state.get("messages", [])),
+        query=original_query,
         findings=findings_str,
-        date=get_today_str(),
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
         [HumanMessage(content=prompt_content)]
     )
+    
+    logger.info("✅ Final synthesis complete - generating response...")
+    logger.info("="*80)
+    logger.info("")
 
     return Command(goto=END, update={"messages": [response]})
 
@@ -431,6 +319,7 @@ async def summarize_conversation_node(
     Returns:
         State updates with new summary and removal commands for old messages.
     """
+    logger.info("📝 Summarizing conversation history...")
     messages = state.get("messages", [])
 
     # Check if we have enough messages to warrant summarization
