@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Dict, List, Literal
 from langchain_core.messages import (
     HumanMessage,
@@ -21,10 +20,6 @@ from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
 from backend.core.tools.rag import search_specific_document_for_research
 from backend.core.tools.api import web_search_tool
 
-
-def get_today_str() -> str:
-    """Returns today's date as a formatted string (YYYY-MM-DD)."""
-    return datetime.now().strftime("%Y-%m-%d")
 
 
 def format_todos_as_string(todos: List[TodoItem]) -> str:
@@ -68,7 +63,7 @@ async def orchestrator_node(
         [WriteTodos, web_search_tool], tool_choice="auto"
     )
 
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
+    system_prompt = LEAD_RESEARCHER_PROMPT
     context_prompt = f"""
 Current TODO List:
 {format_todos_as_string(todos)}
@@ -149,9 +144,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         [search_specific_document_for_research]
     )
 
-    system_prompt = RESEARCH_SYSTEM_PROMPT.format(
-        date=get_today_str(), file_name=doc_name
-    )
+    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(
@@ -226,7 +219,6 @@ async def synthesis_node(
     prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
         messages=get_buffer_string(state.get("messages", [])),
         findings=findings_str,
-        date=get_today_str(),
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
