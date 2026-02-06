@@ -76,27 +76,24 @@ def retrieve_top_k(
     client: QdrantClient,
     query: str,
     k: int = 10,
-    file_name_filter: Optional[str] = None,
+    chunk_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     try:
-        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        filter_msg = f" in document '{chunk_id}'" if chunk_id else " across all documents"
         logger.info(f"🔍 Retrieving top {k} documents for query: {query}{filter_msg}")
         if not client.collection_exists(collection_name="documents"):
             logger.info("No collection found")
             return None
 
-        logger.info(
-            f"📊 Searching through {client.count(collection_name='documents')} document chunks"
-        )
+        logger.info(f"📊 Searching through {client.count(collection_name='documents')} document chunks")
 
-        # Build query filter if document name is specified
         query_filter = None
-        if file_name_filter:
+        if chunk_id:
             query_filter = models.Filter(
                 must=[
                     models.FieldCondition(
-                        key="metadata.file_name",
-                        match=models.MatchValue(value=file_name_filter)
+                        key="metadata.chunk_id",
+                        match=models.MatchValue(value=chunk_id)
                     )
                 ]
             )
@@ -116,7 +113,7 @@ def retrieve_top_k(
         for d in docs_with_scores:
             doc = d.payload
             score = d.score
-            logger.info(f"file name: {doc['metadata'].get('file_name')}")
+            logger.info(f"chunk ID: {doc['metadata'].get('chunk_id')}")
             logger.info(f"score: {score}")
             contains_image = doc["metadata"].get("contains_image", False)
 
@@ -148,20 +145,20 @@ def retrieve_with_keyword_helping(
     query: str,
     query_terms: List[str],
     k: int = 10,
-    file_name_filter: Optional[str] = None,
+    chunk_id: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     try:
-        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        filter_msg = f" in document '{chunk_id}'" if chunk_id else " across all documents"
         logger.info(f"🔍 Vector + keyword search helping for: '{query}'{filter_msg} (limit: {k}+3)")
 
         # Perform vector search
         vector_results = retrieve_top_k(
-            client, query, k=k, file_name_filter=file_name_filter
+            client, query, k=k, chunk_id=chunk_id
         )
 
         # Perform keyword search
         keyword_results = keyword_search(
-            query_terms, k=3, file_name_filter=file_name_filter
+            query_terms, k=3, chunk_id=chunk_id
         )
 
         # Combine results (handle None case)
