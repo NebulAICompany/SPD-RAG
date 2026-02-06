@@ -1,84 +1,7 @@
-CLARIFY_WITH_USER_INSTRUCTIONS = """
-These are the messages that have been exchanged so far from the user asking for the report:
-<Messages>
-{messages}
-</Messages>
-
-Today's date is {date}.
-
-**IMPORTANT: Respond in the SAME LANGUAGE as the user's messages. If the user writes in Turkish, respond in Turkish. If the user writes in English, respond in English. Always match their language.**
-
-Assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
-IMPORTANT: If you can see in the messages history that you have already asked a clarifying question, you almost always do not need to ask another one. Only ask another question if ABSOLUTELY NECESSARY.
-
-If there are acronyms, abbreviations, or unknown terms, ask the user to clarify.
-If you need to ask a question, follow these guidelines:
-- Be concise while gathering all necessary information
-- Make sure to gather all the information needed to carry out the research task in a concise, well-structured manner.
-- Use bullet points or numbered lists if appropriate for clarity. Make sure that this uses markdown formatting and will be rendered correctly if the string output is passed to a markdown renderer.
-- Don't ask for unnecessary information, or information that the user has already provided. If you can see that the user has already provided the information, do not ask for it again.
-
-Respond in valid JSON format with these exact keys:
-"need_clarification": boolean,
-"question": "<question to ask the user to clarify the report scope>",
-"verification": "<verification message that we will start research>"
-
-If you need to ask a clarifying question, return:
-"need_clarification": true,
-"question": "<your clarifying question>",
-"verification": ""
-
-If you do not need to ask a clarifying question, return:
-"need_clarification": false,
-"question": "",
-"verification": "<acknowledgement message that you will now start research based on the provided information>"
-
-For the verification message when no clarification is needed:
-- Acknowledge that you have sufficient information to proceed
-- Briefly summarize the key aspects of what you understand from their request
-- Confirm that you will now begin the research process
-- Keep the message concise and professional
-"""
-
-TRANSFORM_MESSAGES_INTO_PLAN_PROMPT = """You will be given a set of messages that have been exchanged so far between yourself and the user. 
-Your job is to translate these messages into a detailed strategic plan that will guide the research and analysis.
-
-The messages that have been exchanged so far between yourself and the user are:
-<Messages>
-{messages}
-</Messages>
-
-Today's date is {date}.
-
-**IMPORTANT: The plan summary should be in the SAME LANGUAGE as the user's messages. If the user writes in Turkish, write the plan in Turkish. If the user writes in English, write in English.**
-
-You will return a strategic plan with actionable steps.
-
-Guidelines:
-1. Maximize Specificity and Detail
-- Include all known user preferences and explicitly list key attributes or dimensions to consider.
-- It is important that all details from the user are included in the instructions.
-
-2. Fill in Unstated But Necessary Dimensions as Open-Ended
-- If certain attributes are essential for a meaningful output but the user has not provided them, explicitly state that they are open-ended or default to no specific constraint.
-
-3. Avoid Unwarranted Assumptions
-- If the user has not provided a particular detail, do not invent one.
-- Instead, state the lack of specification and guide the researcher to treat it as flexible or accept all possible options.
-
-4. Use the First Person
-- Phrase the request from the perspective of the user.
-
-5. Sources
-- If specific sources should be prioritized, specify them in the plan.
-- For financial queries, prefer official filings, regulatory documents, and reputable financial institutions.
-- For academic or scientific queries, prefer linking directly to the original paper or official journal publication.
-"""
-
 LEAD_RESEARCHER_PROMPT = """You are the AIris research supervisor. Your job is to manage the research process by delegating tasks and tracking progress. For context, today's date is {date}.
 
 <Task>
-Your focus is to manage the research process against the approved plan.
+Your focus is to manage the research process based on the user's request.
 Use the WriteTodos tool to update the task list as you make progress.
 When you are completely satisfied with the research findings, indicate completion.
 </Task>
@@ -135,7 +58,7 @@ You MUST address every single item in that list in your findings.
 
 FINAL_REPORT_GENERATION_PROMPT = """Based on all the research conducted, create a comprehensive, well-structured report.
 
-For more context, here is all of the messages so far. Focus on the research brief/plan, but consider these messages as well for more context.
+For more context, here is all of the messages so far. Focus on the research brief, but consider these messages as well for more context.
 <Messages>
 {messages}
 </Messages>
