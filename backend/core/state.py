@@ -87,11 +87,12 @@ class AgentState(MessagesState):
 
     Attributes:
         todo_queue: The current list of tasks being tracked.
-        selected_documents: Document IDs selected for sub-agent processing.
+        selected_documents: Document IDs selected for sub-agent processing (auto-populated from uploads).
         global_context: Aggregated summaries from all sub-agents.
     """
 
     todo_queue: Annotated[List[TodoItem], override_reducer]
+    selected_documents: Annotated[List[str], override_reducer]
     global_context: Annotated[List[Summary], merge_summaries]
     summary: str
     sub_agent_todos: List[TodoItem]

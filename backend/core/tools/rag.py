@@ -6,7 +6,6 @@ from backend.retrieval.retriever import (
 )
 from backend.retrieval.reranker import rerank
 from backend.shared.logger import get_logger
-from backend.shared.constants import get_selected_files
 
 logger = get_logger("RAG_TOOL")
 
@@ -16,6 +15,7 @@ def search_local_documents(
     query: str,
     keywords: Optional[List[str]] = None,
     max_results: int = 5,
+    file_name_filter: Optional[str] = None,
 ) -> str:
     """Search uploaded local documents in the knowledge base.
 
@@ -48,11 +48,8 @@ def search_local_documents(
         # Use provided keywords or empty list if not provided
         query_terms = keywords if keywords is not None else []
 
-        # Use global selected_files from shared state
-        selected_files = get_selected_files()
-
         logger.info(
-            f"🔍 RAG Tool - Searching with selected files filter: {selected_files}"
+            f"🔍 RAG Tool - Searching through all uploaded documents"
         )
 
         # Retrieve documents using hybrid search (vector + keyword)
@@ -61,7 +58,7 @@ def search_local_documents(
             query=query,
             query_terms=query_terms,
             k=15,
-            selected_files=selected_files,
+            file_name_filter=file_name_filter,
         )
 
         if not retrieved_docs:
@@ -122,14 +119,16 @@ def search_specific_document_for_research(
     query: str,
     file_name: str,
     max_results: int = 3,
+    
 ) -> str:
     """Search for information within a SPECIFIC local document.
 
     Use this tool when you are assigned to research a specific document.
+    This tool ONLY searches within the specified document.
 
     Args:
         query: Search query to find relevant information.
-        file_name: The exact name of the file to search within.
+        file_name: The exact name of the file to search within (REQUIRED).
         max_results: Maximum number of document chunks to return (default 3, max 5).
     """
     try:
@@ -141,16 +140,15 @@ def search_specific_document_for_research(
         if not client.collection_exists(collection_name="documents"):
             return "No documents found in knowledge base.", []
 
-        # Force file filter to the specific file
-        selected_files = [file_name]
-        logger.info(f"🔍 Agentic Tool - Searching ONLY in: {selected_files}")
+        logger.info(f"🔍 Agentic Tool - Searching in document '{file_name}' only")
 
+        # Use the file_name filter to search only in the specific document
         retrieved_docs = retrieve_with_keyword_helping(
             client=client,
             query=query,
             query_terms=[],  # Optional: could expose keywords if needed
             k=15,
-            selected_files=selected_files,
+            file_name_filter=file_name,  # Now actually filters by file name
         )
 
         if not retrieved_docs:
