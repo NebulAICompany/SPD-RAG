@@ -177,8 +177,15 @@ class BM25KeywordSearch:
         self,
         query_terms: List[str],
         k: int = 10,
+        file_name_filter: Optional[str] = None,
     ) -> List[SearchResult]:
-        """Search documents using BM25 algorithm with pre-processed query terms"""
+        """Search documents using BM25 algorithm with pre-processed query terms
+        
+        Args:
+            query_terms: Pre-processed search terms
+            k: Number of results to return
+            file_name_filter: Optional filename to filter results by
+        """
         if not query_terms:
             return []
 
@@ -186,12 +193,19 @@ class BM25KeywordSearch:
             logger.warning("No documents in keyword search index")
             return []
 
-        logger.info(f"🔍 Keyword search for terms: {query_terms} (limit: {k})")
-        logger.info(f"Searching through all {len(self.documents)} documents")
+        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        logger.info(f"🔍 Keyword search for terms: {query_terms}{filter_msg} (limit: {k})")
+        logger.info(f"Searching through {len(self.documents)} documents")
 
-        # Calculate scores for all documents
+        # Calculate scores for all documents (or filtered subset)
         scores = []
         for doc_id in self.documents:
+            # Filter by file_name if specified
+            if file_name_filter:
+                doc_file_name = self.documents[doc_id]["metadata"].get("file_name", "")
+                if doc_file_name != file_name_filter:
+                    continue
+                    
             score, matched_terms = self.calculate_bm25_score(query_terms, doc_id)
             if score > 0:
                 scores.append((doc_id, score, matched_terms))
@@ -387,7 +401,7 @@ def get_keyword_search() -> BM25KeywordSearch:
 
 
 def keyword_search(
-    query_terms: List[str], k: int = 10
+    query_terms: List[str], k: int = 10, file_name_filter: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
     Perform keyword search and return results in the same format as vector search
@@ -395,12 +409,13 @@ def keyword_search(
     Args:
         query_terms: Pre-processed search terms
         k: Number of results to return
+        file_name_filter: Optional filename to filter results by
 
     Returns:
         List of search results compatible with existing retrieval system
     """
     search_engine = get_keyword_search()
-    results = search_engine.search(query_terms, k=k)
+    results = search_engine.search(query_terms, k=k, file_name_filter=file_name_filter)
 
     # Convert to format compatible with existing retrieval system
     formatted_results = []
