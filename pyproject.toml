@@ -17,6 +17,5 @@ dependencies = [
     "pandas>=3.0.0",
     "python-multipart>=0.0.22",
     "qdrant-client>=1.16.2",
-    "tavily>=1.1.0",
     "uvicorn>=0.40.0",
 ]

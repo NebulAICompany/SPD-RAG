@@ -18,7 +18,6 @@ from backend.core.prompts import (
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST, UPLOADS_PATH_STR
 from backend.core.tools.rag import search_specific_document_for_research
-from backend.core.tools.api import web_search_tool
 from backend.shared.logger import get_logger
 
 logger = get_logger("NODES")
@@ -112,9 +111,7 @@ async def orchestrator_node(
     todos = state.get("todo_queue", [])
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools(
-        [WriteTodos], tool_choice="auto"
-    )
+    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
 
     # Build context metadata (RLM paper: root LM receives type, length, chunk info)
     selected_docs = state.get("selected_documents", [])
