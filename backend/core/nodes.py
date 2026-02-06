@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Any, Dict, List, Literal
 import os
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
     ToolMessage,
-    get_buffer_string,
     RemoveMessage,
 )
 from langchain_core.runnables import RunnableConfig
@@ -25,10 +23,6 @@ from backend.shared.logger import get_logger
 
 logger = get_logger("NODES")
 
-
-def get_today_str() -> str:
-    """Returns today's date as a formatted string (YYYY-MM-DD)."""
-    return datetime.now().strftime("%Y-%m-%d")
 
 
 def format_todos_as_string(todos: List[TodoItem]) -> str:
@@ -119,10 +113,22 @@ async def orchestrator_node(
     messages = state["messages"]
 
     llm_with_tools = RESEARCH_LLM_REASONING.bind_tools(
-        [WriteTodos, web_search_tool], tool_choice="auto"
+        [WriteTodos], tool_choice="auto"
     )
 
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
+    # Build context metadata (RLM paper: root LM receives type, length, chunk info)
+    selected_docs = state.get("selected_documents", [])
+    if selected_docs:
+        context_description = (
+            f"a long document split into {len(selected_docs)} chunks: "
+            f"{', '.join(selected_docs)}"
+        )
+    else:
+        context_description = "not yet loaded into the environment"
+
+    system_prompt = LEAD_RESEARCHER_PROMPT.format(
+        context_description=context_description,
+    )
     context_prompt = f"""
 Current TODO List:
 {format_todos_as_string(todos)}
@@ -136,7 +142,6 @@ Current TODO List:
     updates: Dict[str, Any] = {"messages": [response]}
 
     if response.tool_calls:
-        tool_outputs = []
         for tool_call in response.tool_calls:
             if tool_call["name"] == "WriteTodos":
                 new_todos_raw = tool_call["args"].get("todos", [])
@@ -144,23 +149,6 @@ Current TODO List:
                 updates["todo_queue"] = [TodoItem(**t) for t in new_todos_raw]
                 if sub_todos_raw:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
-            elif tool_call["name"] == "web_search_tool":
-                tool_output = await web_search_tool.ainvoke(tool_call["args"])
-                if isinstance(tool_output, tuple):
-                    content, _ = tool_output
-                else:
-                    content = str(tool_output)
-
-                tool_outputs.append(
-                    ToolMessage(
-                        content=str(content),
-                        tool_call_id=tool_call["id"],
-                        name=tool_call["name"],
-                    )
-                )
-
-        if tool_outputs:
-            updates["messages"].extend(tool_outputs)
 
     return updates
 
@@ -181,8 +169,6 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     Returns:
         State update with the Summary added to global_context.
     """
-    from langchain_core.messages import ToolMessage
-
     doc_name = input_data["document_name"]
     todos_list = input_data.get("todos", [])
     
@@ -205,9 +191,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         [search_specific_document_for_research]
     )
 
-    system_prompt = RESEARCH_SYSTEM_PROMPT.format(
-        date=get_today_str(), file_name=doc_name
-    )
+    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(
@@ -301,10 +285,17 @@ async def synthesis_node(
     else:
         findings_str = "No document findings available."
 
+    # Extract the original user query — the first HumanMessage in the conversation
+    messages = state.get("messages", [])
+    original_query = ""
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and msg.content:
+            original_query = msg.content
+            break
+
     prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
-        messages=get_buffer_string(state.get("messages", [])),
+        query=original_query,
         findings=findings_str,
-        date=get_today_str(),
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
