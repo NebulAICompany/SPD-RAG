@@ -260,7 +260,6 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         extractor = RESEARCH_LLM_FAST.with_structured_output(
             Summary,
             include_raw=False,
-            strict=True
         )
         summary = await extractor.ainvoke(messages)
 

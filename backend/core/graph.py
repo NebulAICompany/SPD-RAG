@@ -49,9 +49,9 @@ def route_orchestrator(
         return [
             Send(
                 "document_sub_agent_node",
-                {"document_name": doc_name, "todos": sub_agent_todos},
+                {"chunk_id": chunk_id, "todos": sub_agent_todos},
             )
-            for doc_name in selected_docs
+            for chunk_id in selected_docs
         ]
 
     # Reduce: All docs processed or no docs to process
