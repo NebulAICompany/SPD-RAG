@@ -1,7 +1,6 @@
 import os
 from typing import List, Optional
 from dotenv import load_dotenv
-from tavily import TavilyClient
 import cohere
 from pathlib import Path
 from langchain_core.tracers.stdout import ConsoleCallbackHandler
@@ -10,12 +9,10 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 # Constants for API keys
-TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Constants for API clients
-tavily_client = TavilyClient(TAVILY_API_KEY)
 co = cohere.ClientV2(api_key=COHERE_API_KEY)
 
 # Constants for file paths

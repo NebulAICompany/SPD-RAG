@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Any, Dict, List, Literal
 import os
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
     ToolMessage,
-    get_buffer_string,
     RemoveMessage,
 )
 from langchain_core.runnables import RunnableConfig
@@ -20,16 +18,11 @@ from backend.core.prompts import (
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST, UPLOADS_PATH_STR
 from backend.core.tools.rag import search_specific_document_for_research
-from backend.core.tools.api import web_search_tool
 from backend.shared.logger import get_logger
 from backend.retrieval.retriever import get_vectorstore
 
 logger = get_logger("NODES")
 
-
-def get_today_str() -> str:
-    """Returns today's date as a formatted string (YYYY-MM-DD)."""
-    return datetime.now().strftime("%Y-%m-%d")
 
 
 def format_todos_as_string(todos: List[TodoItem]) -> str:
@@ -132,11 +125,21 @@ async def orchestrator_node(
     todos = state.get("todo_queue", [])
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools(
-        [WriteTodos, web_search_tool], tool_choice="auto"
-    )
+    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
 
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
+    # Build context metadata (RLM paper: root LM receives type, length, chunk info)
+    selected_docs = state.get("selected_documents", [])
+    if selected_docs:
+        context_description = (
+            f"a long document split into {len(selected_docs)} chunks: "
+            f"{', '.join(selected_docs)}"
+        )
+    else:
+        context_description = "not yet loaded into the environment"
+
+    system_prompt = LEAD_RESEARCHER_PROMPT.format(
+        context_description=context_description,
+    )
     context_prompt = f"""
         Current TODO List:
         {format_todos_as_string(todos)}
@@ -150,7 +153,6 @@ async def orchestrator_node(
     updates: Dict[str, Any] = {"messages": [response]}
 
     if response.tool_calls:
-        tool_outputs = []
         for tool_call in response.tool_calls:
             if tool_call["name"] == "WriteTodos":
                 new_todos_raw = tool_call["args"].get("todos", [])
@@ -225,7 +227,6 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     model_with_tools = RESEARCH_LLM_FAST.bind_tools(
         [search_specific_document_for_research]
     )
-
     system_prompt = RESEARCH_SYSTEM_PROMPT.format(
         date=get_today_str(), file_name=chunk_id
     )
@@ -320,10 +321,17 @@ async def synthesis_node(
     else:
         findings_str = "No document findings available."
 
+    # Extract the original user query — the first HumanMessage in the conversation
+    messages = state.get("messages", [])
+    original_query = ""
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and msg.content:
+            original_query = msg.content
+            break
+
     prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
-        messages=get_buffer_string(state.get("messages", [])),
+        query=original_query,
         findings=findings_str,
-        date=get_today_str(),
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
