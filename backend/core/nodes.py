@@ -138,9 +138,9 @@ async def orchestrator_node(
 
     system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
     context_prompt = f"""
-Current TODO List:
-{format_todos_as_string(todos)}
-"""
+        Current TODO List:
+        {format_todos_as_string(todos)}
+        """
 
     full_prompt = system_prompt + context_prompt
     response = await llm_with_tools.ainvoke(
@@ -158,6 +158,13 @@ Current TODO List:
                 updates["todo_queue"] = [TodoItem(**t) for t in new_todos_raw]
                 if sub_todos_raw:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
+                tool_outputs.append(
+                    ToolMessage(
+                        content="Todos updated",  # istersen burada structured içerik dönebilirsin
+                        tool_call_id=tool_call["id"],
+                        name=tool_call["name"],
+                    )
+                )
             elif tool_call["name"] == "web_search_tool":
                 tool_output = await web_search_tool.ainvoke(tool_call["args"])
                 if isinstance(tool_output, tuple):
