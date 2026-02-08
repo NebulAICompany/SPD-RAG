@@ -80,7 +80,6 @@ def load_uploaded_documents_node(state: AgentState) -> Dict[str, Any]:
             for p in points:
                 payload = p.payload or {}
                 chunk_id = payload.get("metadata", {}).get("chunk_id")
-                print(f"Payload chunk_id: {chunk_id}")
                 if chunk_id is not None:
                     unique_chunk_ids.add(chunk_id)
 
