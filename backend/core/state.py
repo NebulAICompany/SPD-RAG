@@ -60,7 +60,7 @@ class TodoItem(BaseModel):
 class Summary(BaseModel):
     """Research summary extracted from a single document by a sub-agent."""
 
-    document_name: str = Field(description="The source document name")
+    chunk_id: str = Field(description="The source chunk ID")
     findings: str = Field(description="Extracted relevant information and analysis")
     relevance_score: float = Field(
         description="Relevance confidence score (0.0 - 1.0)", ge=0.0, le=1.0
@@ -105,8 +105,8 @@ class SubAgentInput(TypedDict):
     Passed via LangGraph's `Send` API for parallel execution.
 
     Attributes:
-        document_name: The name of the document to process.
+        chunk_id: The ID of the chunk to process.
     """
 
-    document_name: str
+    chunk_id: str
     todos: List[TodoItem]

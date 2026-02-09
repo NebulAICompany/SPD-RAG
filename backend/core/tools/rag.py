@@ -15,7 +15,7 @@ def search_local_documents(
     query: str,
     keywords: Optional[List[str]] = None,
     max_results: int = 5,
-    file_name_filter: Optional[str] = None,
+    chunk_id: Optional[str] = None,
 ) -> str:
     """Search uploaded local documents in the knowledge base.
 
@@ -25,6 +25,7 @@ def search_local_documents(
         query: Search query to find relevant information in local documents.
         keywords: Optional list of keywords for hybrid vector + keyword search.
         max_results: Maximum number of document chunks to return (default 5, max 10).
+        chunk_id: Optional ID of a specific chunk to search within.
     """
     try:
         # Limit max_results to reasonable bounds
@@ -58,7 +59,7 @@ def search_local_documents(
             query=query,
             query_terms=query_terms,
             k=15,
-            file_name_filter=file_name_filter,
+            chunk_id=chunk_id,
         )
 
         if not retrieved_docs:
@@ -117,7 +118,7 @@ def search_local_documents(
 )
 def search_specific_document_for_research(
     query: str,
-    file_name: str,
+    chunk_id: str,
     max_results: int = 3,
     
 ) -> str:
@@ -128,7 +129,7 @@ def search_specific_document_for_research(
 
     Args:
         query: Search query to find relevant information.
-        file_name: The exact name of the file to search within (REQUIRED).
+        chunk_id: The exact ID of the chunk to search within (REQUIRED).
         max_results: Maximum number of document chunks to return (default 3, max 5).
     """
     try:
@@ -140,19 +141,18 @@ def search_specific_document_for_research(
         if not client.collection_exists(collection_name="documents"):
             return "No documents found in knowledge base.", []
 
-        logger.info(f"🔍 Agentic Tool - Searching in document '{file_name}' only")
+        logger.info(f"🔍 Agentic Tool - Searching in chunk '{chunk_id}' only")
 
-        # Use the file_name filter to search only in the specific document
         retrieved_docs = retrieve_with_keyword_helping(
             client=client,
             query=query,
-            query_terms=[],  # Optional: could expose keywords if needed
+            query_terms=[],
             k=15,
-            file_name_filter=file_name,  # Now actually filters by file name
+            chunk_id=chunk_id, 
         )
 
         if not retrieved_docs:
-            return f"No relevant information found in {file_name} for your query.", []
+            return f"No relevant information found in chunk {chunk_id} for your query.", []
 
         # Rerank
         doc_contents = [
@@ -162,7 +162,7 @@ def search_specific_document_for_research(
         reranked_docs = rerank(query, doc_contents, with_score=False, top_n=max_results)
 
         if not reranked_docs:
-            return f"No relevant information found in {file_name} after reranking.", []
+            return f"No relevant information found in chunk {chunk_id} after reranking.", []
 
         # Format results
         results = []
@@ -180,9 +180,7 @@ def search_specific_document_for_research(
             if page:
                 result_text += f" (Page {page})"
 
-
             results.append(result_text)
-
             # Metadata for artifact
             source_name = f"{f_name} - Page {page}" if page else f_name
             sources.append({"name": source_name, "file": f_name, "page": page or None})
@@ -193,4 +191,4 @@ def search_specific_document_for_research(
 
     except Exception as e:
         logger.error(f"Error in search_specific_document: {e}")
-        return f"Error searching document {file_name}: {str(e)}", []
+        return f"Error searching chunk {chunk_id}: {str(e)}", []

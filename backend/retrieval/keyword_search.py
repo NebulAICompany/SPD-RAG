@@ -177,14 +177,14 @@ class BM25KeywordSearch:
         self,
         query_terms: List[str],
         k: int = 10,
-        file_name_filter: Optional[str] = None,
+        chunk_id: Optional[str] = None,
     ) -> List[SearchResult]:
         """Search documents using BM25 algorithm with pre-processed query terms
         
         Args:
             query_terms: Pre-processed search terms
             k: Number of results to return
-            file_name_filter: Optional filename to filter results by
+            chunk_id: Optional chunk ID to filter results by
         """
         if not query_terms:
             return []
@@ -193,17 +193,17 @@ class BM25KeywordSearch:
             logger.warning("No documents in keyword search index")
             return []
 
-        filter_msg = f" in document '{file_name_filter}'" if file_name_filter else " across all documents"
+        filter_msg = f" in document '{chunk_id}'" if chunk_id else " across all documents"
         logger.info(f"🔍 Keyword search for terms: {query_terms}{filter_msg} (limit: {k})")
         logger.info(f"Searching through {len(self.documents)} documents")
 
         # Calculate scores for all documents (or filtered subset)
         scores = []
         for doc_id in self.documents:
-            # Filter by file_name if specified
-            if file_name_filter:
-                doc_file_name = self.documents[doc_id]["metadata"].get("file_name", "")
-                if doc_file_name != file_name_filter:
+            # Filter by chunk_id if specified
+            if chunk_id:
+                doc_chunk_id = self.documents[doc_id]["metadata"].get("chunk_id", "")
+                if doc_chunk_id != chunk_id:
                     continue
                     
             score, matched_terms = self.calculate_bm25_score(query_terms, doc_id)
@@ -313,21 +313,21 @@ class BM25KeywordSearch:
         except Exception as e:
             logger.error(f"❌ Failed to clear index files: {e}")
 
-    def remove_documents_by_file(self, file_name: str):
-        """Remove all documents from a specific file"""
+    def remove_documents_by_chunk(self, chunk_id: str):
+        """Remove all documents from a specific chunk"""
         docs_to_remove = []
 
-        # Find all document IDs that start with the file name
+        # Find all document IDs that start with the chunk ID
         for doc_id in self.documents.keys():
-            if doc_id.startswith(f"{file_name}_"):
+            if doc_id.startswith(f"{chunk_id}_"):
                 docs_to_remove.append(doc_id)
 
         if not docs_to_remove:
-            logger.info(f"No existing documents found for file: {file_name}")
+            logger.info(f"No existing documents found for chunk: {chunk_id}")
             return
 
         logger.info(
-            f"🗑️ Removing {len(docs_to_remove)} existing documents for file: {file_name}"
+            f"🗑️ Removing {len(docs_to_remove)} existing documents for chunk: {chunk_id}"
         )
 
         # Remove documents and their associated data
@@ -401,7 +401,7 @@ def get_keyword_search() -> BM25KeywordSearch:
 
 
 def keyword_search(
-    query_terms: List[str], k: int = 10, file_name_filter: Optional[str] = None
+    query_terms: List[str], k: int = 10, chunk_id: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
     Perform keyword search and return results in the same format as vector search
@@ -409,13 +409,13 @@ def keyword_search(
     Args:
         query_terms: Pre-processed search terms
         k: Number of results to return
-        file_name_filter: Optional filename to filter results by
+        chunk_id: Optional chunk ID to filter results by
 
     Returns:
         List of search results compatible with existing retrieval system
     """
     search_engine = get_keyword_search()
-    results = search_engine.search(query_terms, k=k, file_name_filter=file_name_filter)
+    results = search_engine.search(query_terms, k=k, chunk_id=chunk_id)
 
     # Convert to format compatible with existing retrieval system
     formatted_results = []

@@ -140,7 +140,7 @@ class VectorStorePipeline:
             for doc in docs:
                 if not hasattr(doc, "metadata") or doc.metadata is None:
                     doc.metadata = {}
-                doc.metadata["chunk_id"] = f"chunk_{chunk_idx}"
+                doc.metadata["chunk_id"] = f"{document_name}_chunk_{chunk_idx}"
                 doc.metadata["file_name"] = f"{document_name}"
                 chunk_idx += 1
 
