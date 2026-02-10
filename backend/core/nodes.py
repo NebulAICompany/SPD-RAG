@@ -1,9 +1,9 @@
-from datetime import datetime
-from typing import Any, Dict, List, Literal
+import asyncio
+from typing import Any, Dict, List, Literal, Optional
+import tiktoken
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
-    ToolMessage,
     get_buffer_string,
     RemoveMessage,
 )
@@ -11,20 +11,103 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
 from pydantic import BaseModel, Field
+
 from backend.core.prompts import (
     FINAL_REPORT_GENERATION_PROMPT,
+    INTERMEDIATE_SYNTHESIS_PROMPT,
     LEAD_RESEARCHER_PROMPT,
     RESEARCH_SYSTEM_PROMPT,
 )
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
 from backend.core.tools.rag import search_specific_document_for_research
-from backend.core.tools.api import web_search_tool
 
 
-def get_today_str() -> str:
-    """Returns today's date as a formatted string (YYYY-MM-DD)."""
-    return datetime.now().strftime("%Y-%m-%d")
+_ENCODER: Optional[tiktoken.Encoding] = None
+
+
+def _get_encoder() -> tiktoken.Encoding:
+    """Lazily initialise and return a shared tiktoken encoder.
+
+    Uses cl100k_base, which is compatible with GPT-4/4.1/4o/5-style models
+    and already used elsewhere in this project for accurate token counting.
+    """
+    global _ENCODER
+    if _ENCODER is None:
+        _ENCODER = tiktoken.get_encoding("cl100k_base")
+    return _ENCODER
+
+
+def _estimate_tokens(text: str) -> int:
+    """Estimate token count using the cl100k_base tokenizer.
+
+    This aligns with existing project usage (vector pipeline, benchmarks)
+    and is much closer to actual model tokenisation than word-count
+    heuristics.
+    """
+    if not text:
+        return 0
+    return len(_get_encoder().encode(text))
+
+
+async def _summarize_batch_findings(
+    findings_batch: List[str],
+    root_query: str,
+) -> str:
+    """Summarize a batch of findings into a single merged summary."""
+    batch_text = "\n\n---\n\n".join(findings_batch)
+    prompt_content = INTERMEDIATE_SYNTHESIS_PROMPT.format(
+        findings=batch_text,
+        query=root_query,
+    )
+
+    response = await RESEARCH_LLM_REASONING.ainvoke(
+        [HumanMessage(content=prompt_content)]
+    )
+    return getattr(response, "content", str(response))
+
+
+async def recursive_summarize_findings(
+    raw_findings: List[str],
+    root_query: str,
+    target_batch_tokens: int = 1200,
+) -> str:
+    """Recursively merge many findings into a single summary.
+    - Groups findings into batches based on approximate token count.
+    - Summarizes each batch.
+    - Repeats on the new set of summaries until only one remains.
+    """
+    current_level = raw_findings
+
+    while len(current_level) > 1:
+        batches: List[List[str]] = []
+        current_batch: List[str] = []
+        current_tokens = 0
+
+        for chunk in current_level:
+            chunk_tokens = _estimate_tokens(chunk)
+
+            if current_batch and current_tokens + chunk_tokens > target_batch_tokens:
+                batches.append(current_batch)
+                current_batch = [chunk]
+                current_tokens = chunk_tokens
+            else:
+                current_batch.append(chunk)
+                current_tokens += chunk_tokens
+
+        if current_batch:
+            batches.append(current_batch)
+
+        tasks = [
+            _summarize_batch_findings(batch, root_query=root_query)
+            for batch in batches
+            if batch
+        ]
+        next_level = await asyncio.gather(*tasks)
+
+        current_level = list(next_level)
+
+    return current_level[0]
 
 
 def format_todos_as_string(todos: List[TodoItem]) -> str:
@@ -64,11 +147,9 @@ async def orchestrator_node(
     todos = state.get("todo_queue", [])
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools(
-        [WriteTodos, web_search_tool], tool_choice="auto"
-    )
+    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
 
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(date=get_today_str())
+    system_prompt = LEAD_RESEARCHER_PROMPT
     context_prompt = f"""
 Current TODO List:
 {format_todos_as_string(todos)}
@@ -82,7 +163,6 @@ Current TODO List:
     updates: Dict[str, Any] = {"messages": [response]}
 
     if response.tool_calls:
-        tool_outputs = []
         for tool_call in response.tool_calls:
             if tool_call["name"] == "WriteTodos":
                 new_todos_raw = tool_call["args"].get("todos", [])
@@ -90,23 +170,6 @@ Current TODO List:
                 updates["todo_queue"] = [TodoItem(**t) for t in new_todos_raw]
                 if sub_todos_raw:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
-            elif tool_call["name"] == "web_search_tool":
-                tool_output = await web_search_tool.ainvoke(tool_call["args"])
-                if isinstance(tool_output, tuple):
-                    content, _ = tool_output
-                else:
-                    content = str(tool_output)
-
-                tool_outputs.append(
-                    ToolMessage(
-                        content=str(content),
-                        tool_call_id=tool_call["id"],
-                        name=tool_call["name"],
-                    )
-                )
-
-        if tool_outputs:
-            updates["messages"].extend(tool_outputs)
 
     return updates
 
@@ -149,9 +212,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         [search_specific_document_for_research]
     )
 
-    system_prompt = RESEARCH_SYSTEM_PROMPT.format(
-        date=get_today_str(), file_name=doc_name
-    )
+    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(
@@ -213,20 +274,32 @@ async def synthesis_node(
     if len(global_context) < len(selected_docs):
         return Command(goto=END)
 
+    root_query = ""
+    for msg in state.get("messages", []):
+        if isinstance(msg, HumanMessage):
+            root_query = getattr(msg, "content", "")
+            break
+
     if global_context:
-        findings_str = "\n\n".join(
-            [
-                f"**Document {s.document_name}** (Relevance: {s.relevance_score:.2f}):\n{s.findings}"
-                for s in global_context
-            ]
+        raw_findings_chunks: List[str] = [
+            (
+                f"Document: {s.document_name}\n"
+                f"Relevance: {s.relevance_score:.2f}\n"
+                f"Findings:\n{s.findings}"
+            )
+            for s in global_context
+        ]
+
+        merged_findings = await recursive_summarize_findings(
+            raw_findings_chunks,
+            root_query=root_query,
         )
     else:
-        findings_str = "No document findings available."
+        merged_findings = "No document findings available."
 
     prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
         messages=get_buffer_string(state.get("messages", [])),
-        findings=findings_str,
-        date=get_today_str(),
+        findings=merged_findings,
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
