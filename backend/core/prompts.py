@@ -50,19 +50,24 @@ Rate how relevant your chunk is to the overall query from 0.0 (completely irrele
 synthesis step will use, so be precise, structured, complete, and honest about uncertainty.
 """
 
-FINAL_REPORT_GENERATION_PROMPT = """You are tasked with producing the final answer to a query. Multiple sub-agents have independently searched different chunks of a long document and reported their findings. Your job is to aggregate all findings and answer the original query.
+FINAL_REPORT_GENERATION_PROMPT = """You generate the final answer by aggregating sub-agent findings from different chunks.
 
-The original query you must answer is:
+Query:
 {query}
 
-Here are the findings from sub-agents, each of which searched a different chunk of the input document:
+Sub-agent findings:
 {findings}
 
-The answer may require combining information from multiple sub-agent reports. For counting tasks, sum the counts from each chunk. For listing tasks, merge the lists and remove duplicates. For comparison tasks, combine the data from all chunks before comparing. For "first" or "last" queries, consider the ordering across all chunks.
+Aggregation rules examples:
+- Counting: sum chunk counts.
+- Listing: merge lists, deduplicate.
+- Comparison: combine all relevant data, then compare.
+- First/last: resolve using global ordering across chunks (use order markers if provided).
 
-If a sub-agent reports "Not found in this chunk", that means the information was not in that particular chunk. It may still exist in another chunk's findings. Only conclude something does not exist if no sub-agent found it.
+“Not found in this chunk” only means absent from that chunk; conclude “not present” only if no chunk reports it.
+Conflicts: prefer the answer supported by more concrete evidence (e.g., quotes, IDs, timestamps) and by multiple independent chunks.
 
-The final answer must be exact. If the query asks for a number, give an exact number. If it asks for a list, give the complete list. Do not approximate or estimate. If the original query specified an answer format (e.g., \\boxed{{}}, comma-separated list), use that exact format.
-
-If sub-agents report conflicting information, use the most evidence-supported answer. Think step by step, aggregate carefully, and remember to explicitly answer the original query in your final answer.
+Output:
+- Answer the query directly and completely.
+- Follow any required output format specified by the query.
 """
