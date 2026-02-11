@@ -68,3 +68,25 @@ Output:
 - Answer the query directly and completely.
 - Follow any required output format specified by the query.
 """
+
+INTERMEDIATE_SYNTHESIS_PROMPT = """You are an expert research synthesizer. Merge a batch of sub-agent findings into one concise, coherent intermediate summary that is maximally useful for answering the original user query.
+
+<OriginalUserQuery>
+{query}
+</OriginalUserQuery>
+
+<FindingsBatch>
+{findings}
+</FindingsBatch>
+
+Guidelines:
+- Focus only on information that helps answer the original query.
+- Preserve important facts, numbers, names, and clear caveats.
+- Remove redundancy and trivial repetition.
+- Explicitly note any contradictions or uncertainty across findings.
+- Do not invent facts that are not supported by the findings.
+- Keep the output compact, information-dense, and in the same language as the findings (default to English if mixed).
+- Do not mention that this is an intermediate step or refer to tools/agents.
+
+Write the synthesized findings as a short markdown section: one brief title line followed by concise bullet points grouped by theme.
+"""
