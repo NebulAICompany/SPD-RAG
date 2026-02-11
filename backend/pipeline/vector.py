@@ -12,90 +12,82 @@ import hashlib
 logger = get_logger("VECTOR_PIPELINE")
 enc = tiktoken.get_encoding("cl100k_base")
 
+
+async def generate_embeddings(texts: List[str]) -> List[List[float]]:
+    """Embed texts using Cohere embed-v4.0, batching automatically (max 96/call)."""
+    if not texts:
+        return []
+
+    def _embed_batch(batch_texts: List[str]) -> List[List[float]]:
+        if not co:
+            raise RuntimeError("Cohere client not initialised")
+        embed_input = [
+            {"content": [{"type": "text", "text": t}]} for t in batch_texts
+        ]
+        return co.embed(
+            inputs=embed_input,
+            model="embed-v4.0",
+            input_type="search_document",
+            output_dimension=1536,
+            embedding_types=["float"],
+        ).embeddings.float
+
+    batch_size = 96
+    all_embeddings: List[List[float]] = []
+
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i : i + batch_size]
+        batch_embs = await asyncio.to_thread(_embed_batch, batch)
+        all_embeddings.extend(batch_embs)
+
+    return all_embeddings
+
+
 class VectorStorePipeline:
-    """
-    Simplified Vector Store Pipeline for RRM.
-    Removes PII masking and AutoContext for lightweight execution.
-    """
+    """Simplified Vector Store Pipeline for RRM."""
 
     class Embedding:
-        """Handles text embedding operations using Cohere"""
+        """Handles text embedding and Qdrant upload."""
 
         @staticmethod
         async def upload_text_embed(
             client: QdrantClient, processed_docs: List[Document]
         ):
-            """Create embeddings and upload text chunks to Qdrant"""
-            batch_size = 96
+            """Create embeddings for all docs and upload as Qdrant points."""
+            if not processed_docs:
+                logger.warning("No documents to embed.")
+                return
+
+            texts = [doc.page_content for doc in processed_docs]
+            logger.info(f"Embedding {len(texts)} chunks...")
+
+            embeddings = await generate_embeddings(texts)
+
+            if len(embeddings) != len(processed_docs):
+                raise ValueError(
+                    f"Embedding count ({len(embeddings)}) != doc count ({len(processed_docs)})"
+                )
+
             all_points = []
-            
-            # Helper function for Cohere embedding
-            def embed_batch(texts):
-                if not co:
-                    logger.error("Cohere client not available. Cannot embed.")
-                    return []
-                
-                embed_input = [
-                    {"content": [{"type": "text", "text": text}]}
-                    for text in texts
-                ]
-                return co.embed(
-                    inputs=embed_input,
-                    model="embed-v4.0",
-                    input_type="search_document",
-                    output_dimension=1536,
-                    embedding_types=["float"],
-                ).embeddings.float
+            for idx, (doc, embedding) in enumerate(
+                zip(processed_docs, embeddings)
+            ):
+                content_hash = hashlib.md5(doc.page_content.encode()).hexdigest()
+                point_id = int(content_hash[:15], 16) + idx
 
-            for i in range(0, len(processed_docs), batch_size):
-                batch_docs = processed_docs[i : i + batch_size]
-                logger.info(
-                    f"Processing batch {i//batch_size + 1}/{(len(processed_docs) + batch_size - 1)//batch_size} ({len(batch_docs)} documents)"
+                all_points.append(
+                    models.PointStruct(
+                        id=point_id,
+                        vector=embedding,
+                        payload={
+                            "page_content": doc.page_content,
+                            "metadata": doc.metadata,
+                        },
+                    )
                 )
 
-                batch_texts = [doc.page_content for doc in batch_docs]
-
-                try:
-                    # Run embedding in thread
-                    batch_embeddings = await asyncio.to_thread(embed_batch, batch_texts)
-                    
-                    if not batch_embeddings:
-                        logger.warning("No embeddings returned for batch.")
-                        continue
-
-                    # Create Qdrant points
-                    for idx, (doc, embedding) in enumerate(
-                        zip(batch_docs, batch_embeddings)
-                    ):
-                        # Generate ID deterministically from content + idx
-                        content_hash = hashlib.md5(doc.page_content.encode()).hexdigest()
-                        # Use a large integer ID derived from hash + index to avoid collisions
-                        point_id = int(content_hash[:15], 16) + idx 
-                        
-                        point = models.PointStruct(
-                            id=point_id,
-                            vector=embedding,
-                            payload={
-                                "page_content": doc.page_content,
-                                "metadata": doc.metadata,
-                            },
-                        )
-                        all_points.append(point)
-
-                except Exception as e:
-                    logger.error(f"Error embedding batch: {str(e)}")
-                    continue
-
-            if all_points:
-                client.upload_points(
-                    collection_name="documents",
-                    points=all_points,
-                )
-                logger.info(
-                    f"Successfully uploaded {len(all_points)} points to vectorstore"
-                )
-            else:
-                 logger.warning("No points to upload.")
+            client.upload_points(collection_name="documents", points=all_points)
+            logger.info(f"Uploaded {len(all_points)} points to vectorstore")
 
     def __init__(self):
         self.text_splitter = RecursiveCharacterTextSplitter.from_language(
@@ -109,9 +101,7 @@ class VectorStorePipeline:
         return len(enc.encode(text))
 
     async def run(self, text_content: str, document_name: str, file_extension: str = None):
-        """
-        Process text content and index it.
-        """
+        """Process text content and index it."""
         try:
             if not text_content or not text_content.strip():
                 logger.error("❌ No valid text content provided")
@@ -119,35 +109,27 @@ class VectorStorePipeline:
 
             chunk_idx = 0
 
-            # Split text into chunks
             if file_extension in [".xlsx", ".xls"]:
                 text_content_list = text_content.split("====SHEET SEPARATOR====")
                 docs = self.text_splitter.create_documents(text_content_list)
             else:
                 docs = self.text_splitter.create_documents([text_content])
-            
+
             if not docs:
-                logger.warning(
-                    f"⚠️ Warning: No chunks were created for {document_name}."
-                )
+                logger.warning(f"⚠️ No chunks created for {document_name}.")
                 return
 
-            logger.info(
-                f"   ✅ Document '{document_name}' split into {len(docs)} chunks"
-            )
+            logger.info(f"✅ Document '{document_name}' split into {len(docs)} chunks")
 
-            # Add metadata
             for doc in docs:
                 if not hasattr(doc, "metadata") or doc.metadata is None:
                     doc.metadata = {}
                 doc.metadata["chunk_id"] = f"chunk_{chunk_idx}"
-                doc.metadata["file_name"] = f"{document_name}"
+                doc.metadata["file_name"] = document_name
                 chunk_idx += 1
 
-            # Load Vectorstore
             client = load_vectorstore(VECTORSTORE_PATH_STR)
 
-            # Create Collection if not exists
             if not client.collection_exists(collection_name="documents"):
                 client.create_collection(
                     collection_name="documents",

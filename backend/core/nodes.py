@@ -1,6 +1,7 @@
 import asyncio
 from typing import Any, Dict, List, Literal, Optional
 import tiktoken
+import numpy as np
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
@@ -11,17 +12,21 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
 from pydantic import BaseModel, Field
-
 from backend.core.prompts import (
     FINAL_REPORT_GENERATION_PROMPT,
     INTERMEDIATE_SYNTHESIS_PROMPT,
     LEAD_RESEARCHER_PROMPT,
     RESEARCH_SYSTEM_PROMPT,
 )
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics.pairwise import cosine_similarity
+from backend.pipeline.vector import generate_embeddings
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
+from backend.shared.logger import get_logger
 from backend.core.tools.rag import search_specific_document_for_research
 
+logger = get_logger("RECURSIVE_SUMMARIZER")
 
 _ENCODER: Optional[tiktoken.Encoding] = None
 
@@ -39,16 +44,70 @@ def _get_encoder() -> tiktoken.Encoding:
 
 
 def _estimate_tokens(text: str) -> int:
-    """Estimate token count using the cl100k_base tokenizer.
-
-    This aligns with existing project usage (vector pipeline, benchmarks)
-    and is much closer to actual model tokenisation than word-count
-    heuristics.
-    """
+    """Estimate token count using the cl100k_base tokenizer."""
     if not text:
         return 0
     return len(_get_encoder().encode(text))
 
+
+
+def _group_by_tokens(
+    texts: List[str],
+    children: np.ndarray,
+    target_tokens: int
+) -> List[List[str]]:
+    """Group texts into batches using the agglomerative clustering tree.
+
+    Traverses the merge history (children_) to identify the largest possible
+    clusters that satisfy the target_tokens constraint.
+
+    Args:
+        texts: List of original text chunks.
+        children: (N-1, 2) array of merge operations from AgglomerativeClustering.
+        target_tokens: Max token budget per batch.
+
+    Returns:
+        List of batches (each batch is a list of strings).
+    """
+    n_samples = len(texts)
+    
+    node_tokens = {i: _estimate_tokens(texts[i]) for i in range(n_samples)}
+    
+    node_indices = {i: [i] for i in range(n_samples)}
+    
+    valid_roots = set(range(n_samples))
+    
+    valid_nodes = set(range(n_samples))
+
+    for idx, (c1, c2) in enumerate(children):
+        new_node = n_samples + idx
+        c1, c2 = int(c1), int(c2)
+        
+        is_merge_possible = (c1 in valid_nodes) and (c2 in valid_nodes)
+        
+        if is_merge_possible:
+            combined_tokens = node_tokens[c1] + node_tokens[c2]
+            
+            if combined_tokens <= target_tokens:
+                valid_nodes.add(new_node)
+                node_tokens[new_node] = combined_tokens
+                node_indices[new_node] = node_indices[c1] + node_indices[c2]
+                
+                if c1 in valid_roots: valid_roots.remove(c1)
+                if c2 in valid_roots: valid_roots.remove(c2)
+                valid_roots.add(new_node)
+            else:
+                pass
+        else:
+            pass
+
+    batches = []
+    for root in valid_roots:
+        indices = node_indices[root]
+        batch_texts = [texts[i] for i in indices]
+        batches.append(batch_texts)
+
+    return batches
 
 async def _summarize_batch_findings(
     findings_batch: List[str],
@@ -72,31 +131,48 @@ async def recursive_summarize_findings(
     root_query: str,
     target_batch_tokens: int = 1200,
 ) -> str:
-    """Recursively merge many findings into a single summary.
-    - Groups findings into batches based on approximate token count.
-    - Summarizes each batch.
-    - Repeats on the new set of summaries until only one remains.
+    """Hybrid Similarity-Ordered Recursive Summarization.
+
+    Uses sklearn to perform agglomerative clustering on embeddings, then groups
+    chunks into maximally-sized batches that respect the similarity hierarchy.
     """
-    current_level = raw_findings
+    current_level: List[str] = list(raw_findings)
+    iteration = 0
 
     while len(current_level) > 1:
-        batches: List[List[str]] = []
-        current_batch: List[str] = []
-        current_tokens = 0
+        iteration += 1
+        n = len(current_level)
+        logger.info(
+            f"🔄 Recursive summarization – iteration {iteration}, "
+            f"{n} chunk(s) remaining"
+        )
 
-        for chunk in current_level:
-            chunk_tokens = _estimate_tokens(chunk)
+        embeddings = np.array(
+            await generate_embeddings(current_level), dtype=np.float32
+        )
 
-            if current_batch and current_tokens + chunk_tokens > target_batch_tokens:
-                batches.append(current_batch)
-                current_batch = [chunk]
-                current_tokens = chunk_tokens
-            else:
-                current_batch.append(chunk)
-                current_tokens += chunk_tokens
+        sim_matrix = cosine_similarity(embeddings)
+        dist_matrix = 1.0 - sim_matrix
+        np.fill_diagonal(dist_matrix, 0)
+        dist_matrix[dist_matrix < 0] = 0
 
-        if current_batch:
-            batches.append(current_batch)
+        clustering = AgglomerativeClustering(
+            n_clusters=1,
+            linkage='average',
+            metric='precomputed'
+        ).fit(dist_matrix)
+
+        batches = _group_by_tokens(
+            current_level, clustering.children_, target_batch_tokens
+        )
+
+        # If no reduction occurred, force a single batch to guarantee convergence
+        if len(batches) >= n:
+            batches = [current_level]
+
+        logger.info(
+            f"   📦 Formed {len(batches)} batch(es) for LLM synthesis"
+        )
 
         tasks = [
             _summarize_batch_findings(batch, root_query=root_query)
@@ -104,7 +180,6 @@ async def recursive_summarize_findings(
             if batch
         ]
         next_level = await asyncio.gather(*tasks)
-
         current_level = list(next_level)
 
     return current_level[0]
