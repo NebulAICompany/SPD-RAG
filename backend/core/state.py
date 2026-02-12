@@ -4,29 +4,6 @@ from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 
-def override_reducer(current_value, new_value):
-    """
-    Reducer function that allows overriding values in state.
-
-    Supports three modes:
-    1. Explicit override: {"type": "override", "value": <new_value>}
-    2. List append: Both values are lists -> concatenate
-    3. Replacement: Default behavior for non-list types
-
-    Args:
-        current_value: The existing value in state.
-        new_value: The new value to merge or replace.
-
-    Returns:
-        The merged or replaced value.
-    """
-    if isinstance(new_value, dict) and new_value.get("type") == "override":
-        return new_value.get("value", new_value)
-    if isinstance(current_value, list) and isinstance(new_value, list):
-        return current_value + new_value
-    return new_value
-
-
 def merge_summaries(
     left: Optional[List["Summary"]], right: List["Summary"]
 ) -> List["Summary"]:
@@ -86,12 +63,11 @@ class AgentState(MessagesState):
     with the `add_messages` reducer for automatic message handling.
 
     Attributes:
-        todo_queue: The current list of tasks being tracked.
         selected_documents: Document IDs selected for sub-agent processing.
         global_context: Aggregated summaries from all sub-agents.
+        sub_agent_todos: Tasks delegated to sub-agents for document processing.
     """
 
-    todo_queue: Annotated[list, override_reducer] = []
     global_context: Annotated[List[Summary], merge_summaries] = []
     sub_agent_todos: list = []
     selected_documents: List[str] = []

@@ -180,19 +180,9 @@ async def recursive_summarize_findings(
     return current_level[0]
 
 
-def format_todos_as_string(todos: List[TodoItem]) -> str:
-    """Formats a list of TodoItems as a readable string for prompts."""
-    if not todos:
-        return "No tasks defined yet."
-    return "\n".join([f"- {t.task} [{t.status}]" for t in todos])
-
-
 class WriteTodos(BaseModel):
-    """Tool for updating the Todo list during orchestration."""
+    """Tool for defining tasks that sub-agents must execute on their assigned documents."""
 
-    todos: List[TodoItem] = Field(
-        description="The full updated list of todo items with their current statuses."
-    )
     sub_agent_todos: List[TodoItem] = Field(
         description="A list of specific tasks that EVERY sub-agent must execute for their assigned document. Each item must have a 'task' and a 'status' (default 'pending')."
     )
@@ -202,19 +192,18 @@ async def orchestrator_node(
     state: AgentState, config: RunnableConfig
 ) -> Dict[str, Any]:
     """
-    Manages the TODO list and decides on task delegation.
+    Defines tasks for sub-agents to execute on their assigned documents.
 
-    Implements the TodoListMiddleware pattern: binds a WriteTodos tool
-    to the LLM and updates state based on the tool's output.
+    Binds a WriteTodos tool to the LLM to generate sub_agent_todos based
+    on the user query and available documents.
 
     Args:
-        state: Current agent state with todos.
+        state: Current agent state.
         config: Runtime configuration.
 
     Returns:
-        State updates including messages and potentially updated todo_queue.
+        State updates including messages and sub_agent_todos.
     """
-    todos = state.get("todo_queue", [])
     messages = state["messages"]
 
     llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
@@ -223,14 +212,9 @@ async def orchestrator_node(
     context_description = ", ".join(selected_docs) if selected_docs else "User-uploaded documents"
 
     system_prompt = LEAD_RESEARCHER_PROMPT.format(context_description=context_description)
-    context_prompt = f"""
-Current TODO List:
-{format_todos_as_string(todos)}
-"""
-
-    full_prompt = system_prompt + context_prompt
+    
     response = await llm_with_tools.ainvoke(
-        [{"role": "system", "content": full_prompt}] + messages
+        [{"role": "system", "content": system_prompt}] + messages
     )
 
     updates: Dict[str, Any] = {"messages": [response]}
@@ -238,9 +222,7 @@ Current TODO List:
     if response.tool_calls:
         for tool_call in response.tool_calls:
             if tool_call["name"] == "WriteTodos":
-                new_todos_raw = tool_call["args"].get("todos", [])
                 sub_todos_raw = tool_call["args"].get("sub_agent_todos", [])
-                updates["todo_queue"] = [TodoItem(**t) for t in new_todos_raw]
                 if sub_todos_raw:
                     updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
 
