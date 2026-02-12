@@ -8,7 +8,7 @@ from backend.core.nodes import (
     orchestrator_node,
     synthesis_node,
 )
-from backend.core.state import AgentState
+from backend.core.state import AgentInputState, AgentState
 
 
 def route_orchestrator(
@@ -53,7 +53,7 @@ def build_graph() -> StateGraph:
     Returns:
         Compiled StateGraph with all nodes and edges configured.
     """
-    workflow = StateGraph(AgentState)
+    workflow = StateGraph(AgentState, input=AgentInputState)
 
     workflow.add_node("orchestrator_node", orchestrator_node)
     workflow.add_node("document_sub_agent_node", document_sub_agent_node)

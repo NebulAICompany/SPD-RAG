@@ -13,7 +13,7 @@ logger = get_logger("RAG_TOOL")
 @tool(
     "search_specific_document",
     parse_docstring=True,
-    response_format="content_and_artifact",
+    response_format="content",
 )
 def search_specific_document_for_research(
     query: str,
@@ -34,9 +34,9 @@ def search_specific_document_for_research(
         client = get_vectorstore()
 
         if client is None:
-            return "Vectorstore not available.", []
+            return "Vectorstore not available."
         if not client.collection_exists(collection_name="documents"):
-            return "No documents found in knowledge base.", []
+            return "No documents found in knowledge base."
 
         # Force file filter to the specific file
         selected_files = [file_name]
@@ -51,7 +51,7 @@ def search_specific_document_for_research(
         )
 
         if not retrieved_docs:
-            return f"No relevant information found in {file_name} for your query.", []
+            return f"No relevant information found in {file_name} for your query."
 
         # Rerank
         doc_contents = [
@@ -61,12 +61,10 @@ def search_specific_document_for_research(
         reranked_docs = rerank(query, doc_contents, with_score=False, top_n=max_results)
 
         if not reranked_docs:
-            return f"No relevant information found in {file_name} after reranking.", []
+            return f"No relevant information found in {file_name} after reranking."
 
         # Format results
         results = []
-        image_ids = []
-        sources = []
 
         for doc in reranked_docs:
             content = doc["content"]
@@ -81,14 +79,10 @@ def search_specific_document_for_research(
 
             results.append(result_text)
 
-            # Metadata for artifact
-            source_name = f"{f_name} - Page {page}" if page else f_name
-            sources.append({"name": source_name, "file": f_name, "page": page or None})
-
         formatted_results = "\n---\n".join(results)
 
-        return formatted_results, sources
+        return formatted_results
 
     except Exception as e:
         logger.error(f"Error in search_specific_document: {e}")
-        return f"Error searching document {file_name}: {str(e)}", []
+        return f"Error searching document {file_name}: {str(e)}"

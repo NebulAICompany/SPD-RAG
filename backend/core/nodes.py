@@ -302,20 +302,13 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
                     tool_call["args"]
                 )
 
-                if isinstance(tool_output, tuple):
-                    content, _ = tool_output
-                else:
-                    content = str(tool_output)
-
                 messages.append(
                     ToolMessage(
-                        content=str(content),
+                        content=str(tool_output),
                         name=tool_call["name"],
                         tool_call_id=tool_call["id"],
                     )
                 )
-    else:
-        pass
 
     extractor = RESEARCH_LLM_FAST.with_structured_output(Summary)
     summary = await extractor.ainvoke(messages)

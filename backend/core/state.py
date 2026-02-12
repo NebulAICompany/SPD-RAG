@@ -71,11 +71,11 @@ class AgentInputState(MessagesState):
     """
     Input state schema for the agent graph.
 
-    Inherits only the 'messages' key from MessagesState.
+    Inherits the 'messages' key from MessagesState.
     Used to define the expected input structure for `graph.invoke()`.
     """
 
-    pass
+    selected_documents: List[str] = []
 
 
 class AgentState(MessagesState):
@@ -91,10 +91,10 @@ class AgentState(MessagesState):
         global_context: Aggregated summaries from all sub-agents.
     """
 
-    todo_queue: Annotated[List[TodoItem], override_reducer]
-    global_context: Annotated[List[Summary], merge_summaries]
-    sub_agent_todos: List[TodoItem]
-    selected_documents: List[str]
+    todo_queue: Annotated[list, override_reducer] = []
+    global_context: Annotated[List[Summary], merge_summaries] = []
+    sub_agent_todos: list = []
+    selected_documents: List[str] = []
 
 
 class SubAgentInput(TypedDict):
