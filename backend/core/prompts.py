@@ -17,7 +17,6 @@ synthesis step will use, so be precise, structured, complete, and honest about u
 """
 
 
-
 LEAD_RESEARCHER_PROMPT = """You are a lead researcher answering a user query using an exhaustive RAG-based analysis.
 
 Context: {context_description}. The context is split into document chunks stored in a RAG vector database.
@@ -47,37 +46,13 @@ Process:
 """
 
 
-FINAL_REPORT_GENERATION_PROMPT = """You generate the final answer by aggregating sub-agent findings from different chunks.
+SYNTHESIS_PROMPT = """You are an expert research synthesizer. Merge a batch of sub-agent findings into one concise, coherent summary that is maximally useful for answering the original user query.
 
 Query:
 {query}
 
-Sub-agent findings:
+Findings Batch:
 {findings}
-
-Aggregation rules examples:
-- Counting: sum chunk counts.
-- Listing: merge lists, deduplicate.
-- Comparison: combine all relevant data, then compare.
-- First/last: resolve using global ordering across chunks (use order markers if provided).
-
-“Not found in this chunk” only means absent from that chunk; conclude “not present” only if no chunk reports it.
-Conflicts: prefer the answer supported by more concrete evidence (e.g., quotes, IDs, timestamps) and by multiple independent chunks.
-
-Output:
-- Answer the query directly and completely.
-- Follow any required output format specified by the query.
-"""
-
-INTERMEDIATE_SYNTHESIS_PROMPT = """You are an expert research synthesizer. Merge a batch of sub-agent findings into one concise, coherent intermediate summary that is maximally useful for answering the original user query.
-
-<OriginalUserQuery>
-{query}
-</OriginalUserQuery>
-
-<FindingsBatch>
-{findings}
-</FindingsBatch>
 
 Guidelines:
 - Focus only on information that helps answer the original query.
@@ -86,7 +61,7 @@ Guidelines:
 - Explicitly note any contradictions or uncertainty across findings.
 - Do not invent facts that are not supported by the findings.
 - Keep the output compact, information-dense, and in the same language as the findings (default to English if mixed).
-- Do not mention that this is an intermediate step or refer to tools/agents.
+- Do not refer to tools/agents or the synthesis process.
 
 Write the synthesized findings as a short markdown section: one brief title line followed by concise bullet points grouped by theme.
 """
