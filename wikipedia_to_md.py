@@ -1,19 +1,10 @@
 #!/usr/bin/env python3
-"""
-wikipedia_to_md.py
-
-Usage:
-    python wikipedia_to_md.py "https://en.wikipedia.org/wiki/Computer_science"
-    python wikipedia_to_md.py "https://en.wikipedia.org/wiki/Computer_science" -o cs.md
-"""
-
 import argparse
 import os
 import re
 import subprocess
 import sys
 from urllib.parse import urlparse, unquote
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -75,7 +66,7 @@ def clean_html(html: str) -> str:
         "table.toccolours",
         "div.hatnote",
         "div.metadata",
-        "div.mw-references-wrap",  # referanslar zaten normal <ol>/<li> olarak da geliyor
+        "div.mw-references-wrap",
     ]
     for sel in junk_selectors:
         for el in soup.select(sel):
@@ -234,8 +225,6 @@ def simplify_tables(markdown: str) -> str:
     return '\n'.join(out)
 
 
-# ----------------- ANA AKIŞ ----------------- #
-
 def save_wikipedia_to_md(url: str, output_path: str | None = None) -> None:
     title = url_to_title(url)
     decoded_title = unquote(title)
@@ -255,22 +244,23 @@ def save_wikipedia_to_md(url: str, output_path: str | None = None) -> None:
     print(f"Saved Markdown to {output_path}")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Save a Wikipedia page as clean Markdown for RAG "
-            "(keeps content tables, strips citation markers and URL clutter)."
-        )
-    )
-    parser.add_argument("url", help="Wikipedia page URL")
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="Output Markdown file path (default: derived from page title)",
-    )
-    args = parser.parse_args()
-    save_wikipedia_to_md(args.url, args.output)
+def url_to_md(url: str) -> str:
+    """
+    URL alır, Markdown üretir, dosyaya yazar ve dosya yolunu döner.
+    Test pipe'ında doğrudan bu fonksiyonu çağırabilirsin.
+    """
+    title = url_to_title(url)
+    decoded_title = unquote(title)
+    output_path = f"{decoded_title}.md"
 
+    html = fetch_article_html(title)
+    cleaned_html = clean_html(html)
+    md = html_to_markdown(cleaned_html)
+    md = strip_citation_markers(md)
+    md = simplify_links(md)
+    md = simplify_tables(md)
 
-if __name__ == "__main__":
-    main()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(md)
+
+    return output_path
