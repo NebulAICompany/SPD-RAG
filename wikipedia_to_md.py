@@ -20,8 +20,6 @@ from bs4 import BeautifulSoup
 API_URL = "https://en.wikipedia.org/w/api.php"
 
 
-# ----------------- API & HTML KISMI ----------------- #
-
 def url_to_title(url: str) -> str:
     """
     Extract page title from a Wikipedia URL.
@@ -120,8 +118,6 @@ def clean_html(html: str) -> str:
     return str(soup)
 
 
-# ----------------- HTML -> MARKDOWN ----------------- #
-
 def html_to_markdown(html: str) -> str:
     """
     Run pandoc and return Markdown as a string.
@@ -150,16 +146,9 @@ def html_to_markdown(html: str) -> str:
     return out
 
 
-# ----------------- MARKDOWN POST-PROCESSING ----------------- #
-
 def strip_citation_markers(markdown: str) -> str:
     """
     Remove inline citation markers / footnotes while keeping the text.
-    Targets patterns like:
-      ^[[1]](#cite_note-...)
-      [[1]](#cite_note-...)
-      ](#cite_note-...)[[5]](#cite_note-5)
-      [1], [2][3], [a], [citation needed]
     """
 
     # cite_note anchor’lı linkler
@@ -186,10 +175,7 @@ def strip_citation_markers(markdown: str) -> str:
 
 def simplify_links(markdown: str) -> str:
     """
-    Link ve URL benzeri desenleri düz metne çevirir:
-      [foo](/wiki/Bar) -> foo
-      (/wiki/List_of_...#Season_1_(2007) "…") -> Season 1 (2007)
-      (/wiki/1000_BC "1000 BC") -> 1000 BC
+    Link ve URL benzeri desenleri düz metne çevirir: Sayfaların başlıklarına.
     """
 
     # 1) Normal Markdown linkleri: [text](url "title") veya [text](url) -> text
@@ -233,10 +219,6 @@ def simplify_tables(markdown: str) -> str:
 
         # Sadece sembol içeren border / çizgi satırları (harf/rakam yok) -> at
         if s and not any(ch.isalnum() for ch in s):
-            continue
-
-        # Sadece layout çöpü
-        if s in (':::', '::: {}', '{}'):
             continue
 
         # İçinde | olan satırı hücrelere böl ve sadeleştir
