@@ -5,16 +5,15 @@ import numpy as np
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
-    get_buffer_string,
-    RemoveMessage,
+    AIMessage,
 )
+from langchain_core.exceptions import OutputParserException
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from backend.core.prompts import (
-    FINAL_REPORT_GENERATION_PROMPT,
-    INTERMEDIATE_SYNTHESIS_PROMPT,
+    SYNTHESIS_PROMPT,
     LEAD_RESEARCHER_PROMPT,
     RESEARCH_SYSTEM_PROMPT,
 )
@@ -50,11 +49,8 @@ def _estimate_tokens(text: str) -> int:
     return len(_get_encoder().encode(text))
 
 
-
 def _group_by_tokens(
-    texts: List[str],
-    children: np.ndarray,
-    target_tokens: int
+    texts: List[str], children: np.ndarray, target_tokens: int
 ) -> List[List[str]]:
     """Group texts into batches using the agglomerative clustering tree.
 
@@ -70,31 +66,33 @@ def _group_by_tokens(
         List of batches (each batch is a list of strings).
     """
     n_samples = len(texts)
-    
+
     node_tokens = {i: _estimate_tokens(texts[i]) for i in range(n_samples)}
-    
+
     node_indices = {i: [i] for i in range(n_samples)}
-    
+
     valid_roots = set(range(n_samples))
-    
+
     valid_nodes = set(range(n_samples))
 
     for idx, (c1, c2) in enumerate(children):
         new_node = n_samples + idx
         c1, c2 = int(c1), int(c2)
-        
+
         is_merge_possible = (c1 in valid_nodes) and (c2 in valid_nodes)
-        
+
         if is_merge_possible:
             combined_tokens = node_tokens[c1] + node_tokens[c2]
-            
+
             if combined_tokens <= target_tokens:
                 valid_nodes.add(new_node)
                 node_tokens[new_node] = combined_tokens
                 node_indices[new_node] = node_indices[c1] + node_indices[c2]
-                
-                if c1 in valid_roots: valid_roots.remove(c1)
-                if c2 in valid_roots: valid_roots.remove(c2)
+
+                if c1 in valid_roots:
+                    valid_roots.remove(c1)
+                if c2 in valid_roots:
+                    valid_roots.remove(c2)
                 valid_roots.add(new_node)
             else:
                 pass
@@ -109,13 +107,14 @@ def _group_by_tokens(
 
     return batches
 
+
 async def _summarize_batch_findings(
     findings_batch: List[str],
     root_query: str,
 ) -> str:
     """Summarize a batch of findings into a single merged summary."""
     batch_text = "\n\n---\n\n".join(findings_batch)
-    prompt_content = INTERMEDIATE_SYNTHESIS_PROMPT.format(
+    prompt_content = SYNTHESIS_PROMPT.format(
         findings=batch_text,
         query=root_query,
     )
@@ -157,9 +156,7 @@ async def recursive_summarize_findings(
         dist_matrix[dist_matrix < 0] = 0
 
         clustering = AgglomerativeClustering(
-            n_clusters=1,
-            linkage='average',
-            metric='precomputed'
+            n_clusters=1, linkage="average", metric="precomputed"
         ).fit(dist_matrix)
 
         batches = _group_by_tokens(
@@ -170,9 +167,7 @@ async def recursive_summarize_findings(
         if len(batches) >= n:
             batches = [current_level]
 
-        logger.info(
-            f"   📦 Formed {len(batches)} batch(es) for LLM synthesis"
-        )
+        logger.info(f"   📦 Formed {len(batches)} batch(es) for LLM synthesis")
 
         tasks = [
             _summarize_batch_findings(batch, root_query=root_query)
@@ -224,7 +219,10 @@ async def orchestrator_node(
 
     llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
 
-    system_prompt = LEAD_RESEARCHER_PROMPT
+    selected_docs = state.get("selected_documents", [])
+    context_description = ", ".join(selected_docs) if selected_docs else "User-uploaded documents"
+
+    system_prompt = LEAD_RESEARCHER_PROMPT.format(context_description=context_description)
     context_prompt = f"""
 Current TODO List:
 {format_todos_as_string(todos)}
@@ -301,26 +299,30 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     if ai_msg.tool_calls:
         for tool_call in ai_msg.tool_calls:
             if tool_call["name"] == "search_specific_document":
-                tool_output = await search_specific_document_for_research.ainvoke(
+                tool_output = search_specific_document_for_research.invoke(
                     tool_call["args"]
                 )
 
-                if isinstance(tool_output, tuple):
-                    content, _ = tool_output
-                else:
-                    content = str(tool_output)
-
                 messages.append(
                     ToolMessage(
-                        content=str(content),
+                        content=str(tool_output),
                         name=tool_call["name"],
                         tool_call_id=tool_call["id"],
                     )
                 )
-    else:
-        pass
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(Summary)
+    extractor = RESEARCH_LLM_FAST.with_structured_output(
+        Summary,
+        method="function_calling",
+        include_raw=False,
+    ).with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(
+            ValueError,
+            ValidationError,
+            OutputParserException,
+        ),
+    )
     summary = await extractor.ainvoke(messages)
 
     summary.document_name = doc_name
@@ -372,61 +374,9 @@ async def synthesis_node(
     else:
         merged_findings = "No document findings available."
 
-    prompt_content = FINAL_REPORT_GENERATION_PROMPT.format(
-        messages=get_buffer_string(state.get("messages", [])),
-        findings=merged_findings,
-    )
-
-    response = await RESEARCH_LLM_REASONING.ainvoke(
-        [HumanMessage(content=prompt_content)]
-    )
+    response = AIMessage(content=merged_findings)
 
     return Command(goto=END, update={"messages": [response]})
 
 
-async def summarize_conversation_node(
-    state: AgentState, config: RunnableConfig
-) -> Dict[str, Any]:
-    """
-    Summarizes the conversation history if it exceeds a certain length.
 
-    Args:
-        state: Current agent state.
-        config: Runtime configuration.
-
-    Returns:
-        State updates with new summary and removal commands for old messages.
-    """
-    messages = state.get("messages", [])
-
-    # Check if we have enough messages to warrant summarization
-    # We keep the last 4 messages to preserve immediate context for the next steps
-    if len(messages) > 6:
-        summary = state.get("summary", "")
-
-        # Create summarization prompt
-        if summary:
-            summary_message = (
-                f"This is a summary of the conversation to date: {summary}\n\n"
-                "Extend the summary by taking into account the new messages above:"
-            )
-        else:
-            summary_message = "Create a summary of the conversation above:"
-
-        # We summarize the messages that we are about to remove
-        # e.g., if we have 10 messages, we summarize first 6, keep last 4
-        messages_to_summarize = messages[:-4]
-
-        # Invoke LLM to generate summary
-        # We construct a temporary message list for the summarization task
-        prompt_messages = messages_to_summarize + [
-            HumanMessage(content=summary_message)
-        ]
-        response = await RESEARCH_LLM_FAST.ainvoke(prompt_messages)
-
-        # Create RemoveMessage commands for the messages we summarized
-        delete_messages = [RemoveMessage(id=m.id) for m in messages_to_summarize]
-
-        return {"summary": response.content, "messages": delete_messages}
-
-    return {}

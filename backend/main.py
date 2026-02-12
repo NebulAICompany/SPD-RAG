@@ -167,4 +167,4 @@ async def chat_endpoint(request: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
+    uvicorn.run("backend.main:app", host="127.0.0.1", port=8001, reload=True)

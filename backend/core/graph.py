@@ -7,9 +7,8 @@ from backend.core.nodes import (
     document_sub_agent_node,
     orchestrator_node,
     synthesis_node,
-    summarize_conversation_node,
 )
-from backend.core.state import AgentState
+from backend.core.state import AgentInputState, AgentState
 
 
 def route_orchestrator(
@@ -54,17 +53,14 @@ def build_graph() -> StateGraph:
     Returns:
         Compiled StateGraph with all nodes and edges configured.
     """
-    workflow = StateGraph(AgentState)
+    workflow = StateGraph(AgentState, input=AgentInputState)
 
-    # Add all nodes
     workflow.add_node("orchestrator_node", orchestrator_node)
     workflow.add_node("document_sub_agent_node", document_sub_agent_node)
     workflow.add_node("synthesis_node", synthesis_node)
-    workflow.add_node("summarize_conversation_node", summarize_conversation_node)
 
-    # Start with summarization, then route to orchestrator
-    workflow.add_edge(START, "summarize_conversation_node")
-    workflow.add_edge("summarize_conversation_node", "orchestrator_node")
+
+    workflow.add_edge(START, "orchestrator_node")
 
     workflow.add_conditional_edges(
         "orchestrator_node",
@@ -77,16 +73,28 @@ def build_graph() -> StateGraph:
     return workflow
 
 
+_compiled_graph = None
+
+
 def get_compiled_graph():
     """
-    Compiles and returns the graph with the global checkpointer.
-    similar to how create_agent works in agents.py
+    Returns (and caches) the compiled graph as a lazy singleton.
+    Both langgraph.json and main.py share the same instance.
     """
-    workflow = build_graph()
+    global _compiled_graph
+    if _compiled_graph is None:
+        workflow = build_graph()
+        checkpointer = InMemorySaver()
+        _compiled_graph = workflow.compile(checkpointer=checkpointer)
+    return _compiled_graph
 
-    checkpointer = InMemorySaver()
 
-    return workflow.compile(checkpointer=checkpointer)
+# Lazy property for langgraph.json (expects graph.py:graph)
+class _LazyGraph:
+    """Lazy wrapper so `from graph import graph` works without eager compilation."""
+    def __getattr__(self, name):
+        return getattr(get_compiled_graph(), name)
+    def __call__(self, *args, **kwargs):
+        return get_compiled_graph()(*args, **kwargs)
 
-
-graph = get_compiled_graph()
+graph = _LazyGraph()
