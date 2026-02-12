@@ -244,22 +244,23 @@ def save_wikipedia_to_md(url: str, output_path: str | None = None) -> None:
     print(f"Saved Markdown to {output_path}")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Save a Wikipedia page as clean Markdown for RAG "
-            "(keeps content tables, strips citation markers and URL clutter)."
-        )
-    )
-    parser.add_argument("url", help="Wikipedia page URL")
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="Output Markdown file path (default: derived from page title)",
-    )
-    args = parser.parse_args()
-    save_wikipedia_to_md(args.url, args.output)
+def url_to_md(url: str) -> str:
+    """
+    URL alır, Markdown üretir, dosyaya yazar ve dosya yolunu döner.
+    Test pipe'ında doğrudan bu fonksiyonu çağırabilirsin.
+    """
+    title = url_to_title(url)
+    decoded_title = unquote(title)
+    output_path = f"{decoded_title}.md"
 
+    html = fetch_article_html(title)
+    cleaned_html = clean_html(html)
+    md = html_to_markdown(cleaned_html)
+    md = strip_citation_markers(md)
+    md = simplify_links(md)
+    md = simplify_tables(md)
 
-if __name__ == "__main__":
-    main()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(md)
+
+    return output_path
