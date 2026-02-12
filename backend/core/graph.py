@@ -7,7 +7,6 @@ from backend.core.nodes import (
     document_sub_agent_node,
     orchestrator_node,
     synthesis_node,
-    summarize_conversation_node,
 )
 from backend.core.state import AgentState
 
@@ -56,15 +55,12 @@ def build_graph() -> StateGraph:
     """
     workflow = StateGraph(AgentState)
 
-    # Add all nodes
     workflow.add_node("orchestrator_node", orchestrator_node)
     workflow.add_node("document_sub_agent_node", document_sub_agent_node)
     workflow.add_node("synthesis_node", synthesis_node)
-    workflow.add_node("summarize_conversation_node", summarize_conversation_node)
 
-    # Start with summarization, then route to orchestrator
-    workflow.add_edge(START, "summarize_conversation_node")
-    workflow.add_edge("summarize_conversation_node", "orchestrator_node")
+
+    workflow.add_edge(START, "orchestrator_node")
 
     workflow.add_conditional_edges(
         "orchestrator_node",

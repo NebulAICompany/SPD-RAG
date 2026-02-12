@@ -5,7 +5,6 @@ import numpy as np
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
-    RemoveMessage,
     AIMessage,
 )
 from langchain_core.runnables import RunnableConfig
@@ -375,49 +374,4 @@ async def synthesis_node(
     return Command(goto=END, update={"messages": [response]})
 
 
-async def summarize_conversation_node(
-    state: AgentState, config: RunnableConfig
-) -> Dict[str, Any]:
-    """
-    Summarizes the conversation history if it exceeds a certain length.
 
-    Args:
-        state: Current agent state.
-        config: Runtime configuration.
-
-    Returns:
-        State updates with new summary and removal commands for old messages.
-    """
-    messages = state.get("messages", [])
-
-    # Check if we have enough messages to warrant summarization
-    # We keep the last 4 messages to preserve immediate context for the next steps
-    if len(messages) > 6:
-        summary = state.get("summary", "")
-
-        # Create summarization prompt
-        if summary:
-            summary_message = (
-                f"This is a summary of the conversation to date: {summary}\n\n"
-                "Extend the summary by taking into account the new messages above:"
-            )
-        else:
-            summary_message = "Create a summary of the conversation above:"
-
-        # We summarize the messages that we are about to remove
-        # e.g., if we have 10 messages, we summarize first 6, keep last 4
-        messages_to_summarize = messages[:-4]
-
-        # Invoke LLM to generate summary
-        # We construct a temporary message list for the summarization task
-        prompt_messages = messages_to_summarize + [
-            HumanMessage(content=summary_message)
-        ]
-        response = await RESEARCH_LLM_FAST.ainvoke(prompt_messages)
-
-        # Create RemoveMessage commands for the messages we summarized
-        delete_messages = [RemoveMessage(id=m.id) for m in messages_to_summarize]
-
-        return {"summary": response.content, "messages": delete_messages}
-
-    return {}

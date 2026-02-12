@@ -93,7 +93,6 @@ class AgentState(MessagesState):
 
     todo_queue: Annotated[List[TodoItem], override_reducer]
     global_context: Annotated[List[Summary], merge_summaries]
-    summary: str
     sub_agent_todos: List[TodoItem]
     selected_documents: List[str]
 
