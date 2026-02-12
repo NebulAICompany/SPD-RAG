@@ -7,10 +7,11 @@ from langchain_core.messages import (
     SystemMessage,
     AIMessage,
 )
+from langchain_core.exceptions import OutputParserException
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from backend.core.prompts import (
     SYNTHESIS_PROMPT,
     LEAD_RESEARCHER_PROMPT,
@@ -310,7 +311,18 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
                     )
                 )
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(Summary)
+    extractor = RESEARCH_LLM_FAST.with_structured_output(
+        Summary,
+        method="function_calling",
+        include_raw=False,
+    ).with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(
+            ValueError,
+            ValidationError,
+            OutputParserException,
+        ),
+    )
     summary = await extractor.ainvoke(messages)
 
     summary.document_name = doc_name
