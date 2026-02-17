@@ -89,7 +89,7 @@ def retrieve_top_k(
         )
 
         if selected_files:
-            selected_files = [file.split(".")[0] for file in selected_files]
+            # selected_files = [file.split(".")[0] for file in selected_files]
             logger.info(f"🔍 Searching through {selected_files} document chunks")
             docs_with_scores = client.query_points(
                 collection_name="documents",
@@ -103,14 +103,14 @@ def retrieve_top_k(
                     ]
                 ),
                 limit=k,
-                score_threshold=0.2,
+                score_threshold=0.05,
             ).points
         else:
             docs_with_scores = client.query_points(
                 collection_name="documents",
                 query=embed_query(query),
                 limit=k,
-                score_threshold=0.2,
+                score_threshold=0.05,
             ).points
         logger.info(f"✅ Retrieved {len(docs_with_scores)} documents from vectorstore")
 

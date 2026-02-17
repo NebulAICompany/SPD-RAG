@@ -4,7 +4,7 @@ from langchain_core.documents import Document
 from backend.retrieval.retriever import load_vectorstore
 from backend.shared.constants import VECTORSTORE_PATH_STR, co
 from backend.shared.logger import get_logger
-from typing import List
+from typing import List, Optional
 import asyncio
 import tiktoken
 import hashlib
@@ -100,7 +100,7 @@ class VectorStorePipeline:
     def length_function(self, text: str) -> int:
         return len(enc.encode(text))
 
-    async def run(self, text_content: str, document_name: str, file_extension: str = None):
+    async def run(self, text_content: str, document_name: str, metadata: Optional[dict] = None):
         """Process text content and index it."""
         try:
             if not text_content or not text_content.strip():
@@ -109,11 +109,7 @@ class VectorStorePipeline:
 
             chunk_idx = 0
 
-            if file_extension in [".xlsx", ".xls"]:
-                text_content_list = text_content.split("====SHEET SEPARATOR====")
-                docs = self.text_splitter.create_documents(text_content_list)
-            else:
-                docs = self.text_splitter.create_documents([text_content])
+            docs = self.text_splitter.create_documents([text_content])
 
             if not docs:
                 logger.warning(f"⚠️ No chunks created for {document_name}.")
@@ -126,6 +122,8 @@ class VectorStorePipeline:
                     doc.metadata = {}
                 doc.metadata["chunk_id"] = f"chunk_{chunk_idx}"
                 doc.metadata["file_name"] = document_name
+                if metadata:
+                    doc.metadata.update(metadata)
                 chunk_idx += 1
 
             client = load_vectorstore(VECTORSTORE_PATH_STR)
