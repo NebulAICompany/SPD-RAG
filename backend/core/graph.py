@@ -9,7 +9,9 @@ from backend.core.nodes import (
     synthesis_node,
 )
 from backend.core.state import AgentInputState, AgentState
+from backend.shared.logger import get_logger
 
+logger = get_logger("GRAPH")
 
 def route_orchestrator(
     state: AgentState,
@@ -33,6 +35,7 @@ def route_orchestrator(
     sub_agent_todos = state.get("sub_agent_todos", [])
 
     # Fan-out: Process documents in parallel if we have docs but no context yet
+    logger.info(f"Selected docs: {selected_docs}, Context: {context}, Sub agent todos: {sub_agent_todos}")
     if selected_docs and not context:
         return [
             Send(
