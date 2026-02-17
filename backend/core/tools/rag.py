@@ -6,6 +6,8 @@ from backend.retrieval.retriever import (
 )
 from backend.retrieval.reranker import rerank
 from backend.shared.logger import get_logger
+from backend.shared.constants import VECTORSTORE_PATH_STR
+from backend.retrieval.retriever import load_vectorstore
 
 logger = get_logger("RAG_TOOL")
 
@@ -31,7 +33,8 @@ def search_specific_document_for_research(
     """
     try:
         max_results = min(max(1, max_results), 5)
-        client = get_vectorstore()
+        #client = get_vectorstore()
+        client = load_vectorstore(VECTORSTORE_PATH_STR)
 
         if client is None:
             return "Vectorstore not available."

@@ -12,7 +12,7 @@ Reporting:
   - Not found in this chunk
 - Report exact numbers/names/dates; do not approximate.
 
-Rate how relevant your chunk is to the overall query from in range of [0.0, 1.0] according to relevance. Your findings are the raw data that the 
+When calling the Summary tool, you MUST provide the `relevance_score` field (a float between 0.0 and 1.0) as a separate argument — do NOT embed it inside `findings`. Your findings are the raw data that the 
 synthesis step will use, so be precise, structured, complete, and honest about uncertainty.
 """
 
