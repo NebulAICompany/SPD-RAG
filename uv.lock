@@ -1710,6 +1710,7 @@ dependencies = [
     { name = "python-multipart" },
     { name = "qdrant-client" },
     { name = "scikit-learn" },
+    { name = "tiktoken" },
     { name = "tenacity" },
     { name = "uvicorn" },
 ]
@@ -1732,6 +1733,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.22" },
     { name = "qdrant-client", specifier = ">=1.16.2" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
+    { name = "tiktoken", specifier = ">=0.12.0" },
     { name = "tenacity", specifier = ">=9.1.2" },
     { name = "uvicorn", specifier = ">=0.40.0" },
 ]
