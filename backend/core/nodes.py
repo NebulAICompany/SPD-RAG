@@ -21,7 +21,7 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from backend.pipeline.vector import generate_embeddings
 from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
-from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
+from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST, GEMINI_LLM
 from backend.shared.logger import get_logger
 from backend.core.tools.rag import search_specific_document_for_research
 
@@ -119,7 +119,7 @@ async def _summarize_batch_findings(
         query=root_query,
     )
 
-    response = await RESEARCH_LLM_REASONING.ainvoke(
+    response = await GEMINI_LLM.ainvoke(
         [HumanMessage(content=prompt_content)]
     )
     return getattr(response, "content", str(response))
@@ -206,7 +206,7 @@ async def orchestrator_node(
     """
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
+    llm_with_tools = GEMINI_LLM.bind_tools([WriteTodos], tool_choice="auto")
 
     selected_docs = state.get("selected_documents", [])
     context_description = ", ".join(selected_docs) if selected_docs else "User-uploaded documents"
@@ -263,7 +263,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     else:
         todos_str = "No specific sub-tasks provided."
 
-    model_with_tools = RESEARCH_LLM_FAST.bind_tools(
+    model_with_tools = GEMINI_LLM.bind_tools(
         [search_specific_document_for_research]
     )
 
@@ -293,7 +293,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
                     )
                 )
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(
+    extractor = GEMINI_LLM.with_structured_output(
         Summary,
         method="function_calling",
         include_raw=False,
