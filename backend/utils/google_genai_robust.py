@@ -48,7 +48,6 @@ class RobustChatGoogleGenerativeAI:
     """
 
     def __init__(self, model: str, **kwargs):
-        kwargs.pop("max_retries", None)
         self.llm = ChatGoogleGenerativeAI(
             model=model,
             max_retries=1,
@@ -77,3 +76,30 @@ class RobustChatGoogleGenerativeAI:
     def invoke(self, input: Union[str, List[BaseMessage]], **kwargs) -> Any:
         decorator = self._create_retry_decorator()
         return decorator(self.llm.invoke)(input, **kwargs)
+
+    def bind_tools(self, tools, **kwargs) -> "RobustChatGoogleGenerativeAI":
+        """Required for LangChain tool-calling agents."""
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.bind_tools(tools, **kwargs)
+        return new
+
+    def with_structured_output(
+        self, schema, **kwargs
+    ) -> "RobustChatGoogleGenerativeAI":
+        """Required for structured output chains."""
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.with_structured_output(schema, **kwargs)
+        return new
+
+    def bind(self, **kwargs) -> "RobustChatGoogleGenerativeAI":
+        """Required for .bind(stop=...) patterns."""
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.bind(**kwargs)
+        return new
+
+    def __getattr__(self, name: str) -> Any:
+        """
+        Fallback: proxy any other LangChain attribute/method to the inner llm.
+        Ensures future LangChain updates don't break the wrapper.
+        """
+        return getattr(self.llm, name)
