@@ -1,6 +1,7 @@
 import re
 import logging
 from typing import Any, List, Union, Optional
+
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -27,19 +28,16 @@ def google_smart_wait(retry_state: RetryCallState) -> float:
     """
     exception = retry_state.outcome.exception()
 
-    # Try to find 'retry_delay' in the error message
     if exception and isinstance(exception, ResourceExhausted):
         error_str = str(exception)
-        # Regex to capture "retry_delay { seconds: 43 }"
         match = re.search(
             r"retry_delay.*?seconds:\s*(\d+)", error_str, re.IGNORECASE | re.DOTALL
         )
         if match:
-            wait_time = int(match.group(1)) + 1  # Add 1s buffer
+            wait_time = int(match.group(1)) + 1
             logger.warning(f"Quota hit! Google requested wait: {wait_time}s")
             return float(wait_time)
 
-    # Fallback: Exponential backoff (min 2s, max 60s)
     return wait_exponential(multiplier=1, min=2, max=60)(retry_state)
 
 
@@ -49,19 +47,10 @@ class RobustChatGoogleGenerativeAI:
     Fixes the known issue where SDK ignores server-side retry suggestions.
     """
 
-    def __init__(
-        self,
-        model: str,
-        project: Optional[str] = None,
-        location: str = "us-central1",
-        **kwargs,
-    ):
+    def __init__(self, model: str, **kwargs):
         self.llm = ChatGoogleGenerativeAI(
             model=model,
-            project=project,
-            location=location,
             max_retries=1,
-            transport="rest",
             **kwargs,
         )
 
@@ -71,9 +60,9 @@ class RobustChatGoogleGenerativeAI:
             wait=google_smart_wait,
             retry=retry_if_exception_type(
                 (
-                    ResourceExhausted,  # 429
-                    ServiceUnavailable,  # 503
-                    InternalServerError,  # 500
+                    ResourceExhausted,
+                    ServiceUnavailable,
+                    InternalServerError,
                 )
             ),
             before_sleep=before_sleep_log(logger, logging.WARNING),
