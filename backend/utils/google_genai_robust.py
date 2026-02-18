@@ -1,6 +1,8 @@
+import asyncio
 import re
 import logging
-from typing import Any, List, Union, Optional
+from typing import Any, AsyncIterator, Iterator, List, Union
+
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -11,79 +13,97 @@ from tenacity import (
 )
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import BaseMessage
-from google.api_core.exceptions import (
-    ResourceExhausted,
-    ServiceUnavailable,
-    InternalServerError,
-)
+from google.genai.errors import ServerError, ClientError
 
 logger = logging.getLogger(__name__)
 
+_RETRYABLE_EXCEPTIONS = (ServerError, ClientError)
 
-def google_smart_wait(retry_state: RetryCallState) -> float:
-    """
-    Custom wait strategy that parses 'retry_delay' from Google's 429 error.
-    Falls back to exponential backoff for other errors.
-    """
+
+def _extract_wait_time(e: Exception, attempt: int) -> float:
+    error_str = str(e)
+
+    if isinstance(e, ServerError) and "503" in error_str:
+        wait = min(3**attempt, 90)
+        logger.warning(f"503 detected, aggressive backoff: {wait:.1f}s")
+        return wait
+
+    match = re.search(
+        r"retry_delay.*?seconds:\s*(\d+)", error_str, re.IGNORECASE | re.DOTALL
+    )
+    if match:
+        return float(int(match.group(1)) + 1)
+
+    match = re.search(r'"retryDelay":\s*"(\d+)s"', error_str, re.IGNORECASE)
+    if match:
+        return float(int(match.group(1)) + 1)
+
+    return min(2**attempt, 60)
+
+
+def _google_smart_wait(retry_state: RetryCallState) -> float:
     exception = retry_state.outcome.exception()
+    if exception:
+        return _extract_wait_time(exception, retry_state.attempt_number - 1)
+    return 1.0
 
-    # Try to find 'retry_delay' in the error message
-    if exception and isinstance(exception, ResourceExhausted):
-        error_str = str(exception)
-        # Regex to capture "retry_delay { seconds: 43 }"
-        match = re.search(
-            r"retry_delay.*?seconds:\s*(\d+)", error_str, re.IGNORECASE | re.DOTALL
-        )
-        if match:
-            wait_time = int(match.group(1)) + 1  # Add 1s buffer
-            logger.warning(f"Quota hit! Google requested wait: {wait_time}s")
-            return float(wait_time)
 
-    # Fallback: Exponential backoff (min 2s, max 60s)
-    return wait_exponential(multiplier=1, min=2, max=60)(retry_state)
+def _build_retry():
+    return retry(
+        stop=stop_after_attempt(15),
+        wait=_google_smart_wait,
+        retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+        reraise=True,
+    )
 
 
 class RobustChatGoogleGenerativeAI:
-    """
-    Production-ready wrapper for ChatGoogleGenerativeAI.
-    Fixes the known issue where SDK ignores server-side retry suggestions.
-    """
-
-    def __init__(
-        self,
-        model: str,
-        project: Optional[str] = None,
-        location: str = "us-central1",
-        **kwargs,
-    ):
-        self.llm = ChatGoogleGenerativeAI(
-            model=model,
-            project=project,
-            location=location,
-            max_retries=1,
-            transport="rest",
-            **kwargs,
-        )
-
-    def _create_retry_decorator(self):
-        return retry(
-            stop=stop_after_attempt(10),
-            wait=google_smart_wait,
-            retry=retry_if_exception_type(
-                (
-                    ResourceExhausted,  # 429
-                    ServiceUnavailable,  # 503
-                    InternalServerError,  # 500
-                )
-            ),
-            before_sleep=before_sleep_log(logger, logging.WARNING),
-            reraise=True,
-        )
-
-    async def ainvoke(self, input: Union[str, List[BaseMessage]], **kwargs) -> Any:
-        decorator = self._create_retry_decorator()
-        return await decorator(self.llm.ainvoke)(input, **kwargs)
+    def __init__(self, model: str, **kwargs):
+        self.llm = ChatGoogleGenerativeAI(model=model, max_retries=1, **kwargs)
 
     def invoke(self, input: Union[str, List[BaseMessage]], **kwargs) -> Any:
-        decorator = self._create_retry_decorator()
-        return decorator(self.llm.invoke)(input, **kwargs)
+        return _build_retry()(self.llm.invoke)(input, **kwargs)
+
+    async def ainvoke(self, input: Union[str, List[BaseMessage]], **kwargs) -> Any:
+        return await _build_retry()(self.llm.ainvoke)(input, **kwargs)
+
+    def stream(self, input: Union[str, List[BaseMessage]], **kwargs) -> Iterator:
+        return _build_retry()(self.llm.stream)(input, **kwargs)
+
+    async def astream(
+        self, input: Union[str, List[BaseMessage]], **kwargs
+    ) -> AsyncIterator:
+        for attempt in range(15):
+            try:
+                async for chunk in self.llm.astream(input, **kwargs):
+                    yield chunk
+                return
+            except _RETRYABLE_EXCEPTIONS as e:
+                if attempt == 14:
+                    raise
+                wait_time = _extract_wait_time(e, attempt)
+                logger.warning(
+                    f"astream retry {attempt + 1}/15, waiting {wait_time:.1f}s"
+                )
+                await asyncio.sleep(wait_time)
+
+    def bind_tools(self, tools, **kwargs):
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.bind_tools(tools, **kwargs)
+        return new
+
+    def with_structured_output(self, schema, **kwargs):
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.with_structured_output(schema, **kwargs)
+        return new
+
+    def bind(self, **kwargs):
+        new = RobustChatGoogleGenerativeAI.__new__(RobustChatGoogleGenerativeAI)
+        new.llm = self.llm.bind(**kwargs)
+        return new
+
+    def __getattr__(self, name: str) -> Any:
+        if name == "llm":
+            raise AttributeError("Inner LLM not initialized")
+        return getattr(self.llm, name)
