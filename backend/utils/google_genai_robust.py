@@ -48,6 +48,7 @@ class RobustChatGoogleGenerativeAI:
     """
 
     def __init__(self, model: str, **kwargs):
+        kwargs.pop("max_retries", None)
         self.llm = ChatGoogleGenerativeAI(
             model=model,
             max_retries=1,
