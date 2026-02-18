@@ -5,6 +5,7 @@ import cohere
 from pathlib import Path
 from langchain_core.tracers.stdout import ConsoleCallbackHandler
 from langchain_openai import ChatOpenAI
+from backend.utils.google_genai_robust import RobustChatGoogleGenerativeAI
 
 load_dotenv()
 
@@ -40,6 +41,13 @@ RESEARCH_LLM_REASONING = ChatOpenAI(
 RESEARCH_LLM_FAST = ChatOpenAI(
     model="gpt-5-mini",
     temperature=0.0,
+    callbacks=[ConsoleCallbackHandler()],
+)
+
+GEMINI_LLM = RobustChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.0,
+    max_retries=2,
     callbacks=[ConsoleCallbackHandler()],
 )
 
