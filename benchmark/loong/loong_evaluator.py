@@ -22,6 +22,7 @@ Usage:
     python benchmark/loong/loong_evaluator.py --data benchmark/loong/data/loong_set1.jsonl
     python benchmark/loong/loong_evaluator.py --data benchmark/loong/data/loong_set1.jsonl --upload-docs --limit 5
     python benchmark/loong/loong_evaluator.py --level 1 --language en --limit 10
+    python benchmark/loong/loong_evaluator.py --resume  # skip already-evaluated task IDs
     python benchmark/loong/loong_evaluator.py --summarize benchmark/loong/loong_results.jsonl
 """
 
@@ -159,6 +160,29 @@ def filter_data(
     return data
 
 
+def load_evaluated_ids(results_path: str) -> set:
+    """Return the set of task IDs already present in a results JSONL file.
+
+    Returns an empty set if the file does not exist or cannot be read.
+    """
+    path = Path(results_path)
+    if not path.exists():
+        return set()
+    ids: set = set()
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                if "id" in entry:
+                    ids.add(entry["id"])
+            except json.JSONDecodeError:
+                pass
+    return ids
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCUMENT UPLOAD
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -224,12 +248,21 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
     )
     latency = time.perf_counter() - start
 
+    
     raw_output = ""
     if result.get("messages"):
         for msg in reversed(result["messages"]):
             if hasattr(msg, "content") and msg.content:
-                raw_output = msg.content
-                break
+                content = msg.content
+                if isinstance(content, str):
+                    raw_output = content
+                elif isinstance(content, list):
+                    # Tool-call messages have list content blocks
+                    texts = [b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text"]
+                    raw_output = " ".join(texts)
+                if raw_output:
+                    break
+
 
     completion_tokens = count_tokens(raw_output)
     return {
@@ -249,7 +282,7 @@ async def run_judge(
     question: str,
     gold_answer_str: str,
     predicted: str,
-    model: str = "gpt-4.1",
+    model: str = "gpt-5",
 ) -> Dict[str, Any]:
     """Send the predicted answer to the Loong LLM judge and parse the score."""
     from langchain_openai import ChatOpenAI
@@ -371,6 +404,7 @@ async def evaluate(
     offset: Optional[int] = None,
     limit: Optional[int] = None,
     judge_model: str = "gpt-4.1",
+    resume: bool = False,
 ):
     """Run the full Loong evaluation pipeline.
 
@@ -399,6 +433,18 @@ async def evaluate(
         print(f" [{', '.join(filters)}]")
     else:
         print()
+
+    if resume:
+        done_ids = load_evaluated_ids(results_path)
+        if done_ids:
+            before = len(data)
+            data = [d for d in data if d["id"] not in done_ids]
+            print(
+                f"Resume mode: skipping {before - len(data)} already-evaluated tasks "
+                f"({len(data)} remaining)."
+            )
+        else:
+            print("Resume mode: no existing results found, starting fresh.")
 
     if not data:
         print("No tasks to evaluate.")
@@ -530,6 +576,13 @@ Examples:
         help="Model to use as judge (default: gpt-4.1)",
     )
     parser.add_argument(
+        "--resume", action="store_true",
+        help=(
+            "Skip tasks whose IDs are already present in the --results file. "
+            "Useful for continuing an interrupted run."
+        ),
+    )
+    parser.add_argument(
         "--summarize", type=str, metavar="FILE",
         help="Just print summary metrics from an existing results file, then exit",
     )
@@ -548,5 +601,6 @@ Examples:
                 offset=args.offset,
                 limit=args.limit,
                 judge_model=args.judge_model,
+                resume=args.resume,
             )
         )
