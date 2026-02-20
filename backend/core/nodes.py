@@ -207,14 +207,9 @@ async def orchestrator_node(
     messages = state["messages"]
 
     llm_with_tools = GEMINI_LLM.bind_tools([WriteTodos], tool_choice="auto")
-
-    selected_docs = state.get("selected_documents", [])
-    context_description = ", ".join(selected_docs) if selected_docs else "User-uploaded documents"
-
-    system_prompt = LEAD_RESEARCHER_PROMPT.format(context_description=context_description)
     
     response = await llm_with_tools.ainvoke(
-        [{"role": "system", "content": system_prompt}] + messages
+        [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
     )
 
     updates: Dict[str, Any] = {"messages": [response]}
@@ -343,7 +338,6 @@ async def synthesis_node(
         raw_findings_chunks: List[str] = [
             (
                 f"Document: {s.document_name}\n"
-                f"Relevance: {s.relevance_score:.2f}\n"
                 f"Findings:\n{s.findings}"
             )
             for s in global_context

@@ -39,10 +39,6 @@ class Summary(BaseModel):
 
     document_name: str = Field(description="The source document name")
     findings: str = Field(description="Extracted relevant information and analysis")
-    relevance_score: float = Field(
-        default=0.0,
-        description="Relevance confidence score (0.0 - 1.0)", ge=0.0, le=1.0
-    )
 
 
 class AgentInputState(MessagesState):
@@ -52,7 +48,6 @@ class AgentInputState(MessagesState):
     Inherits the 'messages' key from MessagesState.
     Used to define the expected input structure for `graph.invoke()`.
     """
-
     selected_documents: List[str] = []
 
 
