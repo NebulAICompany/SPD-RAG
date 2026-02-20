@@ -6,7 +6,7 @@ Implements the evaluation methodology from the Loong paper
 LLMs with Extended Multi-Doc QA", EMNLP 2024).
 
 Key components:
-- GPT-4 as judge (Appendix A of the paper)
+- GPT-5 as judge (Appendix A of the paper)
 - Evaluates Accuracy/Hallucinations and Completeness
 - Scores 1-100 per question
 - Two aggregate metrics: Avg Score and Perfect Rate
@@ -274,6 +274,43 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# BASELINE LLM INFERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Run the baseline LLM on a Loong task (all docs in context, no retrieval).
+
+    Concatenates all oracle document texts followed by the task prompt and
+    sends the whole thing to RESEARCH_LLM_REASONING in a single call.
+    Returns the same dict shape as run_spd_rag for drop-in use in evaluate().
+    """
+    from backend.shared.constants import RESEARCH_LLM_REASONING
+
+    docs_text = "".join(task["docs"])
+    full_prompt = f"{docs_text}\n{task['prompt']}"
+    prompt_tokens = count_tokens(full_prompt)
+
+    start = time.perf_counter()
+    response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt)
+    latency = time.perf_counter() - start
+
+    content = response.content
+    if isinstance(content, list):
+        raw_output = " ".join(
+            b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text"
+        )
+    else:
+        raw_output = content or ""
+
+    return {
+        "raw_output": raw_output,
+        "latency": latency,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": count_tokens(raw_output),
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # LLM-AS-JUDGE (Loong Appendix A)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -403,13 +440,14 @@ async def evaluate(
     language: Optional[str] = None,
     offset: Optional[int] = None,
     limit: Optional[int] = None,
-    judge_model: str = "gpt-4.1",
+    judge_model: str = "gpt-5",
     resume: bool = False,
+    baseline: bool = False,
 ):
     """Run the full Loong evaluation pipeline.
 
     Steps for each task:
-    1. Run SPD-RAG with the task prompt and oracle documents
+    1. Run SPD-RAG (or baseline LLM) with the task prompt and oracle documents
     2. Send response to the Loong LLM judge (Appendix A)
     3. Parse the 0-100 score
     4. Log per-question results to JSONL
@@ -450,10 +488,16 @@ async def evaluate(
         print("No tasks to evaluate.")
         return
 
+    mode_label = "Baseline LLM" if baseline else "SPD-RAG"
+    print(f"Inference mode: {mode_label}")
+
     if upload_docs:
-        print("\n── Uploading oracle documents to vector store ──")
-        await upload_documents(data)
-        print()
+        if baseline:
+            print("(Skipping vector store upload — not needed for baseline mode)")
+        else:
+            print("\n── Uploading oracle documents to vector store ──")
+            await upload_documents(data)
+            print()
 
     all_results: List[Dict[str, Any]] = []
 
@@ -475,11 +519,14 @@ async def evaluate(
             print(f"   Q: {question[:100]}...")
             print(f"   Docs: {len(doc_filenames)}")
 
-            # Step 1: Run SPD-RAG
+            # Step 1: Run inference (SPD-RAG or baseline)
             try:
-                rag_result = await run_spd_rag(prompt, doc_filenames)
+                if baseline:
+                    rag_result = await run_baseline_llm(task)
+                else:
+                    rag_result = await run_spd_rag(prompt, doc_filenames)
             except Exception as e:
-                print(f"   [ERROR] SPD-RAG failed: {e}")
+                print(f"   [ERROR] {mode_label} failed: {e}")
                 continue
             print(f"   Latency: {rag_result['latency']:.1f}s")
 
@@ -501,6 +548,7 @@ async def evaluate(
             # Step 3: Save result
             result_entry = {
                 "id": task_id,
+                "mode": "baseline" if baseline else "spd_rag",
                 "question": question,
                 "level": level_num,
                 "level_name": level_name,
@@ -572,8 +620,16 @@ Examples:
         help="Max number of tasks to evaluate (for quick testing)",
     )
     parser.add_argument(
-        "--judge-model", default="gpt-4.1",
-        help="Model to use as judge (default: gpt-4.1)",
+        "--baseline", action="store_true",
+        help=(
+            "Use baseline LLM inference instead of SPD-RAG: all oracle docs are "
+            "concatenated into the context and sent to RESEARCH_LLM_REASONING in "
+            "a single call (no vector store needed)."
+        ),
+    )
+    parser.add_argument(
+        "--judge-model", default="gpt-5",
+        help="Model to use as judge (default: gpt-5)",
     )
     parser.add_argument(
         "--resume", action="store_true",
@@ -602,5 +658,6 @@ Examples:
                 limit=args.limit,
                 judge_model=args.judge_model,
                 resume=args.resume,
+                baseline=args.baseline,
             )
         )
