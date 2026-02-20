@@ -45,7 +45,7 @@ RESEARCH_LLM_FAST = ChatOpenAI(
 )
 
 GEMINI_LLM = RobustChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-1.5-pro",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
