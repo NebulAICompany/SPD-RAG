@@ -288,7 +288,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
                     )
                 )
 
-    extractor = RESEARCH_LLM_FAST.with_structured_output(
+    extractor = RESEARCH_LLM_REASONING.with_structured_output(
         Summary,
         method="function_calling",
         include_raw=False,
