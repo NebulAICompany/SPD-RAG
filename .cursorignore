@@ -1,0 +1,52 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Database and Data
+*.db
+*.sqlite
+*.sqlite3
+backend/database/*.db
+backend/database/json/
+backend/database/charts/
+backend/database/market_data.db
+backend/database/chat_history.db
+backend/database/uploads_tracking.db
+backend/database/balance_payments.db
+backend/database/checkpoints.db
+backend/database/masked_map.json
+
+# User Uploads and Generated Content
+backend/database/uploads/
+backend/database/created_documents/
+backend/database/vectorstore/
+
+data
