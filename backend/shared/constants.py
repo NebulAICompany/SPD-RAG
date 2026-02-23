@@ -33,22 +33,26 @@ VECTORSTORE_PATH_STR = str(VECTORSTORE_PATH)
 BACKEND_LOG_PATH_STR = str(BACKEND_LOG_PATH)
 BACKEND_ERROR_LOG_PATH_STR = str(BACKEND_ERROR_LOG_PATH)
 
-RESEARCH_LLM_REASONING = ChatOpenAI(
+GPT5 = ChatOpenAI(
     model="gpt-5",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
-RESEARCH_LLM_FAST = ChatOpenAI(
+GPT5_MINI = ChatOpenAI(
     model="gpt-5-mini",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
 
-GEMINI_LLM = RobustChatGoogleGenerativeAI(
-    model="gemini-1.5-pro",
+GEMINI_25_FLASH = RobustChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
+
+RESEARCH_LLM_REASONING = GEMINI_25_FLASH
+RESEARCH_LLM_FAST = GEMINI_25_FLASH
+
 
 SELECTED_FILES: Optional[List[str]] = None
 

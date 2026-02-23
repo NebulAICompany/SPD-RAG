@@ -6,7 +6,7 @@ Implements the evaluation methodology from the Loong paper
 LLMs with Extended Multi-Doc QA", EMNLP 2024).
 
 Key components:
-- GPT-4 as judge (Appendix A of the paper)
+- GPT-5 as judge (Appendix A of the paper)
 - Evaluates Accuracy/Hallucinations and Completeness
 - Scores 1-100 per question
 - Two aggregate metrics: Avg Score and Perfect Rate
@@ -22,6 +22,7 @@ Usage:
     python benchmark/loong/loong_evaluator.py --data benchmark/loong/data/loong_set1.jsonl
     python benchmark/loong/loong_evaluator.py --data benchmark/loong/data/loong_set1.jsonl --upload-docs --limit 5
     python benchmark/loong/loong_evaluator.py --level 1 --language en --limit 10
+    python benchmark/loong/loong_evaluator.py --resume  # skip already-evaluated task IDs
     python benchmark/loong/loong_evaluator.py --summarize benchmark/loong/loong_results.jsonl
 """
 
@@ -159,6 +160,29 @@ def filter_data(
     return data
 
 
+def load_evaluated_ids(results_path: str) -> set:
+    """Return the set of task IDs already present in a results JSONL file.
+
+    Returns an empty set if the file does not exist or cannot be read.
+    """
+    path = Path(results_path)
+    if not path.exists():
+        return set()
+    ids: set = set()
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                if "id" in entry:
+                    ids.add(entry["id"])
+            except json.JSONDecodeError:
+                pass
+    return ids
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCUMENT UPLOAD
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -224,12 +248,21 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
     )
     latency = time.perf_counter() - start
 
+    
     raw_output = ""
     if result.get("messages"):
         for msg in reversed(result["messages"]):
             if hasattr(msg, "content") and msg.content:
-                raw_output = msg.content
-                break
+                content = msg.content
+                if isinstance(content, str):
+                    raw_output = content
+                elif isinstance(content, list):
+                    # Tool-call messages have list content blocks
+                    texts = [b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text"]
+                    raw_output = " ".join(texts)
+                if raw_output:
+                    break
+
 
     completion_tokens = count_tokens(raw_output)
     return {
@@ -241,6 +274,43 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# BASELINE LLM INFERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Run the baseline LLM on a Loong task (all docs in context, no retrieval).
+
+    Concatenates all oracle document texts followed by the task prompt and
+    sends the whole thing to RESEARCH_LLM_REASONING in a single call.
+    Returns the same dict shape as run_spd_rag for drop-in use in evaluate().
+    """
+    from backend.shared.constants import RESEARCH_LLM_REASONING
+
+    docs_text = "".join(task["docs"])
+    full_prompt = f"{docs_text}\n{task['prompt']}"
+    prompt_tokens = count_tokens(full_prompt)
+
+    start = time.perf_counter()
+    response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt)
+    latency = time.perf_counter() - start
+
+    content = response.content
+    if isinstance(content, list):
+        raw_output = " ".join(
+            b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text"
+        )
+    else:
+        raw_output = content or ""
+
+    return {
+        "raw_output": raw_output,
+        "latency": latency,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": count_tokens(raw_output),
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # LLM-AS-JUDGE (Loong Appendix A)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -249,7 +319,7 @@ async def run_judge(
     question: str,
     gold_answer_str: str,
     predicted: str,
-    model: str = "gpt-4.1",
+    model: str = "gpt-5",
 ) -> Dict[str, Any]:
     """Send the predicted answer to the Loong LLM judge and parse the score."""
     from langchain_openai import ChatOpenAI
@@ -370,12 +440,14 @@ async def evaluate(
     language: Optional[str] = None,
     offset: Optional[int] = None,
     limit: Optional[int] = None,
-    judge_model: str = "gpt-4.1",
+    judge_model: str = "gpt-5",
+    resume: bool = False,
+    baseline: bool = False,
 ):
     """Run the full Loong evaluation pipeline.
 
     Steps for each task:
-    1. Run SPD-RAG with the task prompt and oracle documents
+    1. Run SPD-RAG (or baseline LLM) with the task prompt and oracle documents
     2. Send response to the Loong LLM judge (Appendix A)
     3. Parse the 0-100 score
     4. Log per-question results to JSONL
@@ -400,14 +472,32 @@ async def evaluate(
     else:
         print()
 
+    if resume:
+        done_ids = load_evaluated_ids(results_path)
+        if done_ids:
+            before = len(data)
+            data = [d for d in data if d["id"] not in done_ids]
+            print(
+                f"Resume mode: skipping {before - len(data)} already-evaluated tasks "
+                f"({len(data)} remaining)."
+            )
+        else:
+            print("Resume mode: no existing results found, starting fresh.")
+
     if not data:
         print("No tasks to evaluate.")
         return
 
+    mode_label = "Baseline LLM" if baseline else "SPD-RAG"
+    print(f"Inference mode: {mode_label}")
+
     if upload_docs:
-        print("\n── Uploading oracle documents to vector store ──")
-        await upload_documents(data)
-        print()
+        if baseline:
+            print("(Skipping vector store upload — not needed for baseline mode)")
+        else:
+            print("\n── Uploading oracle documents to vector store ──")
+            await upload_documents(data)
+            print()
 
     all_results: List[Dict[str, Any]] = []
 
@@ -429,11 +519,14 @@ async def evaluate(
             print(f"   Q: {question[:100]}...")
             print(f"   Docs: {len(doc_filenames)}")
 
-            # Step 1: Run SPD-RAG
+            # Step 1: Run inference (SPD-RAG or baseline)
             try:
-                rag_result = await run_spd_rag(prompt, doc_filenames)
+                if baseline:
+                    rag_result = await run_baseline_llm(task)
+                else:
+                    rag_result = await run_spd_rag(prompt, doc_filenames)
             except Exception as e:
-                print(f"   [ERROR] SPD-RAG failed: {e}")
+                print(f"   [ERROR] {mode_label} failed: {e}")
                 continue
             print(f"   Latency: {rag_result['latency']:.1f}s")
 
@@ -455,6 +548,7 @@ async def evaluate(
             # Step 3: Save result
             result_entry = {
                 "id": task_id,
+                "mode": "baseline" if baseline else "spd_rag",
                 "question": question,
                 "level": level_num,
                 "level_name": level_name,
@@ -526,8 +620,23 @@ Examples:
         help="Max number of tasks to evaluate (for quick testing)",
     )
     parser.add_argument(
-        "--judge-model", default="gpt-4.1",
-        help="Model to use as judge (default: gpt-4.1)",
+        "--baseline", action="store_true",
+        help=(
+            "Use baseline LLM inference instead of SPD-RAG: all oracle docs are "
+            "concatenated into the context and sent to RESEARCH_LLM_REASONING in "
+            "a single call (no vector store needed)."
+        ),
+    )
+    parser.add_argument(
+        "--judge-model", default="gpt-5",
+        help="Model to use as judge (default: gpt-5)",
+    )
+    parser.add_argument(
+        "--resume", action="store_true",
+        help=(
+            "Skip tasks whose IDs are already present in the --results file. "
+            "Useful for continuing an interrupted run."
+        ),
     )
     parser.add_argument(
         "--summarize", type=str, metavar="FILE",
@@ -548,5 +657,7 @@ Examples:
                 offset=args.offset,
                 limit=args.limit,
                 judge_model=args.judge_model,
+                resume=args.resume,
+                baseline=args.baseline,
             )
         )
