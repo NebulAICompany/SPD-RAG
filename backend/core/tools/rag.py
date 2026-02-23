@@ -63,7 +63,7 @@ def search_specific_document_for_research(
 
         for doc in reranked_docs:
             content = doc["content"]
-            result_text += f"\n{content}\n"
+            result_text = f"\n{content}\n"
             results.append(result_text)
 
         formatted_results = "\n---\n".join(results)
