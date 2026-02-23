@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional
+from typing import Annotated, List, Literal, Optional
 from langgraph.graph import MessagesState
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
@@ -41,6 +41,29 @@ class Summary(BaseModel):
     findings: str = Field(description="Extracted relevant information and analysis")
 
 
+class AgentAction(BaseModel):
+    """Structured action the sub-agent outputs in each iteration of the retrieval loop.
+
+    The external loop interprets this and either calls the retriever directly or
+    records the final findings — without ever binding tools to the LLM.
+    """
+
+    action: Literal["search", "finalize"] = Field(
+        description="'search' to issue another retrieval query, 'finalize' when findings are complete"
+    )
+    query: Optional[str] = Field(
+        None,
+        description="The search query to run (only required when action='search')",
+    )
+    reasoning: str = Field(
+        description="Brief explanation of why you are taking this action"
+    )
+    findings: Optional[str] = Field(
+        None,
+        description="Complete extracted findings from the document (only required when action='finalize')",
+    )
+
+
 class AgentInputState(MessagesState):
     """
     Input state schema for the agent graph.
@@ -65,7 +88,7 @@ class AgentState(MessagesState):
     """
 
     global_context: Annotated[List[Summary], merge_summaries] = []
-    sub_agent_todos: list = []
+    sub_agent_todos: List[TodoItem] = []
     selected_documents: List[str] = []
 
 
