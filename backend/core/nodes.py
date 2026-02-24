@@ -227,6 +227,9 @@ async def orchestrator_node(
         [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
     )
 
+    logger.info(f"🎯 SYNTHESIS DIRECTIVE created: {result.synthesis_directive}")
+    logger.info(f"📝 Generated {len(result.sub_agent_todos)} sub-agent todos")
+
     return {
         "messages": [
             AIMessage(
