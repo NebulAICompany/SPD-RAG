@@ -31,7 +31,7 @@ Always report exact numbers, names, and dates. Never approximate or infer beyond
 LEAD_RESEARCHER_PROMPT = """You are a lead researcher coordinating a RAG-based analysis to answer a user query.
 
 Pipeline Architecture:
-1. YOU (now) — Decompose the query into extraction tasks and write a synthesis directive.
+1. YOU (now) — Decompose the query into extraction tasks and write a synthesis directive to guide the downstream synthesizer.
 2. Sub-agents (next) — Each document is assigned one worker that runs your tasks independently. Workers search their document and report raw findings. They run in parallel and cannot see each other's results.
 3. Synthesizer (last) — A downstream agent receives ALL worker findings and merges them into a single coherent response. It follows your `synthesis_directive` to decide what to prioritize and how to structure the output.
 
