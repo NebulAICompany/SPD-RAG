@@ -107,12 +107,14 @@ def _group_by_tokens(
 async def _summarize_batch_findings(
     findings_batch: List[str],
     root_query: str,
+    synthesis_directive: str = "",
 ) -> str:
     """Summarize a batch of findings into a single merged summary."""
     batch_text = "\n\n---\n\n".join(findings_batch)
     prompt_content = SYNTHESIS_PROMPT.format(
         findings=batch_text,
         query=root_query,
+        synthesis_directive=synthesis_directive,
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
@@ -125,6 +127,7 @@ async def recursive_summarize_findings(
     raw_findings: List[str],
     root_query: str,
     target_batch_tokens: int = 1200,
+    synthesis_directive: str = "",
 ) -> str:
     """Hybrid Similarity-Ordered Recursive Summarization.
 
@@ -166,7 +169,11 @@ async def recursive_summarize_findings(
         logger.info(f"   📦 Formed {len(batches)} batch(es) for LLM synthesis")
 
         tasks = [
-            _summarize_batch_findings(batch, root_query=root_query)
+            _summarize_batch_findings(
+                batch,
+                root_query=root_query,
+                synthesis_directive=synthesis_directive,
+            )
             for batch in batches
             if batch
         ]
@@ -181,6 +188,11 @@ class WriteTodos(BaseModel):
 
     sub_agent_todos: List[TodoItem] = Field(
         description="A list of specific tasks that EVERY sub-agent must execute for their assigned document. Each item must have a 'task' and a 'status' (default 'pending')."
+    )
+    synthesis_directive: str = Field(
+        description=(
+            "A concise instruction (2-4 sentences) for the downstream synthesizer: the main goal, what to prioritize, and how to structure the merged output."
+        )
     )
 
 
@@ -215,6 +227,9 @@ async def orchestrator_node(
         [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
     )
 
+    logger.info(f"🎯 SYNTHESIS DIRECTIVE created: {result.synthesis_directive}")
+    logger.info(f"📝 Generated {len(result.sub_agent_todos)} sub-agent todos")
+
     return {
         "messages": [
             AIMessage(
@@ -222,6 +237,7 @@ async def orchestrator_node(
             )
         ],
         "sub_agent_todos": result.sub_agent_todos,
+        "synthesis_directive": result.synthesis_directive,
     }
 
 
@@ -380,6 +396,7 @@ async def synthesis_node(
         Command routing to END with final report in messages.
     """
     global_context = state.get("global_context", [])
+    synthesis_directive = state.get("synthesis_directive", "")
 
     root_query = ""
     for msg in state.get("messages", []):
@@ -396,6 +413,7 @@ async def synthesis_node(
         merged_findings = await recursive_summarize_findings(
             raw_findings_chunks,
             root_query=root_query,
+            synthesis_directive=synthesis_directive,
         )
     else:
         merged_findings = "No document findings available."
