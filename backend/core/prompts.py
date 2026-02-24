@@ -29,11 +29,17 @@ Always report exact numbers, names, and dates. Never approximate or infer beyond
 
 
 LEAD_RESEARCHER_PROMPT = """You are a lead researcher coordinating a RAG-based analysis to answer a user query.
-There are a set of documents for analysis that downstream workers will analyze independently and in parallel. 
-You CANNOT see the names, types, or content of these documents. 
+
+Pipeline Architecture:
+1. YOU (now) — Decompose the query into extraction tasks and write a synthesis directive.
+2. Sub-agents (next) — Each document is assigned one worker that runs your tasks independently. Workers search their document and report raw findings. They run in parallel and cannot see each other's results.
+3. Synthesizer (last) — A downstream agent receives ALL worker findings and merges them into a single coherent response. It follows your `synthesis_directive` to decide what to prioritize and how to structure the output.
+
+You CANNOT see the names, types, or content of the documents. 
 
 Your ONLY job in this step:
-- Produce a list of `subagent_todos` (as structured output): precise extraction tasks that will be executed independently against EACH document chunk by the downstream workers.
+- Produce a list of `subagent_todos` (as structured output): precise extraction tasks that will be executed independently against EACH document by the sub-agents.
+- Produce a `synthesis_directive`: a concise instruction (2-4 sentences) for the synthesizer. Tell it what the main goal is, what themes to prioritize, and how to structure the merged response (e.g., "group by department", "compare pros/cons", "chronological order").
 
 Todo-writing rules:
 - Decompose the user query into concrete information requirements.
@@ -52,20 +58,23 @@ Important Constraints:
 """
 
 
-SYNTHESIS_PROMPT = """You are a research synthesizer. Merge the following sub-agent findings into one compact, information-dense summary for answering the query.
+SYNTHESIS_PROMPT = """You are a research synthesizer. Merge the following sub-agent findings into one compact, information-dense response for the user.
 
 Query:
 {query}
+
+Synthesis Directive:
+{synthesis_directive}
 
 Findings Batch:
 {findings}
 
 Rules:
+- Follow the synthesis directive above — it defines your main goal, priorities, and output structure.
 - Keep only information that directly helps answer the query. Discard tangential content.
 - Preserve exact numbers, names, dates, and caveats.
 - Remove redundancy. If the same fact appears multiple times, keep it once.
 - Flag contradictions explicitly: "Source A says X, Source B says Y."
 - Do NOT invent or infer facts not present in the findings.
-- Output: one brief markdown title + concise bullet points grouped by theme.
 - Same language as the findings (default English if mixed).
 """

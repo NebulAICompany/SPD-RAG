@@ -90,6 +90,7 @@ class AgentState(MessagesState):
     global_context: Annotated[List[Summary], merge_summaries] = []
     sub_agent_todos: List[TodoItem] = []
     selected_documents: List[str] = []
+    synthesis_directive: str = ""
 
 
 class SubAgentInput(TypedDict):
