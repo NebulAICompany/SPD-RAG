@@ -1,11 +1,9 @@
 import time
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional
 
 import tiktoken
-from langchain_core.exceptions import OutputParserException
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
-from pydantic import BaseModel, Field, ValidationError
 
 from backend.retrieval.reranker import rerank
 from backend.retrieval.retriever import load_vectorstore, retrieve_top_k
@@ -29,25 +27,6 @@ def _count_tokens(text: str) -> int:
     if not text:
         return 0
     return len(_get_encoder().encode(text))
-
-
-class AgenticRAGAction(BaseModel):
-    """Structured action the agent outputs on every turn of the retrieval loop."""
-
-    action: Literal["search", "finalize"] = Field(
-        description="'search' to issue a retrieval query against the knowledge base; 'finalize' when you have enough evidence to answer the question completely."
-    )
-    query: Optional[str] = Field(
-        default=None,
-        description="Targeted search query to run (required when action='search'). Be specific — prefer concrete terms over broad paraphrases.",
-    )
-    reasoning: str = Field(
-        description="Brief explanation of why you are taking this action."
-    )
-    answer: Optional[str] = Field(
-        default=None,
-        description="Complete, well-structured answer to the user question (required when action='finalize'). Synthesise all retrieved evidence; be precise about numbers, names, and dates. Do NOT fabricate facts.",
-    )
 
 
 def _make_search_tool(selected_files: List[str]):
@@ -103,24 +82,16 @@ def _make_search_tool(selected_files: List[str]):
 
 
 _SYSTEM_PROMPT = """You are a research agent with access to a knowledge base that spans multiple documents.
-Your goal is to answer the user's question accurately and completely by iteratively searching the knowledge base.
+Your goal is to answer the user's question accurately and completely.
 
-Retrieval loop rules:
-1. On each turn output exactly one structured action:
-   - action="search"   → issue ONE focused query; the results will be returned to you in the next turn.
-   - action="finalize" → you have gathered sufficient evidence; compose the final answer in the `answer` field and stop.
-
-2. Search strategy:
-   - Start with the most specific terms that appear in the question.
-   - If initial results are sparse, try synonyms, acronyms, or closely related concepts.
-   - Issue separate queries for different sub-questions; never bundle multiple unrelated topics into one query.
-   - Stop searching when every part of the question is covered by concrete retrieved evidence, or when additional searches return no new information.
-
-3. Finalisation:
-   - Synthesise the retrieved evidence into a clear, concise answer.
-   - Preserve exact numbers, names, dates, and technical terms.
-   - If the knowledge base does not contain enough information, state that explicitly — do NOT hallucinate.
-   - Respond in the same language as the question.
+Instructions:
+- Use the search_documents tool to retrieve relevant information before answering.
+- You MUST call the tool at least once before providing your final answer.
+- Issue separate searches for different aspects of the question.
+- Once you have sufficient evidence, provide a clear, complete answer directly (without calling any tool).
+- Preserve exact numbers, names, dates, and technical terms.
+- If the knowledge base does not contain enough information, state that explicitly — do NOT hallucinate.
+- Respond in the same language as the question.
 """
 
 
@@ -142,20 +113,12 @@ async def run_agentic_rag(
     start_time = time.perf_counter()
     prompt_tokens = _count_tokens(query)
     search_tool = _make_search_tool(selected_files)
+    llm_with_tools = RESEARCH_LLM_FAST.bind_tools([search_tool], tool_choice="required")
 
-    messages: List = [
+    messages: List[Any] = [
         SystemMessage(content=_SYSTEM_PROMPT),
         HumanMessage(content=query),
     ]
-
-    action_extractor = RESEARCH_LLM_FAST.with_structured_output(
-        AgenticRAGAction,
-        method="function_calling",
-        include_raw=False,
-    ).with_retry(
-        stop_after_attempt=3,
-        retry_if_exception_type=(ValueError, ValidationError, OutputParserException),
-    )
 
     iteration = 0
     final_answer = ""
@@ -172,15 +135,14 @@ async def run_agentic_rag(
                 HumanMessage(
                     content=(
                         "You have reached the maximum number of search iterations. "
-                        "You MUST finalize your answer now using the evidence "
-                        "gathered so far."
+                        "Provide your final answer now based on the evidence gathered so far."
                     )
                 )
             )
             try:
-                forced: AgenticRAGAction = await action_extractor.ainvoke(messages)
+                forced = await RESEARCH_LLM_FAST.ainvoke(messages)
                 final_answer = (
-                    forced.answer
+                    forced.content
                     or "Safety limit reached; answer could not be fully synthesised."
                 )
             except Exception as exc:
@@ -189,62 +151,24 @@ async def run_agentic_rag(
             break
 
         try:
-            action: AgenticRAGAction = await action_extractor.ainvoke(messages)
+            response = await llm_with_tools.ainvoke(messages)
         except Exception as exc:
-            logger.error(
-                f"[AgenticRAG] Action parsing failed (iter {iteration}): {exc}"
-            )
-            final_answer = "Action parsing failed; no answer could be produced."
+            logger.error(f"[AgenticRAG] LLM invocation failed (iter {iteration}): {exc}")
+            final_answer = "LLM invocation failed; no answer could be produced."
             break
 
-        logger.info(
-            f"[AgenticRAG] Iter {iteration} — "
-            f"action={action.action!r} | reasoning={action.reasoning!r}"
-        )
-        if action.action == "finalize":
-            if not action.answer:
-                logger.warning(
-                    f"[AgenticRAG] 'finalize' action with empty answer "
-                    f"(iter {iteration}) — treating as empty result."
-                )
-            final_answer = action.answer or "No answer was produced."
+        messages.append(response)
+
+        if not response.tool_calls:
+            final_answer = response.content or "No answer was produced."
             break
 
-        if not action.query:
-            logger.warning(
-                f"[AgenticRAG] 'search' action with empty query (iter {iteration}). "
-                f"Prompting the agent to provide a query."
-            )
-            messages.append(
-                HumanMessage(
-                    content=(
-                        "Your last action was 'search' but the `query` field was empty. "
-                        "Please provide a specific search string, or finalize if you "
-                        "have gathered sufficient information."
-                    )
-                )
-            )
-            continue
+        logger.info(f"[AgenticRAG] Iter {iteration} — {len(response.tool_calls)} tool call(s)")
 
-        search_results = await search_tool.ainvoke(
-            {"query": action.query}
-        )
-
-        messages.append(
-            AIMessage(
-                content=(
-                    f"[SEARCH] Reasoning: {action.reasoning}\n"
-                    f"Query: {action.query}"
-                )
-            )
-        )
-        messages.append(
-            HumanMessage(
-                content=(
-                    f"Search results for '{action.query}':\n\n{search_results}"
-                )
-            )
-        )
+        for tool_call in response.tool_calls:
+            tool_result = await search_tool.ainvoke(tool_call["args"])
+            messages.append(ToolMessage(content=str(tool_result), tool_call_id=tool_call["id"]))
+            logger.info(f"[AgenticRAG] Searched: {tool_call['args'].get('query', '')!r}")
 
     latency = time.perf_counter() - start_time
     completion_tokens = _count_tokens(final_answer)
