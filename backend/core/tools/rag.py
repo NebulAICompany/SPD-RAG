@@ -73,3 +73,52 @@ async def search_specific_document_for_research(
     except Exception as e:
         logger.error(f"Error in search_specific_document: {e}")
         return f"Error searching document {file_name}: {str(e)}"
+
+def perform_normal_rag(query: str, selected_files: List[str]) -> str:
+    """Perform a normal RAG query on the selected files."""
+    try:
+        client = load_vectorstore(VECTORSTORE_PATH_STR)
+
+        if client is None:
+            return "Vectorstore not available."
+        if not client.collection_exists(collection_name="documents"):
+            return "No documents found in knowledge base."
+
+        # Force file filter to the specific file
+        logger.info(f"🔍 Agentic Tool - Searching ONLY in: {selected_files}")
+
+        retrieved_docs = retrieve_top_k(
+            client=client,
+            query=query,
+            k=30,
+            selected_files=selected_files,
+        )
+
+        if not retrieved_docs:
+            return f"No relevant information found for your query."
+
+        # Rerank
+        doc_contents = [
+            {"content": doc["content"], "metadata": doc["metadata"]}
+            for doc in retrieved_docs
+        ]
+        reranked_docs = rerank(query, doc_contents, with_score=False, top_n=5)
+
+        if not reranked_docs:
+            return f"No relevant information found after reranking."
+
+        # Format results
+        results = []
+
+        for doc in reranked_docs:
+            content = doc["content"]
+            result_text = f"\n{content}\n"
+            results.append(result_text)
+
+        formatted_results = "\n---\n".join(results)
+
+        return formatted_results
+
+    except Exception as e:
+        logger.error(f"Error in perform_normal_rag: {e}")
+        return f"Error performing normal RAG: {str(e)}"

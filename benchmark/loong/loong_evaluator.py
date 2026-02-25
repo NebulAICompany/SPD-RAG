@@ -316,12 +316,42 @@ async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
 # AGENTIC RAG BASELINE INFERENCE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-
 async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str], task_id: str) -> Dict[str, Any]:
     """Run the Agentic RAG baseline on a Loong task prompt."""
     from benchmark.agentic_rag import run_agentic_rag
 
     return await run_agentic_rag(query=prompt, selected_files=doc_filenames, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "agentic_rag", "task_id": task_id}})
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NORMAL RAG INFERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def run_normal_rag(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Run the normal RAG on a Loong task."""
+    from backend.core.tools.rag import perform_normal_rag
+
+    prompt = task["prompt"]
+    doc_filenames = task["doc"]
+    docs_text = perform_normal_rag(prompt, doc_filenames)
+    full_prompt = f"{docs_text}\n{prompt}"
+    prompt_tokens = count_tokens(full_prompt)
+    start = time.perf_counter()
+    response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "normal_rag", "task_id": task["id"]}})
+    latency = time.perf_counter() - start
+    content = response.content
+    if isinstance(content, list):
+        raw_output = " ".join(
+            b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text"
+        )
+    else:
+        raw_output = content or ""
+
+    return {
+        "raw_output": raw_output,
+        "latency": latency,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": count_tokens(raw_output),
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
