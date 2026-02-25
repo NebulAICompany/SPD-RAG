@@ -74,7 +74,6 @@ Rules:
 - Keep only information that directly helps answer the query. Discard tangential content.
 - Preserve exact numbers, names, dates, and caveats.
 - Remove redundancy. If the same fact appears multiple times, keep it once.
-- Flag contradictions explicitly: "Source A says X, Source B says Y."
 - Do NOT invent or infer facts not present in the findings.
 - Same language as the findings (default English if mixed).
 """
