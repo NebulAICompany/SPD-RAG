@@ -4,9 +4,8 @@ import time
 import uuid
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 import tiktoken
-from typing import Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -14,7 +13,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.pipeline.vector import VectorStorePipeline
 
-# Tiktoken encoder for accurate token counts (cl100k_base covers GPT-4 family)
 _ENCODER: Optional[tiktoken.Encoding] = None
 
 MD_PATH = PROJECT_ROOT / "benchmark" / "data" / "wiki_md_esradan"
@@ -106,6 +104,29 @@ async def llm_judge(
     return 0.0
 
 
+async def perform_agentic_rag(question: str, doc_paths: list[str]):
+    """Run the Agentic RAG baseline on a Monaco question.
+
+    Searches only within *doc_paths* (the oracle documents for this task).
+
+    Args:
+        question: The question to answer.
+        doc_paths: Oracle document filenames to restrict retrieval to.
+
+    Returns:
+        Dict with keys ``raw_output``, ``latency``, ``prompt_tokens``,
+        ``completion_tokens``, and ``iterations``.
+    """
+    from benchmark.agentic_rag import run_agentic_rag
+
+    user_message = (
+        f"Question: {question}\n\n"
+        "Provide your final answer inside \\boxed{}."
+    )
+    result = await run_agentic_rag(query=user_message, selected_files=doc_paths)
+    return result
+
+
 async def perform_spd_rag(question: str, selected_files: list[str]):
     from langchain_core.messages import HumanMessage
     from backend.core.graph import get_compiled_graph
@@ -177,12 +198,91 @@ async def evaluate_monaco_data(data: list[Dict[str, Any]]):
             f.flush()
 
 
+async def evaluate_monaco_data_agentic(
+    data: list[Dict[str, Any]],
+    test_ids: Optional[list[int]] = None,
+    results_file: Optional[Path] = None,
+):
+    """Evaluate Monaco tasks using the Agentic RAG baseline.
 
+    Oracle documents must already be uploaded to the vectorstore before
+    calling this function (set ``UPLOAD_DOCS_BOOL = True`` in ``__main__``).
+
+    Args:
+        data:         Full Monaco dataset loaded from JSONL.
+        test_ids:     Task IDs to evaluate.  Evaluates all tasks if ``None``.
+        results_file: Path to write/append JSONL results.  Defaults to
+                      ``benchmark/monaco/agentic_rag_results.jsonl``.
+    """
+    if results_file is None:
+        results_file = Path(__file__).resolve().parent / "agentic_rag_results.jsonl"
+
+    results_file.parent.mkdir(parents=True, exist_ok=True)
+
+    tasks = data if test_ids is None else [t for t in data if t["id"] in test_ids]
+    print(f"[Agentic RAG] Evaluating {len(tasks)} Monaco task(s).")
+
+    with open(results_file, "a", encoding="utf-8") as f:
+        for i, task in enumerate(tasks):
+            task_id = task["id"]
+            question = task["question"]
+            answer = task["answer"]
+
+            print(f"\n── [{i + 1}/{len(tasks)}] Task {task_id} ──")
+            print(f"   Q: {question[:100]}...")
+
+            try:
+                response = await perform_agentic_rag(question, task["doc_paths"])
+            except Exception as exc:
+                print(f"   [ERROR] Agentic RAG failed: {exc}")
+                continue
+
+            print(
+                f"   Latency: {response['latency']:.1f}s  "
+                f"Iterations: {response['iterations']}"
+            )
+
+            try:
+                judge_score = await llm_judge(question, answer, response["raw_output"])
+            except Exception as exc:
+                print(f"   [ERROR] Judge failed: {exc}")
+                continue
+
+            verdict_label = {1.0: "CORRECT", 0.5: "PARTIAL", 0.0: "INCORRECT"}.get(
+                judge_score, "UNKNOWN"
+            )
+            print(f"   Judge: {verdict_label} ({judge_score})")
+
+            result_entry = {
+                "id": task_id,
+                "mode": "agentic_rag",
+                "question": question,
+                "answer": answer,
+                "predicted": response["raw_output"],
+                "judge_score": judge_score,
+                "latency": response["latency"],
+                "prompt_tokens": response["prompt_tokens"],
+                "completion_tokens": response["completion_tokens"],
+                "iterations": response["iterations"],
+            }
+            f.write(json.dumps(result_entry, ensure_ascii=False) + "\n")
+            f.flush()
+
+    print(f"\n[Agentic RAG] Results saved to: {results_file}")
 
 
 if __name__ == "__main__":
     data = load_monaco_data(PROJECT_ROOT / "benchmark" / "data" / "monaco_question_docs_answers_with_md.jsonl")
+
+    # ── Mode selection ──────────────────────────────────────────────────────
+    # Set EVAL_MODE to "spd_rag" or "agentic_rag" to choose the inference mode.
+    EVAL_MODE = "spd_rag"
+
     UPLOAD_DOCS_BOOL = False
     if UPLOAD_DOCS_BOOL:
         asyncio.run(upload_documents_to_vectorstore(data))
-    asyncio.run(evaluate_monaco_data(data))
+
+    if EVAL_MODE == "agentic_rag":
+        asyncio.run(evaluate_monaco_data_agentic(data, test_ids=[1621]))
+    else:
+        asyncio.run(evaluate_monaco_data(data))

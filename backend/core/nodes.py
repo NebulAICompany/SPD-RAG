@@ -20,7 +20,7 @@ from backend.core.prompts import (
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from backend.pipeline.vector import generate_embeddings
-from backend.core.state import AgentState, SubAgentInput, Summary, TodoItem
+from backend.core.state import AgentState, AgentAction, SubAgentInput, Summary, TodoItem
 from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
 from backend.shared.logger import get_logger
 from backend.core.tools.rag import search_specific_document_for_research
@@ -94,10 +94,6 @@ def _group_by_tokens(
                 if c2 in valid_roots:
                     valid_roots.remove(c2)
                 valid_roots.add(new_node)
-            else:
-                pass
-        else:
-            pass
 
     batches = []
     for root in valid_roots:
@@ -111,12 +107,14 @@ def _group_by_tokens(
 async def _summarize_batch_findings(
     findings_batch: List[str],
     root_query: str,
+    synthesis_directive: str = "",
 ) -> str:
     """Summarize a batch of findings into a single merged summary."""
     batch_text = "\n\n---\n\n".join(findings_batch)
     prompt_content = SYNTHESIS_PROMPT.format(
         findings=batch_text,
         query=root_query,
+        synthesis_directive=synthesis_directive,
     )
 
     response = await RESEARCH_LLM_REASONING.ainvoke(
@@ -129,6 +127,7 @@ async def recursive_summarize_findings(
     raw_findings: List[str],
     root_query: str,
     target_batch_tokens: int = 1200,
+    synthesis_directive: str = "",
 ) -> str:
     """Hybrid Similarity-Ordered Recursive Summarization.
 
@@ -170,7 +169,11 @@ async def recursive_summarize_findings(
         logger.info(f"   📦 Formed {len(batches)} batch(es) for LLM synthesis")
 
         tasks = [
-            _summarize_batch_findings(batch, root_query=root_query)
+            _summarize_batch_findings(
+                batch,
+                root_query=root_query,
+                synthesis_directive=synthesis_directive,
+            )
             for batch in batches
             if batch
         ]
@@ -181,10 +184,15 @@ async def recursive_summarize_findings(
 
 
 class WriteTodos(BaseModel):
-    """Tool for defining tasks that sub-agents must execute on their assigned documents."""
+    """Structured output schema for the orchestrator to define tasks for sub-agents."""
 
     sub_agent_todos: List[TodoItem] = Field(
         description="A list of specific tasks that EVERY sub-agent must execute for their assigned document. Each item must have a 'task' and a 'status' (default 'pending')."
+    )
+    synthesis_directive: str = Field(
+        description=(
+            "A concise instruction (2-4 sentences) for the downstream synthesizer: the main goal, what to prioritize, and how to structure the merged output."
+        )
     )
 
 
@@ -192,10 +200,10 @@ async def orchestrator_node(
     state: AgentState, config: RunnableConfig
 ) -> Dict[str, Any]:
     """
-    Defines tasks for sub-agents to execute on their assigned documents.
+    Defines tasks for sub-agents based on the user query.
 
-    Binds a WriteTodos tool to the LLM to generate sub_agent_todos based
-    on the user query and available documents.
+    Uses structured output (no tool binding) so the LLM always returns a
+    well-formed WriteTodos object deterministically.
 
     Args:
         state: Current agent state.
@@ -206,105 +214,170 @@ async def orchestrator_node(
     """
     messages = state["messages"]
 
-    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([WriteTodos], tool_choice="auto")
-    
-    response = await llm_with_tools.ainvoke(
-        [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
-    )
-
-    updates: Dict[str, Any] = {"messages": [response]}
-
-    if response.tool_calls:
-        for tool_call in response.tool_calls:
-            if tool_call["name"] == "WriteTodos":
-                sub_todos_raw = tool_call["args"].get("sub_agent_todos", [])
-                if sub_todos_raw:
-                    updates["sub_agent_todos"] = [TodoItem(**t) for t in sub_todos_raw]
-
-    return updates
-
-
-async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
-    """
-    Processes a document query using an agentic RAG workflow.
-
-    This node acts as a specialized sub-agent that:
-    1. Receives a topic/document ID.
-    2. Uses the LLM to formulate a search query for the `search_local_documents` tool.
-    3. Executes the tool to retrieve information.
-    4. Synthesizes the findings into a structured Summary.
-
-    Args:
-        input_data: SubAgentInput containing the document_name (used as research topic).
-
-    Returns:
-        State update with the Summary added to global_context.
-    """
-    from langchain_core.messages import ToolMessage
-
-    doc_name = input_data["document_name"]
-    todos_list = input_data.get("todos", [])
-
-    # Format TodoItems into a string list for the prompt
-    # todos_list is a list of TodoItem objects (or dicts if not pushed as objects)
-    todos_str = ""
-    if todos_list:
-        todos_str = "\n".join(
-            [
-                f"{i+1}. [ ] {t.task if hasattr(t, 'task') else t.get('task')}"
-                for i, t in enumerate(todos_list)
-            ]
-        )
-    else:
-        todos_str = "No specific sub-tasks provided."
-
-    model_with_tools = RESEARCH_LLM_FAST.bind_tools(
-        [search_specific_document_for_research]
-    )
-
-    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
-    messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(
-            content=f"Research Topic: {doc_name}\n\n**Orchestrator Assigned Tasks**:\nYou must address the following points about this document:\n{todos_str}"
-        ),
-    ]
-
-    ai_msg = await model_with_tools.ainvoke(messages)
-    messages.append(ai_msg)
-
-    if ai_msg.tool_calls:
-        for tool_call in ai_msg.tool_calls:
-            if tool_call["name"] == "search_specific_document":
-                tool_output = search_specific_document_for_research.invoke(
-                    tool_call["args"]
-                )
-
-                messages.append(
-                    ToolMessage(
-                        content=str(tool_output),
-                        name=tool_call["name"],
-                        tool_call_id=tool_call["id"],
-                    )
-                )
-
-    extractor = RESEARCH_LLM_REASONING.with_structured_output(
-        Summary,
+    todo_writer = RESEARCH_LLM_REASONING.with_structured_output(
+        WriteTodos,
         method="function_calling",
         include_raw=False,
     ).with_retry(
         stop_after_attempt=3,
-        retry_if_exception_type=(
-            ValueError,
-            ValidationError,
-            OutputParserException,
-        ),
+        retry_if_exception_type=(ValueError, ValidationError, OutputParserException),
     )
-    summary = await extractor.ainvoke(messages)
 
-    summary.document_name = doc_name
+    result = await todo_writer.ainvoke(
+        [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
+    )
 
-    return {"global_context": [summary]}
+    logger.info(f"🎯 SYNTHESIS DIRECTIVE created: {result.synthesis_directive}")
+    logger.info(f"📝 Generated {len(result.sub_agent_todos)} sub-agent todos")
+
+    return {
+        "messages": [
+            AIMessage(
+                content=f"Prepared {len(result.sub_agent_todos)} research task(s) for sub-agents."
+            )
+        ],
+        "sub_agent_todos": result.sub_agent_todos,
+        "synthesis_directive": result.synthesis_directive,
+    }
+
+
+async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
+    """
+    Processes a document using an RLM-inspired iterative retrieval loop.
+
+    The LLM fully controls iteration: it outputs a structured AgentAction each
+    turn. The external loop executes the search and feeds results back, or exits
+    when the LLM signals action="finalize". No tools are ever bound to the LLM.
+
+    A high safety ceiling (SAFETY_LIMIT) exists only as an emergency fallback to
+    prevent runaway costs — the LLM is expected to finalize well before it.
+
+    Args:
+        input_data: SubAgentInput containing the document_name and assigned todos.
+
+    Returns:
+        State update with the Summary added to global_context.
+    """
+    SAFETY_LIMIT = 50
+
+    doc_name = input_data["document_name"]
+    todos_list = input_data.get("todos", [])
+
+    todos_str = (
+        "\n".join(f"{i + 1}. {t.task}" for i, t in enumerate(todos_list))
+        if todos_list
+        else "No specific sub-tasks provided."
+    )
+
+    system_prompt = RESEARCH_SYSTEM_PROMPT.format(file_name=doc_name)
+    messages: List = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(
+            content=(
+                f"**Orchestrator Assigned Tasks**:\n{todos_str}\n\n"
+                f"Begin your investigation. Issue SEARCH actions to retrieve "
+                f"information, then FINALIZE once all tasks are covered."
+            )
+        ),
+    ]
+
+    action_extractor = RESEARCH_LLM_FAST.with_structured_output(
+        AgentAction,
+        method="function_calling",
+        include_raw=False,
+    ).with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(ValueError, ValidationError, OutputParserException),
+    )
+
+    iteration = 0
+    while True:
+        iteration += 1
+
+        if iteration > SAFETY_LIMIT:
+            logger.error(
+                f"[{doc_name}] Safety ceiling of {SAFETY_LIMIT} iterations reached — "
+                f"LLM never issued 'finalize'. Forcing extraction."
+            )
+            messages.append(
+                HumanMessage(
+                    content="You have used the maximum number of searches. "
+                    "You MUST finalize your findings now."
+                )
+            )
+            try:
+                action = await action_extractor.ainvoke(messages)
+                findings = action.findings or "Safety limit reached; partial findings only."
+            except Exception as e:
+                logger.error(f"[{doc_name}] Forced finalization failed: {e}")
+                findings = "Extraction failed after safety limit."
+            return {
+                "global_context": [Summary(document_name=doc_name, findings=findings)]
+            }
+
+        try:
+            action: AgentAction = await action_extractor.ainvoke(messages)
+        except Exception as e:
+            logger.error(
+                f"[{doc_name}] AgentAction parsing failed (iter {iteration}): {e}. "
+                f"Aborting loop."
+            )
+            return {
+                "global_context": [
+                    Summary(
+                        document_name=doc_name,
+                        findings="Action parsing failed; no findings extracted.",
+                    )
+                ]
+            }
+
+        logger.info(
+            f"[{doc_name}] Iter {iteration} — "
+            f"action={action.action!r} | reasoning={action.reasoning!r}"
+        )
+
+        if action.action == "finalize":
+            if not action.findings:
+                logger.warning(
+                    f"[{doc_name}] LLM finalized with empty findings (iter {iteration})."
+                )
+            return {
+                "global_context": [
+                    Summary(
+                        document_name=doc_name,
+                        findings=action.findings or "No findings extracted.",
+                    )
+                ]
+            }
+
+        if not action.query:
+            logger.warning(
+                f"[{doc_name}] LLM issued 'search' with no query (iter {iteration})."
+            )
+            messages.append(
+                HumanMessage(
+                    content="Your last action was 'search' but the `query` field was "
+                    "empty. Please provide a specific search string, or finalize if "
+                    "you have gathered enough information."
+                )
+            )
+            continue
+
+        search_results = await search_specific_document_for_research.ainvoke(
+            {"query": action.query, "file_name": doc_name}
+        )
+        logger.info(f"[{doc_name}] Search query: '{action.query}'")
+
+        messages.append(
+            AIMessage(
+                content=f"[SEARCH] Reasoning: {action.reasoning}\nQuery: {action.query}"
+            )
+        )
+        messages.append(
+            HumanMessage(
+                content=f"Search results for '{action.query}':\n\n{search_results}"
+            )
+        )
 
 
 async def synthesis_node(
@@ -323,10 +396,7 @@ async def synthesis_node(
         Command routing to END with final report in messages.
     """
     global_context = state.get("global_context", [])
-    selected_docs = state.get("selected_documents", [])
-
-    if len(global_context) < len(selected_docs):
-        return Command(goto=END)
+    synthesis_directive = state.get("synthesis_directive", "")
 
     root_query = ""
     for msg in state.get("messages", []):
@@ -336,16 +406,14 @@ async def synthesis_node(
 
     if global_context:
         raw_findings_chunks: List[str] = [
-            (
-                f"Document: {s.document_name}\n"
-                f"Findings:\n{s.findings}"
-            )
+            f"Document: {s.document_name}\nFindings:\n{s.findings}"
             for s in global_context
         ]
 
         merged_findings = await recursive_summarize_findings(
             raw_findings_chunks,
             root_query=root_query,
+            synthesis_directive=synthesis_directive,
         )
     else:
         merged_findings = "No document findings available."
@@ -353,6 +421,4 @@ async def synthesis_node(
     response = AIMessage(content=merged_findings)
 
     return Command(goto=END, update={"messages": [response]})
-
-
 
