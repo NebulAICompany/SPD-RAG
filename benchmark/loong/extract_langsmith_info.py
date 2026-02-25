@@ -17,6 +17,7 @@ def summarize_run(run) -> dict:
 
     total_cost = getattr(run, "total_cost", None)  # Decimal or float, may be None [web:23]
     total_cost_usd = float(total_cost) if total_cost is not None else None
+    latency = run.latency
 
     return {
         "run_id": str(run.id),
@@ -25,6 +26,7 @@ def summarize_run(run) -> dict:
         "output_tokens": output_tokens,
         "total_tokens": total_tokens,
         "total_cost_usd": total_cost_usd,
+        "latency": latency,
     }
 
 
@@ -48,10 +50,16 @@ def get_run_usage(
     # Most recent runs: order by start_time desc, limit = n_recent
     runs_iter = client.list_runs(
         project_name=project_name,
-        is_root=True,           # often you only care about root traces; drop if you want all [web:19]
+        #is_root=True,           # often you only care about root traces; drop if you want all [web:19]
         order_by="-start_time",  # descending, newest first (string form per docs) [web:19]
         limit=n_recent,         # only fetch N most recent runs [web:19]
     )
+    a = 0
+    for i in runs_iter:
+        if a==4:
+            print(i)
+            break
+        a += 1
 
     return [summarize_run(r) for r in runs_iter]
 
@@ -60,7 +68,11 @@ def get_run_usage(
 
 
 # 2) Most recent 3 runs in a project
-recent = get_run_usage(project_name=PROJECT_NAME, n_recent=2)
-for r in recent:
-    print(r)
+recent = get_run_usage(project_name=PROJECT_NAME, n_recent=50)
+# count = 20
+# while count > 0:
+#     r = recent.pop(0)
+#     if r["name"] != "ChatOpenAI":
+#         # print(r)
+#         count -= 1
     

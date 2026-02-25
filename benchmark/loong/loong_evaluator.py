@@ -245,7 +245,7 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
             "messages": [HumanMessage(content=prompt)],
             "selected_documents": doc_filenames,
         },
-        config={"configurable": {"thread_id": f"loong_{uuid.uuid4().hex[:12]}"}},
+        config={"configurable": {"thread_id": f"loong_{uuid.uuid4().hex[:12]}"}, "metadata": {"model": "gemini-2.5-pro"}},
     )
     latency = time.perf_counter() - start
 

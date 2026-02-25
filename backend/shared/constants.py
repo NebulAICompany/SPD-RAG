@@ -45,7 +45,7 @@ GPT5_MINI = ChatOpenAI(
 )
 
 GEMINI_25_FLASH = RobustChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-pro",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
