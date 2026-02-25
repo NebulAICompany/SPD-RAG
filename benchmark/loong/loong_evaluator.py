@@ -48,6 +48,7 @@ from backend.pipeline.vector import VectorStorePipeline
 
 DEFAULT_DATA = PROJECT_ROOT / "benchmark" / "loong" / "data" / "loong_set1.jsonl"
 DEFAULT_RESULTS = PROJECT_ROOT / "benchmark" / "loong" / "loong_results.jsonl"
+DEFAULT_AGENTIC_RESULTS = PROJECT_ROOT / "benchmark" / "loong" / "agentic_rag_results.jsonl"
 
 # ── Tokenizer ──────────────────────────────────────────────────────────────────
 
@@ -310,6 +311,19 @@ async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
         "completion_tokens": count_tokens(raw_output),
     }
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENTIC RAG BASELINE INFERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
+    """Run the Agentic RAG baseline on a Loong task prompt."""
+    from benchmark.agentic_rag import run_agentic_rag
+
+    return await run_agentic_rag(query=prompt, selected_files=doc_filenames)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # LLM-AS-JUDGE (Loong Appendix A)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -443,15 +457,26 @@ async def evaluate(
     judge_model: str = "gpt-5",
     resume: bool = False,
     baseline: bool = False,
+    agentic: bool = False,
 ):
     """Run the full Loong evaluation pipeline.
 
+    Three inference modes (mutually exclusive; ``agentic`` takes priority over
+    ``baseline`` if both are set):
+
+    * **SPD-RAG** (default) — multi-agent, per-document sub-agents, oracle
+      document filtering.  Requires ``--upload-docs``.
+    * **Baseline LLM** (``--baseline``) — all oracle docs concatenated into
+      context, single LLM call.  No vectorstore needed.
+    * **Agentic RAG** (``--agentic``) — single agent, iterative retrieval
+      scoped to the oracle documents for the task.  Requires ``--upload-docs``.
+
     Steps for each task:
-    1. Run SPD-RAG (or baseline LLM) with the task prompt and oracle documents
-    2. Send response to the Loong LLM judge (Appendix A)
-    3. Parse the 0-100 score
-    4. Log per-question results to JSONL
-    5. Print aggregate summary at the end
+    1. Run the selected inference mode with the task prompt and oracle documents.
+    2. Send the response to the Loong LLM judge (Appendix A).
+    3. Parse the 0-100 score.
+    4. Append the result to the JSONL results file.
+    5. Print an aggregate summary at the end.
     """
     data = load_data(data_path)
     print(f"Loaded {len(data)} tasks from {data_path}")
@@ -488,7 +513,12 @@ async def evaluate(
         print("No tasks to evaluate.")
         return
 
-    mode_label = "Baseline LLM" if baseline else "SPD-RAG"
+    if agentic:
+        mode_label = "Agentic RAG"
+    elif baseline:
+        mode_label = "Baseline LLM"
+    else:
+        mode_label = "SPD-RAG"
     print(f"Inference mode: {mode_label}")
 
     if upload_docs:
@@ -519,9 +549,10 @@ async def evaluate(
             print(f"   Q: {question[:100]}...")
             print(f"   Docs: {len(doc_filenames)}")
 
-            # Step 1: Run inference (SPD-RAG or baseline)
             try:
-                if baseline:
+                if agentic:
+                    rag_result = await run_agentic_rag_loong(prompt, doc_filenames)
+                elif baseline:
                     rag_result = await run_baseline_llm(task)
                 else:
                     rag_result = await run_spd_rag(prompt, doc_filenames)
@@ -530,7 +561,6 @@ async def evaluate(
                 continue
             print(f"   Latency: {rag_result['latency']:.1f}s")
 
-            # Step 2: Run Loong LLM judge
             gold_str = format_answer(answer)
             try:
                 judge_result = await run_judge(
@@ -545,10 +575,9 @@ async def evaluate(
             is_perfect = score == 100
             print(f"   Score: {score}/100{' (PERFECT)' if is_perfect else ''}")
 
-            # Step 3: Save result
             result_entry = {
                 "id": task_id,
-                "mode": "baseline" if baseline else "spd_rag",
+                "mode": "agentic_rag" if agentic else ("baseline" if baseline else "spd_rag"),
                 "question": question,
                 "level": level_num,
                 "level_name": level_name,
@@ -562,13 +591,13 @@ async def evaluate(
                 "latency": rag_result["latency"],
                 "prompt_tokens": rag_result["prompt_tokens"],
                 "completion_tokens": rag_result["completion_tokens"],
+                "iterations": rag_result.get("iterations"),
                 "raw_judge_output": judge_result["raw_judge_output"],
             }
             f.write(json.dumps(result_entry, ensure_ascii=False) + "\n")
             f.flush()
             all_results.append(result_entry)
 
-    # Step 4: Print summary
     if all_results:
         _print_summary(all_results)
         print(f"\n  Results saved to: {results_path}")
@@ -582,11 +611,20 @@ async def evaluate(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Loong Benchmark Evaluator for SPD-RAG",
+        description="Loong Benchmark Evaluator — SPD-RAG, Agentic RAG, and Baseline LLM",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
-  python benchmark/loong/loong_evaluator.py --data benchmark/loong/data/loong_set1.jsonl --upload-docs --limit 3
+  # SPD-RAG (default)
+  python benchmark/loong/loong_evaluator.py --upload-docs --limit 3
+
+  # Agentic RAG baseline (single agent, global search)
+  python benchmark/loong/loong_evaluator.py --agentic --upload-docs --limit 3
+
+  # Baseline LLM (full context, no retrieval)
+  python benchmark/loong/loong_evaluator.py --baseline --limit 3
+
+  # Filter and summarise
   python benchmark/loong/loong_evaluator.py --level 1 --language en --limit 10
   python benchmark/loong/loong_evaluator.py --summarize benchmark/loong/loong_results.jsonl
 """,
@@ -596,8 +634,12 @@ Examples:
         help="Path to JSONL data file (default: loong_set1.jsonl)",
     )
     parser.add_argument(
-        "--results", default=str(DEFAULT_RESULTS),
-        help="Path to write/append results (default: loong_results.jsonl)",
+        "--results", default=None,
+        help=(
+            "Path to write/append results. Defaults to loong_results.jsonl "
+            "(SPD-RAG), agentic_rag_results.jsonl (--agentic), or "
+            "baseline_loong_results.jsonl (--baseline)."
+        ),
     )
     parser.add_argument(
         "--upload-docs", action="store_true",
@@ -622,9 +664,17 @@ Examples:
     parser.add_argument(
         "--baseline", action="store_true",
         help=(
-            "Use baseline LLM inference instead of SPD-RAG: all oracle docs are "
-            "concatenated into the context and sent to RESEARCH_LLM_REASONING in "
-            "a single call (no vector store needed)."
+            "Use baseline LLM inference: all oracle docs are concatenated into "
+            "the context and sent to RESEARCH_LLM_REASONING in a single call "
+            "(no vector store needed)."
+        ),
+    )
+    parser.add_argument(
+        "--agentic", action="store_true",
+        help=(
+            "Use Agentic RAG inference: a single agent iteratively searches the "
+            "oracle documents for each task (same document set as SPD-RAG, but "
+            "one agent instead of N). Requires --upload-docs on the first run."
         ),
     )
     parser.add_argument(
@@ -647,10 +697,20 @@ Examples:
     if args.summarize:
         summarize_results(args.summarize)
     else:
+        # Resolve the default results path based on the chosen inference mode
+        if args.results is not None:
+            results_path = args.results
+        elif args.agentic:
+            results_path = str(DEFAULT_AGENTIC_RESULTS)
+        elif args.baseline:
+            results_path = str(PROJECT_ROOT / "baseline_loong_results.jsonl")
+        else:
+            results_path = str(DEFAULT_RESULTS)
+
         asyncio.run(
             evaluate(
                 data_path=args.data,
-                results_path=args.results,
+                results_path=results_path,
                 upload_docs=args.upload_docs,
                 level=args.level,
                 language=args.language,
@@ -659,5 +719,6 @@ Examples:
                 judge_model=args.judge_model,
                 resume=args.resume,
                 baseline=args.baseline,
+                agentic=args.agentic,
             )
         )
