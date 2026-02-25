@@ -71,10 +71,18 @@ def get_run_usage(
 
 # 2) Most recent 3 runs in a project
 recent = get_run_usage(project_name=PROJECT_NAME, n_recent=100)
-count = 20
+count = 10
 while count > 0:
     r = recent.pop(0)
     if r["name"] != "ChatOpenAI" and r["model"] == "gemini-2.5-pro" and r["is_error"] == False:
-        print(r)
+        # print(r)
         count -= 1
-    
+
+from pathlib import Path
+import sys
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from backend.shared.constants import RESEARCH_LLM_REASONING
+print(RESEARCH_LLM_REASONING.model)

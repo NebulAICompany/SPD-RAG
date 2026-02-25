@@ -43,6 +43,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.pipeline.vector import VectorStorePipeline
+from backend.shared.constants import RESEARCH_LLM_REASONING
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
@@ -225,7 +226,7 @@ async def upload_documents(data: List[Dict[str, Any]]):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
+async def run_spd_rag(prompt: str, doc_filenames: List[str], task_id: str) -> Dict[str, Any]:
     """Run the SPD-RAG multi-agent system on a Loong task.
 
     Args:
@@ -245,7 +246,7 @@ async def run_spd_rag(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
             "messages": [HumanMessage(content=prompt)],
             "selected_documents": doc_filenames,
         },
-        config={"configurable": {"thread_id": f"loong_{uuid.uuid4().hex[:12]}"}, "metadata": {"model": "gemini-2.5-pro"}},
+        config={"configurable": {"thread_id": f"loong_{task_id}"}, "metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "spd_rag", "task_id": task_id}},
     )
     latency = time.perf_counter() - start
 
@@ -286,14 +287,13 @@ async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
     sends the whole thing to RESEARCH_LLM_REASONING in a single call.
     Returns the same dict shape as run_spd_rag for drop-in use in evaluate().
     """
-    from backend.shared.constants import RESEARCH_LLM_REASONING
 
     docs_text = "".join(task["docs"])
     full_prompt = f"{docs_text}\n{task['prompt']}"
     prompt_tokens = count_tokens(full_prompt)
 
     start = time.perf_counter()
-    response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt)
+    response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "baseline_llm", "task_id": task["id"]}})
     latency = time.perf_counter() - start
 
     content = response.content
@@ -317,11 +317,11 @@ async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str]) -> Dict[str, Any]:
+async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str], task_id: str) -> Dict[str, Any]:
     """Run the Agentic RAG baseline on a Loong task prompt."""
     from benchmark.agentic_rag import run_agentic_rag
 
-    return await run_agentic_rag(query=prompt, selected_files=doc_filenames)
+    return await run_agentic_rag(query=prompt, selected_files=doc_filenames, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "agentic_rag", "task_id": task_id}})
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -551,11 +551,11 @@ async def evaluate(
 
             try:
                 if agentic:
-                    rag_result = await run_agentic_rag_loong(prompt, doc_filenames)
+                    rag_result = await run_agentic_rag_loong(prompt, doc_filenames, task_id)
                 elif baseline:
                     rag_result = await run_baseline_llm(task)
                 else:
-                    rag_result = await run_spd_rag(prompt, doc_filenames)
+                    rag_result = await run_spd_rag(prompt, doc_filenames, task_id)
             except Exception as e:
                 print(f"   [ERROR] {mode_label} failed: {e}")
                 continue
