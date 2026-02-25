@@ -14,7 +14,7 @@ logger = get_logger("RAG_TOOL")
     parse_docstring=True,
     response_format="content",
 )
-def search_specific_document_for_research(
+async def search_specific_document_for_research(
     query: str,
     file_name: str,
 ) -> str:
