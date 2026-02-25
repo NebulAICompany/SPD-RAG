@@ -48,8 +48,15 @@ from backend.shared.constants import RESEARCH_LLM_REASONING
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
 DEFAULT_DATA = PROJECT_ROOT / "benchmark" / "loong" / "data" / "loong_set1.jsonl"
-DEFAULT_RESULTS = PROJECT_ROOT / "benchmark" / "loong" / "loong_results.jsonl"
-DEFAULT_AGENTIC_RESULTS = PROJECT_ROOT / "benchmark" / "loong" / "agentic_rag_results.jsonl"
+
+MODE_CHOICES = ("spd_rag", "baseline", "agentic", "normal_rag")
+
+MODE_DEFAULT_RESULTS = {
+    "spd_rag": str(PROJECT_ROOT / "benchmark" / "loong" / "spd_rag_results.jsonl"),
+    "baseline": str(PROJECT_ROOT / "benchmark" / "loong" / "baseline_results.jsonl"),
+    "agentic": str(PROJECT_ROOT / "benchmark" / "loong" / "agentic_rag_results.jsonl"),
+    "normal_rag": str(PROJECT_ROOT / "benchmark" / "loong" / "normal_rag_results.jsonl"),
+}
 
 # ── Tokenizer ──────────────────────────────────────────────────────────────────
 
@@ -486,20 +493,19 @@ async def evaluate(
     limit: Optional[int] = None,
     judge_model: str = "gpt-5",
     resume: bool = False,
-    baseline: bool = False,
-    agentic: bool = False,
+    mode: str = "spd_rag",
 ):
     """Run the full Loong evaluation pipeline.
 
-    Three inference modes (mutually exclusive; ``agentic`` takes priority over
-    ``baseline`` if both are set):
-
-    * **SPD-RAG** (default) — multi-agent, per-document sub-agents, oracle
+    Inference modes (``--mode``):
+    * **spd_rag** (default) — multi-agent, per-document sub-agents, oracle
       document filtering.  Requires ``--upload-docs``.
-    * **Baseline LLM** (``--baseline``) — all oracle docs concatenated into
-      context, single LLM call.  No vectorstore needed.
-    * **Agentic RAG** (``--agentic``) — single agent, iterative retrieval
-      scoped to the oracle documents for the task.  Requires ``--upload-docs``.
+    * **baseline** — all oracle docs concatenated into context, single LLM call.
+      No vectorstore needed.
+    * **agentic** — single agent, iterative retrieval scoped to the oracle
+      documents for the task.  Requires ``--upload-docs``.
+    * **normal_rag** — retrieve chunks from oracle docs, concatenate, single LLM
+      call.  Requires ``--upload-docs``.
 
     Steps for each task:
     1. Run the selected inference mode with the task prompt and oracle documents.
@@ -543,16 +549,17 @@ async def evaluate(
         print("No tasks to evaluate.")
         return
 
-    if agentic:
-        mode_label = "Agentic RAG"
-    elif baseline:
-        mode_label = "Baseline LLM"
-    else:
-        mode_label = "SPD-RAG"
+    MODE_LABELS = {
+        "spd_rag": "SPD-RAG",
+        "baseline": "Baseline LLM",
+        "agentic": "Agentic RAG",
+        "normal_rag": "Normal RAG",
+    }
+    mode_label = MODE_LABELS.get(mode, mode)
     print(f"Inference mode: {mode_label}")
 
     if upload_docs:
-        if baseline:
+        if mode == "baseline":
             print("(Skipping vector store upload — not needed for baseline mode)")
         else:
             print("\n── Uploading oracle documents to vector store ──")
@@ -580,12 +587,16 @@ async def evaluate(
             print(f"   Docs: {len(doc_filenames)}")
 
             try:
-                if agentic:
-                    rag_result = await run_agentic_rag_loong(prompt, doc_filenames, task_id)
-                elif baseline:
-                    rag_result = await run_baseline_llm(task)
-                else:
+                if mode == "spd_rag":
                     rag_result = await run_spd_rag(prompt, doc_filenames, task_id)
+                elif mode == "baseline":
+                    rag_result = await run_baseline_llm(task)
+                elif mode == "agentic":
+                    rag_result = await run_agentic_rag_loong(prompt, doc_filenames, task_id)
+                elif mode == "normal_rag":
+                    rag_result = await run_normal_rag(task)
+                else:
+                    raise ValueError(f"Unknown mode: {mode}")
             except Exception as e:
                 print(f"   [ERROR] {mode_label} failed: {e}")
                 continue
@@ -607,7 +618,7 @@ async def evaluate(
 
             result_entry = {
                 "id": task_id,
-                "mode": "agentic_rag" if agentic else ("baseline" if baseline else "spd_rag"),
+                "mode": mode,
                 "question": question,
                 "level": level_num,
                 "level_name": level_name,
@@ -648,11 +659,14 @@ Examples:
   # SPD-RAG (default)
   python benchmark/loong/loong_evaluator.py --upload-docs --limit 3
 
-  # Agentic RAG baseline (single agent, global search)
-  python benchmark/loong/loong_evaluator.py --agentic --upload-docs --limit 3
+  # Agentic RAG
+  python benchmark/loong/loong_evaluator.py --mode agentic --upload-docs --limit 3
 
   # Baseline LLM (full context, no retrieval)
-  python benchmark/loong/loong_evaluator.py --baseline --limit 3
+  python benchmark/loong/loong_evaluator.py --mode baseline --limit 3
+
+  # Normal RAG (retrieve + single LLM call)
+  python benchmark/loong/loong_evaluator.py --mode normal_rag --upload-docs --limit 3
 
   # Filter and summarise
   python benchmark/loong/loong_evaluator.py --level 1 --language en --limit 10
@@ -666,9 +680,8 @@ Examples:
     parser.add_argument(
         "--results", default=None,
         help=(
-            "Path to write/append results. Defaults to loong_results.jsonl "
-            "(SPD-RAG), agentic_rag_results.jsonl (--agentic), or "
-            "baseline_loong_results.jsonl (--baseline)."
+            "Path to write/append results. Defaults depend on --mode "
+            "(see MODE_DEFAULT_RESULTS)."
         ),
     )
     parser.add_argument(
@@ -692,19 +705,9 @@ Examples:
         help="Max number of tasks to evaluate (for quick testing)",
     )
     parser.add_argument(
-        "--baseline", action="store_true",
+        "--mode", default="spd_rag", choices=MODE_CHOICES,
         help=(
-            "Use baseline LLM inference: all oracle docs are concatenated into "
-            "the context and sent to RESEARCH_LLM_REASONING in a single call "
-            "(no vector store needed)."
-        ),
-    )
-    parser.add_argument(
-        "--agentic", action="store_true",
-        help=(
-            "Use Agentic RAG inference: a single agent iteratively searches the "
-            "oracle documents for each task (same document set as SPD-RAG, but "
-            "one agent instead of N). Requires --upload-docs on the first run."
+            "Inference mode: spd_rag (default), baseline, agentic, or normal_rag."
         ),
     )
     parser.add_argument(
@@ -727,15 +730,7 @@ Examples:
     if args.summarize:
         summarize_results(args.summarize)
     else:
-        # Resolve the default results path based on the chosen inference mode
-        if args.results is not None:
-            results_path = args.results
-        elif args.agentic:
-            results_path = str(DEFAULT_AGENTIC_RESULTS)
-        elif args.baseline:
-            results_path = str(PROJECT_ROOT / "baseline_loong_results.jsonl")
-        else:
-            results_path = str(DEFAULT_RESULTS)
+        results_path = args.results if args.results is not None else MODE_DEFAULT_RESULTS[args.mode]
 
         asyncio.run(
             evaluate(
@@ -748,7 +743,6 @@ Examples:
                 limit=args.limit,
                 judge_model=args.judge_model,
                 resume=args.resume,
-                baseline=args.baseline,
-                agentic=args.agentic,
+                mode=args.mode,
             )
         )
