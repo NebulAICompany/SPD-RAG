@@ -32,13 +32,11 @@ async def process_file(file_path: str) -> dict:
         
         # 2. Vectorize & Index
         original_stem = Path(file_path).stem
-        file_extension = Path(file_path).suffix.lower()
-        
+
         pipeline = vectorpipe.VectorStorePipeline()
         await pipeline.run(
             text_content=extracted_text,
             document_name=original_stem,
-            file_extension=file_extension
         )
 
         return {

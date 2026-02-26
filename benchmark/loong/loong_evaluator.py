@@ -327,7 +327,7 @@ async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str], task_id: 
     """Run the Agentic RAG baseline on a Loong task prompt."""
     from benchmark.agentic_rag import run_agentic_rag
 
-    return await run_agentic_rag(query=prompt, selected_files=doc_filenames, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "agentic_rag", "task_id": task_id}})
+    return await run_agentic_rag(query=prompt, selected_files=doc_filenames)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # NORMAL RAG INFERENCE
@@ -485,7 +485,7 @@ def _print_summary(results: List[Dict[str, Any]]):
 
 async def evaluate(
     data_path: str = str(DEFAULT_DATA),
-    results_path: str = str(DEFAULT_RESULTS),
+    results_path: str = MODE_DEFAULT_RESULTS["spd_rag"],
     upload_docs: bool = False,
     level: Optional[int] = None,
     language: Optional[str] = None,

@@ -16,7 +16,7 @@ venv.bak/
 
 # Environment variables
 .env
-.env.*
+!.env.example
 
 # Logs
 logs/
@@ -25,6 +25,7 @@ logs/
 # IDE settings
 .vscode/
 .idea/
+.cursor/
 
 # OS generated files
 .DS_Store
@@ -40,7 +41,6 @@ backend/database/charts/
 backend/database/market_data.db
 backend/database/chat_history.db
 backend/database/uploads_tracking.db
-backend/database/balance_payments.db
 backend/database/checkpoints.db
 backend/database/masked_map.json
 
@@ -48,5 +48,10 @@ backend/database/masked_map.json
 backend/database/uploads/
 backend/database/created_documents/
 backend/database/vectorstore/
+test_documents/
+
+# Benchmark result data (generated, not tracked)
+*.jsonl
+!benchmark/**/*.jsonl
 
 data

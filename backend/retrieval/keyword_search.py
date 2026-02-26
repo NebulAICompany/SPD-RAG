@@ -132,36 +132,26 @@ class BM25KeywordSearch:
     def calculate_bm25_score(
         self, query_terms: List[str], doc_id: str
     ) -> Tuple[float, List[str]]:
-        """Calculate BM25 score for a document given query terms"""
+        """Calculate BM25 score for a document given query terms."""
         if doc_id not in self.term_frequencies:
-            # logger.debug(f"Document {doc_id} not found in term frequencies")
-            # logger.debug(f"Term frequencies: {self.term_frequencies}")
             return 0.0, []
-        # logger.debug(f"Calculating BM25 score for document {doc_id}")
+
         doc_tf = self.term_frequencies[doc_id]
         doc_length = self.document_lengths[doc_id]
-        # logger.debug(f"Document ID: {doc_id}")
-        # logger.debug(f"Document TFs: {self.term_frequencies}")
-        # logger.debug(f"Document lengths: {self.document_lengths}")
         matched_terms = []
         score = 0.0
-        # logger.debug(f"Query terms: {query_terms}")
+
         for term in query_terms:
             if term in doc_tf:
                 matched_terms.append(term)
-                # logger.debug(f"Matched term: {term}")
-                # Term frequency in document
                 tf = doc_tf[term]
-                # logger.debug(f"Term frequency: {tf}")
-                # Document frequency (how many docs contain this term)
                 df = self.document_frequencies.get(term, 0)
-                # logger.debug(f"Document frequency: {df}")
                 if df == 0:
                     continue
 
                 # IDF calculation
                 idf = math.log((self.total_documents - df + 0.5) / (df + 0.5))
-                # logger.debug(f"IDF: {idf}")
+
                 # BM25 formula
                 numerator = tf * (self.k1 + 1)
                 denominator = tf + self.k1 * (
@@ -380,7 +370,7 @@ class BM25KeywordSearch:
             if self.index_file.exists():
                 total_size += self.index_file.stat().st_size
             return total_size / (1024 * 1024)
-        except:
+        except Exception:
             return 0.0
 
 

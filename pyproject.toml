@@ -1,8 +1,9 @@
 [project]
-name = "rrm"
+name = "spd-rag"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sub-Agent Per Document Retrieval-Augmented Generation — a multi-agent RAG system with per-document sub-agents and hierarchical recursive summarization."
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "cohere>=5.20.2",
