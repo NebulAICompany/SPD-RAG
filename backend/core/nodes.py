@@ -21,7 +21,11 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from backend.pipeline.vector import generate_embeddings
 from backend.core.state import AgentState, AgentAction, SubAgentInput, Summary, TodoItem
-from backend.shared.constants import RESEARCH_LLM_REASONING, RESEARCH_LLM_FAST
+from backend.shared.constants import (
+    RESEARCH_LLM_REASONING,
+    RESEARCH_LLM_FAST,
+    get_synthesizer_token_limit_for_fast,
+)
 from backend.shared.logger import get_logger
 from backend.core.tools.rag import search_specific_document_for_research
 
@@ -126,7 +130,7 @@ async def _summarize_batch_findings(
 async def recursive_summarize_findings(
     raw_findings: List[str],
     root_query: str,
-    target_batch_tokens: int = 1200,
+    target_batch_tokens: Optional[int] = None,
     synthesis_directive: str = "",
 ) -> str:
     """Hybrid Similarity-Ordered Recursive Summarization.
@@ -134,6 +138,10 @@ async def recursive_summarize_findings(
     Uses sklearn to perform agglomerative clustering on embeddings, then groups
     chunks into maximally-sized batches that respect the similarity hierarchy.
     """
+    if target_batch_tokens is None:
+        synth_limit = get_synthesizer_token_limit_for_fast()
+        target_batch_tokens = synth_limit
+
     current_level: List[str] = list(raw_findings)
     iteration = 0
 
@@ -218,9 +226,6 @@ async def orchestrator_node(
         WriteTodos,
         method="function_calling",
         include_raw=False,
-    ).with_retry(
-        stop_after_attempt=3,
-        retry_if_exception_type=(ValueError, ValidationError, OutputParserException),
     )
 
     result = await todo_writer.ainvoke(
@@ -285,9 +290,6 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         AgentAction,
         method="function_calling",
         include_raw=False,
-    ).with_retry(
-        stop_after_attempt=3,
-        retry_if_exception_type=(ValueError, ValidationError, OutputParserException),
     )
 
     iteration = 0
@@ -307,7 +309,9 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
             )
             try:
                 action = await action_extractor.ainvoke(messages)
-                findings = action.findings or "Safety limit reached; partial findings only."
+                findings = (
+                    action.findings or "Safety limit reached; partial findings only."
+                )
             except Exception as e:
                 logger.error(f"[{doc_name}] Forced finalization failed: {e}")
                 findings = "Extraction failed after safety limit."
@@ -421,4 +425,3 @@ async def synthesis_node(
     response = AIMessage(content=merged_findings)
 
     return Command(goto=END, update={"messages": [response]})
-

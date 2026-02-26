@@ -1,4 +1,5 @@
 import json
+import os
 from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient, models
 from backend.shared.constants import co
@@ -42,18 +43,35 @@ def load_vectorstore(path: str) -> QdrantClient:
     if _qdrant_client is not None:
         return _qdrant_client
 
-    try:
-        _qdrant_client = QdrantClient(path=path)
-        logger.info(f"✅ Vectorstore loaded from {path}")
-        if _qdrant_client.collection_exists(collection_name="documents"):
-            logger.info(
-                f"📦 Contains {_qdrant_client.count(collection_name='documents')} document chunks"
-            )
-        else:
-            logger.info("No collection found")
-        return _qdrant_client
-    except Exception as e:
-        raise RuntimeError(f"Failed to load vectorstore from {path}: {e}") from e
+    qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
+    if qdrant_url:
+        try:
+            _qdrant_client = QdrantClient(url=qdrant_url)
+            logger.info(f"✅ Vectorstore connected to Qdrant server at {qdrant_url}")
+        except Exception as e:
+            raise RuntimeError(f"Failed to connect to Qdrant server at {qdrant_url}: {e}") from e
+    else:
+        try:
+            _qdrant_client = QdrantClient(path=path)
+            logger.info(f"✅ Vectorstore loaded from {path}")
+        except Exception as e:
+            if "already accessed" in str(e):
+                raise RuntimeError(
+                    f"Failed to load vectorstore from {path}: {e}\n"
+                    "Hint: another process (e.g. the backend server) already holds the "
+                    "Qdrant storage lock. Either stop that process before running the "
+                    "evaluator, or run Qdrant as a server and set QDRANT_URL=http://localhost:6333 "
+                    "in your .env so both can share it concurrently."
+                ) from e
+            raise RuntimeError(f"Failed to load vectorstore from {path}: {e}") from e
+
+    if _qdrant_client.collection_exists(collection_name="documents"):
+        logger.info(
+            f"📦 Contains {_qdrant_client.count(collection_name='documents')} document chunks"
+        )
+    else:
+        logger.info("No collection found")
+    return _qdrant_client
 
 
 def get_vectorstore() -> Optional[QdrantClient]:

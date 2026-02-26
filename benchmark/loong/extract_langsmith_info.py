@@ -17,14 +17,18 @@ def summarize_run(run) -> dict:
 
     total_cost = getattr(run, "total_cost", None)  # Decimal or float, may be None [web:23]
     total_cost_usd = float(total_cost) if total_cost is not None else None
+    latency = run.latency
 
     return {
         "run_id": str(run.id),
         "name": run.name,
+        "model": getattr(run, 'metadata')['model'] if getattr(run, 'metadata') and 'model' in getattr(run, 'metadata') else None,
+        "is_error": getattr(run, 'error', None) is not None,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "total_tokens": total_tokens,
         "total_cost_usd": total_cost_usd,
+        "latency": latency,
     }
 
 
@@ -52,6 +56,12 @@ def get_run_usage(
         order_by="-start_time",  # descending, newest first (string form per docs) [web:19]
         limit=n_recent,         # only fetch N most recent runs [web:19]
     )
+    # a = 0
+    # for i in runs_iter:
+    #     if a==1:
+    #         print(i)
+    #         break
+    #     a += 1
 
     return [summarize_run(r) for r in runs_iter]
 
@@ -60,7 +70,19 @@ def get_run_usage(
 
 
 # 2) Most recent 3 runs in a project
-recent = get_run_usage(project_name=PROJECT_NAME, n_recent=2)
-for r in recent:
-    print(r)
-    
+recent = get_run_usage(project_name=PROJECT_NAME, n_recent=100)
+count = 10
+while count > 0:
+    r = recent.pop(0)
+    if r["name"] != "ChatOpenAI" and r["model"] == "gemini-2.5-pro" and r["is_error"] == False:
+        # print(r)
+        count -= 1
+
+from pathlib import Path
+import sys
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from backend.shared.constants import RESEARCH_LLM_REASONING
+print(RESEARCH_LLM_REASONING.model)

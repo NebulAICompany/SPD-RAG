@@ -6,6 +6,7 @@ from pathlib import Path
 from langchain_core.tracers.stdout import ConsoleCallbackHandler
 from langchain_openai import ChatOpenAI
 from backend.utils.google_genai_robust import RobustChatGoogleGenerativeAI
+from backend.shared.constants import RESEARCH_LLM_FAST
 
 load_dotenv()
 
@@ -45,7 +46,7 @@ GPT5_MINI = ChatOpenAI(
 )
 
 GEMINI_25_FLASH = RobustChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-pro",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
@@ -79,3 +80,25 @@ def set_original_user_query(query: Optional[str]) -> None:
 def get_original_user_query() -> Optional[str]:
     """Get the global original user query."""
     return ORIGINAL_USER_QUERY
+
+
+def get_synthesizer_token_limit_for_fast() -> int:
+    """
+    Return a safe synthesizer input-token limit based solely on
+    the currently configured RESEARCH_LLM_FAST model.
+    """
+    max_context_map = {
+        "gpt-5": 400_000,
+        "gpt-5-mini": 400_000,
+        "gemini-2.5-flash": 1_000_000,
+        "gemini-2.5-pro": 1_000_000,
+        "gemini-3-flash": 200_000,
+        "gemini-3-pro": 1_000_000,
+    }
+
+    model_name = getattr(RESEARCH_LLM_FAST, "model_name", None) or getattr(
+        RESEARCH_LLM_FAST, "model", None
+    )
+
+    max_ctx = max_context_map.get(model_name, 128_000)
+    return int(max_ctx * 0.75)

@@ -9,6 +9,7 @@ from typing import Any, AsyncIterator, Iterator, List, Union
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai.chat_models import ChatGoogleGenerativeAIError
 from langchain_core.messages import BaseMessage
 from google.genai.errors import ServerError, ClientError
 
@@ -30,12 +31,20 @@ def _is_retryable(e: Exception) -> bool:
         return getattr(e, "code", 0) in _RETRYABLE_SERVER_CODES
     if isinstance(e, ClientError):
         return getattr(e, "code", 0) in _QUOTA_CLIENT_CODES
+    # langchain_google_genai wraps ClientError/ServerError into ChatGoogleGenerativeAIError
+    if isinstance(e, ChatGoogleGenerativeAIError):
+        msg = str(e)
+        return any(code in msg for code in ("429", "500", "502", "503", "504"))
     return False
 
 
 def _is_quota_error(e: Exception) -> bool:
     """True when rotating to a different API key may help (quota exhausted on this key)."""
-    return isinstance(e, ClientError) and getattr(e, "code", 0) == 429
+    if isinstance(e, ClientError):
+        return getattr(e, "code", 0) == 429
+    if isinstance(e, ChatGoogleGenerativeAIError):
+        return "429" in str(e)
+    return False
 
 
 def _extract_wait_time(e: Exception, attempt: int) -> float:
