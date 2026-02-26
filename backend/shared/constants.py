@@ -6,7 +6,6 @@ from pathlib import Path
 from langchain_core.tracers.stdout import ConsoleCallbackHandler
 from langchain_openai import ChatOpenAI
 from backend.utils.google_genai_robust import RobustChatGoogleGenerativeAI
-from backend.shared.constants import RESEARCH_LLM_FAST
 
 load_dotenv()
 
