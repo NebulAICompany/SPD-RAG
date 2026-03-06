@@ -262,7 +262,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
     Returns:
         State update with the Summary added to global_context.
     """
-    SAFETY_LIMIT = 50
+    SAFETY_LIMIT = 5
 
     doc_name = input_data["document_name"]
     todos_list = input_data.get("todos", [])

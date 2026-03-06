@@ -18,6 +18,9 @@ Investigation principles:
 4. Issue separate queries for different aspects of a task (e.g., definition vs. example vs. limitation).
 5. Keep searching until every task is covered with concrete evidence or confirmed absent.
 6. Do NOT attempt to answer the user query directly — extract raw facts only.
+7. Do not finalize a task as "Not found" after only a single focused search. At least attempt 2 focused searches before concluding information is absent.
+8. Do not focus on very specific terms, but rather on the general context of the task. Always try to find the most relevant information.
+9. You must use AT MOST 5 searches to answer a task. DO NOT OVERUSE THE SEARCH TOOL.
 
 Finalize report format (when action="finalize"):
 For each assigned task, output either:

@@ -8,6 +8,7 @@ from typing import List, Optional
 import asyncio
 import tiktoken
 import hashlib
+import time
 
 logger = get_logger("VECTOR_PIPELINE")
 enc = tiktoken.get_encoding("cl100k_base")
@@ -32,12 +33,21 @@ async def generate_embeddings(texts: List[str]) -> List[List[float]]:
             embedding_types=["float"],
         ).embeddings.float
 
-    batch_size = 96
+    batch_size = 8
     all_embeddings: List[List[float]] = []
 
     for i in range(0, len(texts), batch_size):
         batch = texts[i : i + batch_size]
-        batch_embs = await asyncio.to_thread(_embed_batch, batch)
+        for attempt in range(13):
+            try:
+                batch_embs = await asyncio.to_thread(_embed_batch, batch)
+                break
+            except Exception as e:
+                if "rate limit" in str(e).lower() and attempt < 12:
+                    logger.warning(f"Embed rate limit hit, retrying in 5s... (attempt {attempt + 1}/13)")
+                    await asyncio.sleep(5)
+                else:
+                    raise
         all_embeddings.extend(batch_embs)
 
     return all_embeddings
@@ -98,7 +108,7 @@ class VectorStorePipeline:
         )
 
     def length_function(self, text: str) -> int:
-        return len(enc.encode(text))
+        return len(enc.encode(text, disallowed_special=()))
 
     async def run(self, text_content: str, document_name: str, metadata: Optional[dict] = None):
         """Process text content and index it."""
@@ -135,6 +145,19 @@ class VectorStorePipeline:
                         size=1536, distance=models.Distance.COSINE
                     ),
                 )
+            else:
+                existing = client.count(
+                    collection_name="documents",
+                    count_filter=models.Filter(
+                        must=[models.FieldCondition(
+                            key="metadata.file_name",
+                            match=models.MatchValue(value=document_name),
+                        )]
+                    ),
+                )
+                if existing.count > 0:
+                    logger.info(f"Document '{document_name}' already exists in vectorstore, skipping.")
+                    return
 
             logger.info("Creating embeddings using Cohere embed-v4.0...")
             await self.Embedding.upload_text_embed(client, docs)

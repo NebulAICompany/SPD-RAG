@@ -44,11 +44,15 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from backend.pipeline.vector import VectorStorePipeline
 from backend.shared.constants import RESEARCH_LLM_REASONING
+from backend.shared.logger import get_logger
+
+
+logger = get_logger("LOONG_EVALUATOR")
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
 DEFAULT_DATA = PROJECT_ROOT / "benchmark" / "loong" / "data" / "loong_set1.jsonl"
-
+DEFAULT_RESULTS = PROJECT_ROOT / "benchmark" / "loong" / "loong_results.jsonl"
 MODE_CHOICES = ("spd_rag", "baseline", "agentic", "normal_rag")
 
 MODE_DEFAULT_RESULTS = {
@@ -71,7 +75,7 @@ def _get_encoder() -> tiktoken.Encoding:
 
 
 def count_tokens(text: str) -> int:
-    return len(_get_encoder().encode(text))
+    return len(_get_encoder().encode(text, disallowed_special=()))
 
 
 # ── Task level labels ──────────────────────────────────────────────────────────
@@ -102,11 +106,11 @@ in response to the user question displayed above according to the gold answer. \
 Please use the following listed aspects and their descriptions as evaluation \
 criteria:
     - Accuracy and Hallucinations: The assistant's answer is semantically \
-consistent with the gold answer; The numerical value and order need to be \
+consistent with the gold answer; The numerical value and order (check only if the task requires it) need to be \
 accurate, and there should be no hallucinations.
     - Completeness: Referring to the reference answers, the assistant's answer \
 should contain all the key points needed to answer the user's question; further \
-elaboration on these key points can be omitted.
+elaboration on these key points and minor typos (like non-alphanumeric characters) can be omitted.
 Please rate whether this answer is suitable for the question. Please note that \
 the gold answer can be considered as a correct answer to the question.
 
@@ -221,11 +225,11 @@ async def upload_documents(data: List[Dict[str, Any]]):
                     metadata={"id": task_id, "question": question},
                 )
                 uploaded += 1
-                print(f"  [{uploaded}/{total}] Uploaded: {filename}")
+                logger.info(f"  [{uploaded}/{total}] Uploaded: {filename}")
             except Exception as e:
-                print(f"  [WARN] Failed to upload {filename}: {e}")
+                logger.warning(f"  [WARN] Failed to upload {filename}: {e}")
 
-    print(f"Upload complete: {uploaded}/{total} documents.")
+    logger.info(f"Upload complete: {uploaded}/{total} documents.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -297,8 +301,9 @@ async def run_baseline_llm(task: Dict[str, Any]) -> Dict[str, Any]:
 
     docs_text = "".join(task["docs"])
     full_prompt = f"{docs_text}\n{task['prompt']}"
+    logger.info(f"Prompt length: {len(full_prompt)}")
     prompt_tokens = count_tokens(full_prompt)
-
+    logger.info(f"Prompt tokens: {prompt_tokens}")
     start = time.perf_counter()
     response = await RESEARCH_LLM_REASONING.ainvoke(full_prompt, config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "baseline_llm", "task_id": task["id"]}})
     latency = time.perf_counter() - start
@@ -327,7 +332,7 @@ async def run_agentic_rag_loong(prompt: str, doc_filenames: List[str], task_id: 
     """Run the Agentic RAG baseline on a Loong task prompt."""
     from benchmark.agentic_rag import run_agentic_rag
 
-    return await run_agentic_rag(query=prompt, selected_files=doc_filenames)
+    return await run_agentic_rag(query=prompt, selected_files=doc_filenames, ls_config={"metadata": {"model": RESEARCH_LLM_REASONING.model, "mode": "agentic_rag", "task_id": task_id}})
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # NORMAL RAG INFERENCE
@@ -383,7 +388,12 @@ async def run_judge(
         predicted=predicted,
     )
     response = await llm.ainvoke([HumanMessage(content=prompt)])
-    return parse_judge_response(response.content)
+    content = response.content
+    if isinstance(content, list):
+        text = " ".join(b["text"] for b in content if isinstance(b, dict) and b.get("type") == "text")
+    else:
+        text = content or ""
+    return parse_judge_response(text)
 
 
 def parse_judge_response(text: str) -> Dict[str, Any]:
@@ -434,8 +444,10 @@ def _print_summary(results: List[Dict[str, Any]]):
     avg_score = sum(scores) / n
     perfect_rate = sum(1 for s in scores if s == 100) / n
 
+
+    mode = results[0]["mode"]
     print("\n" + "=" * 65)
-    print("  Loong Evaluation Summary (SPD-RAG, Oracle Documents)")
+    print(f"  Loong Evaluation Summary (mode = {mode})")
     print("=" * 65)
     print(f"  Questions evaluated : {n}")
     print(f"  Avg Score (0-100)   : {avg_score:.2f}")
@@ -469,12 +481,35 @@ def _print_summary(results: List[Dict[str, Any]]):
             print(f"  {lang:25s} : Avg={lang_avg:6.2f}  PR={lang_pr:.4f}  (n={lang_n})")
 
     print("\n  " + "-" * 55)
-    print("  Reference (Loong paper, overall baselines):")
-    print("  Gemini-1.5-pro  : Avg=55.37  PR=0.27")
-    print("  GPT-4o          : Avg=53.47  PR=0.26")
-    print("  Claude3.5-Sonnet: Avg=48.85  PR=0.23")
+    print("  Reference (Loong paper, Set 4 baselines):")
+    print("  Gemini-1.5-pro  : Avg=50.70  PR=0.25")
+    print("  Claude3.5-Haiku: Avg=32.15  PR=0.10")
+    print("  GPT-4o (128K)         : Avg=31.11  PR=0.07")
+    print("  Claude3.5-Sonnet: Avg=30.51  PR=0.08")
     avg_latency = sum(r.get("latency", 0) for r in results) / n
     print(f"\n  Avg Latency (s)  : {avg_latency:.1f}")
+
+    # LangSmith token/cost metrics (only shown if present in results)
+    ls_results = [r for r in results if r.get("ls_total_tokens") is not None]
+    if ls_results:
+        ls_n = len(ls_results)
+        avg_input  = sum(r["ls_input_tokens"]  for r in ls_results) / ls_n
+        avg_output = sum(r["ls_output_tokens"] for r in ls_results) / ls_n
+        avg_total  = sum(r["ls_total_tokens"]  for r in ls_results) / ls_n
+        costs = [r["ls_cost_usd"] for r in ls_results if r.get("ls_cost_usd") is not None]
+        avg_cost   = sum(costs) / len(costs) if costs else None
+        total_cost = sum(costs) if costs else None
+        avg_ls_lat = sum(r["ls_latency"] for r in ls_results) / ls_n
+        print(f"\n  LangSmith metrics   (n={ls_n})")
+        print("  " + "-" * 55)
+        print(f"  Avg Input Tokens    : {avg_input:,.0f}")
+        print(f"  Avg Output Tokens   : {avg_output:,.0f}")
+        print(f"  Avg Total Tokens    : {avg_total:,.0f}")
+        if avg_cost is not None:
+            print(f"  Avg Cost (USD)      : ${avg_cost:.4f}")
+            print(f"  Total Cost (USD)    : ${total_cost:.4f}")
+        print(f"  Avg LS Latency (s)  : {avg_ls_lat:.1f}")
+
     print("=" * 65)
 
 
@@ -515,10 +550,10 @@ async def evaluate(
     5. Print an aggregate summary at the end.
     """
     data = load_data(data_path)
-    print(f"Loaded {len(data)} tasks from {data_path}")
+    logger.info(f"Loaded {len(data)} tasks from {data_path}")
 
     data = filter_data(data, level=level, language=language, offset=offset, limit=limit)
-    print(f"After filtering: {len(data)} tasks", end="")
+    logger.info(f"After filtering: {len(data)} tasks", end="")
     filters = []
     if level is not None:
         filters.append(f"level={level} ({LEVEL_NAMES.get(level, '?')})")
@@ -529,24 +564,24 @@ async def evaluate(
     if limit is not None:
         filters.append(f"limit={limit}")
     if filters:
-        print(f" [{', '.join(filters)}]")
+        logger.info(f" [{', '.join(filters)}]")
     else:
-        print()
+        logger.info("No filters applied")
 
     if resume:
         done_ids = load_evaluated_ids(results_path)
         if done_ids:
             before = len(data)
             data = [d for d in data if d["id"] not in done_ids]
-            print(
+            logger.info(
                 f"Resume mode: skipping {before - len(data)} already-evaluated tasks "
                 f"({len(data)} remaining)."
             )
         else:
-            print("Resume mode: no existing results found, starting fresh.")
+            logger.info("Resume mode: no existing results found, starting fresh.")
 
     if not data:
-        print("No tasks to evaluate.")
+        logger.info("No tasks to evaluate.")
         return
 
     MODE_LABELS = {
@@ -556,15 +591,15 @@ async def evaluate(
         "normal_rag": "Normal RAG",
     }
     mode_label = MODE_LABELS.get(mode, mode)
-    print(f"Inference mode: {mode_label}")
+    logger.info(f"Inference mode: {mode_label}")
 
     if upload_docs:
         if mode == "baseline":
-            print("(Skipping vector store upload — not needed for baseline mode)")
+            logger.info("(Skipping vector store upload — not needed for baseline mode)")
         else:
-            print("\n── Uploading oracle documents to vector store ──")
+            logger.info("\n── Uploading oracle documents to vector store ──")
             await upload_documents(data)
-            print()
+            logger.info("Documents uploaded to vector store")
 
     all_results: List[Dict[str, Any]] = []
 
@@ -580,11 +615,11 @@ async def evaluate(
             doc_filenames = task["doc"]
 
             level_name = LEVEL_NAMES.get(level_num, f"Level {level_num}")
-            print(
+            logger.info(
                 f"\n── [{i + 1}/{len(data)}] {level_name} | {doc_type} | {lang} ──"
             )
-            print(f"   Q: {question[:100]}...")
-            print(f"   Docs: {len(doc_filenames)}")
+            logger.info(f"   Q: {question[:100]}...")
+            logger.info(f"   Docs: {len(doc_filenames)}")
 
             try:
                 if mode == "spd_rag":
@@ -598,9 +633,9 @@ async def evaluate(
                 else:
                     raise ValueError(f"Unknown mode: {mode}")
             except Exception as e:
-                print(f"   [ERROR] {mode_label} failed: {e}")
+                logger.error(f"   [ERROR] {mode_label} failed: {e}")
                 continue
-            print(f"   Latency: {rag_result['latency']:.1f}s")
+            logger.info(f"   Latency: {rag_result['latency']:.1f}s")
 
             gold_str = format_answer(answer)
             try:
@@ -609,12 +644,12 @@ async def evaluate(
                     model=judge_model,
                 )
             except Exception as e:
-                print(f"   [ERROR] Judge failed: {e}")
+                logger.error(f"   [ERROR] Judge failed: {e}")
                 continue
 
             score = judge_result["score"]
             is_perfect = score == 100
-            print(f"   Score: {score}/100{' (PERFECT)' if is_perfect else ''}")
+            logger.info(f"   Score: {score}/100{' (PERFECT)' if is_perfect else ''}")
 
             result_entry = {
                 "id": task_id,
@@ -641,9 +676,9 @@ async def evaluate(
 
     if all_results:
         _print_summary(all_results)
-        print(f"\n  Results saved to: {results_path}")
+        logger.info(f"\n  Results saved to: {results_path}")
     else:
-        print("\nNo results were collected.")
+        logger.info("\nNo results were collected.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

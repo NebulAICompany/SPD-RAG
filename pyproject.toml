@@ -26,4 +26,6 @@ dependencies = [
     "tenacity>=9.1.2",
     "uvicorn>=0.40.0",
     "langsmith>=0.6.8",
+    "matplotlib>=3.10.8",
+    "scipy>=1.17.0",
 ]

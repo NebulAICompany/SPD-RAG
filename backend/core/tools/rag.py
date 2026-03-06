@@ -5,8 +5,21 @@ from backend.retrieval.reranker import rerank
 from backend.shared.logger import get_logger
 from backend.shared.constants import VECTORSTORE_PATH_STR
 from backend.retrieval.retriever import load_vectorstore
+import time
 
 logger = get_logger("RAG_TOOL")
+
+
+def rerank_with_retry(query, doc_contents, with_score=False, top_n=20, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            return rerank(query, doc_contents, with_score=with_score, top_n=top_n)
+        except Exception as e:
+            if "rate limit" in str(e).lower() and attempt < retries - 1:
+                logger.warning(f"Rerank rate limit hit, retrying in {delay}s... (attempt {attempt + 1}/{retries})")
+                time.sleep(delay)
+            else:
+                raise
 
 
 @tool(
@@ -53,7 +66,7 @@ async def search_specific_document_for_research(
             {"content": doc["content"], "metadata": doc["metadata"]}
             for doc in retrieved_docs
         ]
-        reranked_docs = rerank(query, doc_contents, with_score=False, top_n=5)
+        reranked_docs = rerank_with_retry(query, doc_contents, with_score=False, top_n=5)
 
         if not reranked_docs:
             return f"No relevant information found in {file_name} after reranking."
@@ -102,7 +115,7 @@ def perform_normal_rag(query: str, selected_files: List[str]) -> str:
             {"content": doc["content"], "metadata": doc["metadata"]}
             for doc in retrieved_docs
         ]
-        reranked_docs = rerank(query, doc_contents, with_score=False, top_n=5)
+        reranked_docs = rerank_with_retry(query, doc_contents, with_score=False, top_n=20)
 
         if not reranked_docs:
             return f"No relevant information found after reranking."
