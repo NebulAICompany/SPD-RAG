@@ -7,7 +7,7 @@ from langchain_core.tools import tool
 
 from backend.retrieval.reranker import rerank
 from backend.retrieval.retriever import load_vectorstore, retrieve_top_k
-from backend.shared.constants import RESEARCH_LLM_FAST, VECTORSTORE_PATH_STR
+from backend.shared.constants import RESEARCH_LLM_REASONING, VECTORSTORE_PATH_STR
 from backend.shared.logger import get_logger
 
 logger = get_logger("AGENTIC_RAG_BASELINE")
@@ -41,7 +41,7 @@ def _make_search_tool(selected_files: List[str]):
         """Search for information within the task documents.
 
         Args:
-            query: Search query to find relevant information.
+            query: Search query to find relevant information in the task documents.
         """
         try:
             client = load_vectorstore(VECTORSTORE_PATH_STR)
@@ -86,11 +86,12 @@ Your goal is to answer the user's question accurately and completely.
 
 Instructions:
 - Use the search_documents tool to retrieve relevant information before answering.
-- You MUST call the tool at least once before providing your final answer.
-- Issue separate searches for different aspects of the question.
-- Once you have sufficient evidence, provide a clear, complete answer directly (without calling any tool).
-- Preserve exact numbers, names, dates, and technical terms.
-- If the knowledge base does not contain enough information, state that explicitly — do NOT hallucinate.
+- Search thoroughly for different aspects of the question to gather comprehensive evidence.
+- Avoid redundant searches: if you already retrieved information on a topic, use it instead of searching again.
+- Once you have gathered sufficient evidence covering all key aspects, synthesize a complete answer from the retrieved passages.
+- Do NOT continue searching after you have enough information to answer confidently.
+- Preserve exact numbers, names, dates, and technical terms from the retrieved passages.
+- If the knowledge base lacks sufficient information, state that explicitly — do NOT hallucinate.
 - Respond in the same language as the question.
 """
 
@@ -98,7 +99,8 @@ Instructions:
 async def run_agentic_rag(
     query: str,
     selected_files: List[str],
-    max_iterations: int = 20,
+    max_iterations: int = 10,
+    ls_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Run the agentic RAG agent and return ``raw_output``, ``latency``,
     ``prompt_tokens``, ``completion_tokens``, and ``iterations``.
@@ -113,7 +115,9 @@ async def run_agentic_rag(
     start_time = time.perf_counter()
     prompt_tokens = _count_tokens(query)
     search_tool = _make_search_tool(selected_files)
-    llm_with_tools = RESEARCH_LLM_FAST.bind_tools([search_tool], tool_choice="required")
+
+    # First call requires tool usage, then auto to let LLM decide when to stop
+    llm_with_tools = RESEARCH_LLM_REASONING.bind_tools([search_tool], tool_choice="auto")
 
     messages: List[Any] = [
         SystemMessage(content=_SYSTEM_PROMPT),
@@ -140,18 +144,18 @@ async def run_agentic_rag(
                 )
             )
             try:
-                forced = await RESEARCH_LLM_FAST.ainvoke(messages)
-                final_answer = (
-                    forced.content
-                    or "Safety limit reached; answer could not be fully synthesised."
-                )
+                forced = await RESEARCH_LLM_REASONING.ainvoke(messages, config=ls_config)
+                c = forced.content
+                if isinstance(c, list):
+                    c = " ".join(b["text"] for b in c if isinstance(b, dict) and b.get("type") == "text")
+                final_answer = c or "Safety limit reached; answer could not be fully synthesised."
             except Exception as exc:
                 logger.error(f"[AgenticRAG] Forced finalisation failed: {exc}")
                 final_answer = "Answer extraction failed after safety limit."
             break
 
         try:
-            response = await llm_with_tools.ainvoke(messages)
+            response = await llm_with_tools.ainvoke(messages, config=ls_config)
         except Exception as exc:
             logger.error(f"[AgenticRAG] LLM invocation failed (iter {iteration}): {exc}")
             final_answer = "LLM invocation failed; no answer could be produced."
@@ -160,7 +164,10 @@ async def run_agentic_rag(
         messages.append(response)
 
         if not response.tool_calls:
-            final_answer = response.content or "No answer was produced."
+            c = response.content
+            if isinstance(c, list):
+                c = " ".join(b["text"] for b in c if isinstance(b, dict) and b.get("type") == "text")
+            final_answer = c or "No answer was produced."
             break
 
         logger.info(f"[AgenticRAG] Iter {iteration} — {len(response.tool_calls)} tool call(s)")

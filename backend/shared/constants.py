@@ -6,7 +6,6 @@ from pathlib import Path
 from langchain_core.tracers.stdout import ConsoleCallbackHandler
 from langchain_openai import ChatOpenAI
 from backend.utils.google_genai_robust import RobustChatGoogleGenerativeAI
-from backend.shared.constants import RESEARCH_LLM_FAST
 
 load_dotenv()
 
@@ -46,12 +45,17 @@ GPT5_MINI = ChatOpenAI(
 )
 
 GEMINI_25_FLASH = RobustChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.0,
+    callbacks=[ConsoleCallbackHandler()],
+)
+GEMINI_25_PRO = RobustChatGoogleGenerativeAI(
     model="gemini-2.5-pro",
     temperature=0.0,
     callbacks=[ConsoleCallbackHandler()],
 )
 
-RESEARCH_LLM_REASONING = GEMINI_25_FLASH
+RESEARCH_LLM_REASONING = GEMINI_25_PRO
 RESEARCH_LLM_FAST = GEMINI_25_FLASH
 
 
