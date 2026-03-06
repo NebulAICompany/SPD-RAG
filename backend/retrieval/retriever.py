@@ -1,4 +1,3 @@
-import json
 import os
 from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient, models
@@ -100,7 +99,7 @@ def retrieve_top_k(
         logger.info(f"🔍 Retrieving top {k} documents for query: {query}")
         if not client.collection_exists(collection_name="documents"):
             logger.info("No collection found")
-            return None
+            return []
 
         logger.info(
             f"📊 Searching through {client.count(collection_name='documents')} document chunks"
@@ -137,8 +136,7 @@ def retrieve_top_k(
         for d in docs_with_scores:
             doc = d.payload
             score = d.score
-            logger.info(f"file name: {doc['metadata'].get('file_name')}")
-            logger.info(f"score: {score}")
+            logger.debug(f"file_name={doc['metadata'].get('file_name')}, score={score}")
             contains_image = doc["metadata"].get("contains_image", False)
 
             if contains_image:
@@ -156,7 +154,6 @@ def retrieve_top_k(
                 }
             )
         logger.info(f"📈 Retrieved {len(results)} document chunks")
-        logger.info(f"Results: {json.dumps(results, indent=4)}")
         return results
 
     except Exception as e:

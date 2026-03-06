@@ -7,11 +7,10 @@ from langchain_core.messages import (
     SystemMessage,
     AIMessage,
 )
-from langchain_core.exceptions import OutputParserException
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
 from langgraph.types import Command
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 from backend.core.prompts import (
     SYNTHESIS_PROMPT,
     LEAD_RESEARCHER_PROMPT,
