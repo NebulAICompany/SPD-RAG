@@ -1,7 +1,6 @@
 """Dense retrieval over Qdrant using Cohere embed-v4.0 (1536-dim).
 
-Supports document-scoped filtering for SPD-RAG sub-agents and optional
-hybrid retrieval with BM25 keyword search.
+Supports document-scoped filtering for SPD-RAG sub-agents.
 """
 
 import os
@@ -9,7 +8,6 @@ from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient, models
 from backend.shared.constants import co
 from backend.shared.logger import get_logger
-from backend.retrieval.keyword_search import keyword_search
 
 logger = get_logger("RETRIEVER")
 
@@ -171,39 +169,4 @@ def retrieve_top_k(
 
     except Exception as e:
         logger.error("Retrieval error: %s", e)
-        return []
-
-
-def retrieve_with_keyword_helping(
-    client: QdrantClient,
-    query: str,
-    query_terms: List[str],
-    k: int = 10,
-    selected_files: Optional[List[str]] = None,
-) -> List[Dict[str, Any]]:
-    """Hybrid retrieval: dense (top-k) plus BM25 keyword results (top-3) merged."""
-    try:
-        logger.info("Hybrid retrieval for query (limit k+3): %s", query[:80] if query else "")
-
-        vector_results = retrieve_top_k(
-            client, query, k=k, selected_files=selected_files
-        )
-
-        keyword_results = keyword_search(
-            query_terms, k=3, selected_files=selected_files
-        )
-
-        if vector_results is None:
-            vector_results = []
-
-        results = vector_results + keyword_results
-        logger.info(
-            "Hybrid retrieval: %s total (%s vector, %s keyword)",
-            len(results), len(vector_results), len(keyword_results),
-        )
-
-        return results
-
-    except Exception as e:
-        logger.error("Hybrid retrieval error: %s", e)
         return []

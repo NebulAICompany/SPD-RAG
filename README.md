@@ -113,7 +113,7 @@ spd-rag/
 │   │   ├── state.py    # Pydantic state schemas
 │   │   └── tools/      # RAG search tools
 │   ├── pipeline/       # Document upload and vectorization
-│   ├── retrieval/      # Vector search, BM25, and reranking
+│   ├── retrieval/      # Vector search and reranking
 │   ├── shared/         # Constants, logging configuration
 │   └── utils/          # Robust LLM wrapper, file parsers
 ├── benchmark/          # Evaluation harnesses (Loong, MoNaCo, OOLONG)
