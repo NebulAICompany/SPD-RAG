@@ -1,6 +1,8 @@
-"""
-Simple Keyword Search System using BM25 Algorithm
-Integrates with existing vector search pipeline for hybrid retrieval
+"""BM25 keyword search for hybrid retrieval (vector + keyword).
+
+Integrates with the dense retrieval pipeline: keyword results can be merged with
+vector results (e.g. in retrieve_with_keyword_helping) for better recall on
+lexical matches.
 """
 
 import json
@@ -20,7 +22,7 @@ logger = get_logger("KEYWORD_SEARCH")
 
 @dataclass
 class SearchResult:
-    """Represents a keyword search result"""
+    """Single result from BM25 keyword search (doc_id, content, score, metadata, matched_terms)."""
 
     doc_id: str
     content: str
@@ -30,39 +32,30 @@ class SearchResult:
 
 
 def tokenize_text(text: str) -> List[str]:
-    """
-    Simple tokenizer to convert text into searchable terms
-    
+    """Normalize text into BM25-style tokens: lowercase, alphanumeric, length 2-50.
+
     Args:
-        text: Input text to tokenize
-        
+        text: Raw input text.
+
     Returns:
-        List of lowercase tokens (words)
+        List of tokens used for indexing and querying.
     """
     if not text:
         return []
-    
-    # Convert to lowercase
+
     text = text.lower()
-    
-    # Replace punctuation with spaces, keep alphanumeric and basic punctuation
     text = re.sub(r'[^\w\s]', ' ', text)
-    
-    # Split into tokens
     tokens = text.split()
-    
-    # Filter out very short tokens (1 char) and very long tokens (>50 chars, likely noise)
     tokens = [t for t in tokens if 2 <= len(t) <= 50]
-    
     return tokens
 
 
 class BM25KeywordSearch:
-    """BM25-based keyword search"""
+    """BM25 index and search: k1 (term frequency saturation), b (length normalization)."""
 
     def __init__(self, k1: float = 1.5, b: float = 0.75):
-        self.k1 = k1  # Term frequency saturation parameter
-        self.b = b  # Length normalization parameter
+        self.k1 = k1
+        self.b = b
 
         self.documents: Dict[str, Dict[str, Any]] = {}
         self.term_frequencies: Dict[str, Dict[str, int]] = {}
@@ -71,13 +64,12 @@ class BM25KeywordSearch:
         self.avg_doc_length: float = 0.0
         self.total_documents: int = 0
 
-        # File paths for persistence
         self.index_dir = Path(VECTORSTORE_PATH_STR) / "keyword_index"
         self.index_dir.mkdir(parents=True, exist_ok=True)
         self.documents_file = self.index_dir / "documents.json"
         self.index_file = self.index_dir / "bm25_index.pkl"
 
-        logger.info("🔍 BM25 Keyword Search initialized")
+        logger.info("BM25 keyword search initialized")
 
     def add_document(
         self,
@@ -86,53 +78,45 @@ class BM25KeywordSearch:
         metadata: Dict[str, Any],
         terms: List[str] = None,
     ):
-        """Add a document to the search index with pre-processed terms"""
+        """Add a document to the BM25 index; tokenizes content if terms not provided."""
         if not content or not content.strip():
-            logger.warning(f"⚠️ Skipping document {doc_id}: empty content")
+            logger.warning("Skipping empty document: %s", doc_id)
             return
 
-        # Use provided terms or tokenize the content automatically
         if terms is None:
             terms = tokenize_text(content)
             if not terms:
-                logger.warning(f"⚠️ No terms extracted from document {doc_id}")
+                logger.warning("No terms extracted from document: %s", doc_id)
                 return
-            logger.debug(f"🔤 Tokenized {len(terms)} terms from document {doc_id}")
+            logger.debug("Tokenized %s terms from document %s", len(terms), doc_id)
 
-        # Store document
         self.documents[doc_id] = {
             "content": content,
             "metadata": metadata,
             "terms": terms,
         }
 
-        # Calculate term frequencies for this document
         term_freq = Counter(terms)
         self.term_frequencies[doc_id] = dict(term_freq)
 
-        # Update document frequencies (how many docs contain each term)
         unique_terms = set(terms)
         for term in unique_terms:
             self.document_frequencies[term] += 1
 
-        # Store document length
         self.document_lengths[doc_id] = len(terms)
 
-        # Update total documents and average length
         self.total_documents = len(self.documents)
         if self.total_documents > 0:
             self.avg_doc_length = (
                 sum(self.document_lengths.values()) / self.total_documents
             )
 
-        logger.debug(
-            f"✅ Added document {doc_id} with {len(terms)} terms (total: {self.total_documents})"
-        )
+        logger.debug("Added document %s (%s terms, total docs: %s)", doc_id, len(terms), self.total_documents)
 
     def calculate_bm25_score(
         self, query_terms: List[str], doc_id: str
     ) -> Tuple[float, List[str]]:
-        """Calculate BM25 score for a document given query terms."""
+        """Compute BM25 score for one document and return matched query terms."""
         if doc_id not in self.term_frequencies:
             return 0.0, []
 
@@ -149,10 +133,7 @@ class BM25KeywordSearch:
                 if df == 0:
                     continue
 
-                # IDF calculation
                 idf = math.log((self.total_documents - df + 0.5) / (df + 0.5))
-
-                # BM25 formula
                 numerator = tf * (self.k1 + 1)
                 denominator = tf + self.k1 * (
                     1 - self.b + self.b * (doc_length / self.avg_doc_length)
@@ -169,24 +150,21 @@ class BM25KeywordSearch:
         k: int = 10,
         selected_files: Optional[List[str]] = None,
     ) -> List[SearchResult]:
-        """Search documents using BM25 algorithm with pre-processed query terms"""
+        """Return top-k documents by BM25 score; optionally filter by selected_files."""
         if not query_terms:
             return []
 
         if self.total_documents == 0:
-            logger.warning("No documents in keyword search index")
+            logger.warning("Keyword index is empty")
             return []
 
-        logger.info(f"🔍 Keyword search for terms: {query_terms} (limit: {k})")
+        logger.info("Keyword search terms=%s limit=%s", query_terms, k)
 
         logger.info(f"Selected files: {selected_files}")
         logger.info(f"Length of Documents: {len(self.documents)}")
 
-        # Calculate scores for all documents
         scores = []
         for doc_id in self.documents:
-
-            # Filter by selected files if specified
             if selected_files:
                 doc_metadata = self.documents[doc_id]["metadata"]
                 file_name = doc_metadata.get("file_name", "")
@@ -197,10 +175,8 @@ class BM25KeywordSearch:
             if score > 0:
                 scores.append((doc_id, score, matched_terms))
 
-        # Sort by score (descending)
         scores.sort(key=lambda x: x[1], reverse=True)
 
-        # Create search results
         results = []
         for doc_id, score, matched_terms in scores[:k]:
             doc_data = self.documents[doc_id]
@@ -213,20 +189,17 @@ class BM25KeywordSearch:
             )
             results.append(result)
 
-        logger.info(f"✅ Found {len(results)} matching documents")
+        logger.info("Keyword search returned %s results", len(results))
         return results
 
     def save_index(self):
-        """Save the search index to disk"""
+        """Persist the BM25 index (documents JSON + term stats pickle) to disk."""
         try:
-            # Ensure directory exists before saving
             self.index_dir.mkdir(parents=True, exist_ok=True)
 
-            # Save documents as JSON
             with open(self.documents_file, "w", encoding="utf-8") as f:
                 json.dump(self.documents, f, ensure_ascii=False, indent=2)
 
-            # Save index data as pickle
             index_data = {
                 "term_frequencies": self.term_frequencies,
                 "document_frequencies": dict(self.document_frequencies),
@@ -240,25 +213,21 @@ class BM25KeywordSearch:
             with open(self.index_file, "wb") as f:
                 pickle.dump(index_data, f)
 
-            logger.info(
-                f"💾 Keyword search index saved ({self.total_documents} documents)"
-            )
+            logger.info("Keyword index saved (%s documents)", self.total_documents)
 
         except Exception as e:
-            logger.error(f"❌ Failed to save keyword search index: {e}")
+            logger.error("Failed to save keyword index: %s", e)
 
     def load_index(self) -> bool:
-        """Load the search index from disk"""
+        """Load the BM25 index from disk; returns False if no index exists."""
         try:
             if not self.documents_file.exists() or not self.index_file.exists():
                 logger.info("No existing keyword search index found")
                 return False
 
-            # Load documents
             with open(self.documents_file, "r", encoding="utf-8") as f:
                 self.documents = json.load(f)
 
-            # Load index data
             with open(self.index_file, "rb") as f:
                 index_data = pickle.load(f)
 
@@ -272,17 +241,15 @@ class BM25KeywordSearch:
             self.k1 = index_data.get("k1", 1.5)
             self.b = index_data.get("b", 0.75)
 
-            logger.info(
-                f"📚 Keyword search index loaded ({self.total_documents} documents)"
-            )
+            logger.info("Keyword index loaded (%s documents)", self.total_documents)
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to load keyword search index: {e}")
+            logger.error("Failed to load keyword index: %s", e)
             return False
 
     def clear_index(self):
-        """Clear the entire search index"""
+        """Clear the in-memory index and delete persisted index files."""
         self.documents.clear()
         self.term_frequencies.clear()
         self.document_frequencies.clear()
@@ -290,42 +257,34 @@ class BM25KeywordSearch:
         self.avg_doc_length = 0.0
         self.total_documents = 0
 
-        # Remove index files
         try:
             if self.documents_file.exists():
                 self.documents_file.unlink()
             if self.index_file.exists():
                 self.index_file.unlink()
-            logger.info("🗑️ Keyword search index cleared")
+            logger.info("Keyword index cleared")
         except Exception as e:
-            logger.error(f"❌ Failed to clear index files: {e}")
+            logger.error("Failed to clear index files: %s", e)
 
     def remove_documents_by_file(self, file_name: str):
-        """Remove all documents from a specific file"""
+        """Remove all indexed chunks belonging to the given file name."""
         docs_to_remove = []
 
-        # Find all document IDs that start with the file name
         for doc_id in self.documents.keys():
             if doc_id.startswith(f"{file_name}_"):
                 docs_to_remove.append(doc_id)
 
         if not docs_to_remove:
-            logger.info(f"No existing documents found for file: {file_name}")
+            logger.info("No documents to remove for file: %s", file_name)
             return
 
-        logger.info(
-            f"🗑️ Removing {len(docs_to_remove)} existing documents for file: {file_name}"
-        )
+        logger.info("Removing %s documents for file: %s", len(docs_to_remove), file_name)
 
-        # Remove documents and their associated data
         for doc_id in docs_to_remove:
-            # Remove from documents
             if doc_id in self.documents:
                 del self.documents[doc_id]
 
-            # Remove from term frequencies and update document frequencies
             if doc_id in self.term_frequencies:
-                # Decrease document frequencies for each unique term in this document
                 unique_terms = set(self.term_frequencies[doc_id].keys())
                 for term in unique_terms:
                     if term in self.document_frequencies:
@@ -335,11 +294,9 @@ class BM25KeywordSearch:
 
                 del self.term_frequencies[doc_id]
 
-            # Remove from document lengths
             if doc_id in self.document_lengths:
                 del self.document_lengths[doc_id]
 
-        # Update total documents and average length
         self.total_documents = len(self.documents)
         if self.total_documents > 0:
             self.avg_doc_length = (
@@ -348,12 +305,10 @@ class BM25KeywordSearch:
         else:
             self.avg_doc_length = 0.0
 
-        logger.info(
-            f"✅ Removed {len(docs_to_remove)} documents. Index now has {self.total_documents} documents"
-        )
+        logger.info("Removed %s documents; index has %s documents", len(docs_to_remove), self.total_documents)
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get search index statistics"""
+        """Return index statistics: total_documents, total_terms, avg_doc_length, index_size_mb."""
         return {
             "total_documents": self.total_documents,
             "total_terms": len(self.document_frequencies),
@@ -362,7 +317,7 @@ class BM25KeywordSearch:
         }
 
     def _get_index_size_mb(self) -> float:
-        """Get index size in MB"""
+        """Return total size of persisted index files in megabytes."""
         try:
             total_size = 0
             if self.documents_file.exists():
@@ -374,12 +329,11 @@ class BM25KeywordSearch:
             return 0.0
 
 
-# Global keyword search instance
 _keyword_search_instance = None
 
 
 def get_keyword_search() -> BM25KeywordSearch:
-    """Get or create the global keyword search instance"""
+    """Return the global BM25 instance, loading the index from disk if needed."""
     global _keyword_search_instance
     if _keyword_search_instance is None:
         _keyword_search_instance = BM25KeywordSearch()
@@ -390,21 +344,19 @@ def get_keyword_search() -> BM25KeywordSearch:
 def keyword_search(
     query_terms: List[str], k: int = 10, selected_files: Optional[List[str]] = None
 ) -> List[Dict[str, Any]]:
-    """
-    Perform keyword search and return results in the same format as vector search
+    """Run BM25 search and return results in the same shape as vector retrieval.
 
     Args:
-        query_terms: Pre-processed search terms
-        k: Number of results to return
-        selected_files: Optional list of files to search in
+        query_terms: Tokenized query terms (e.g. from tokenize_text).
+        k: Maximum number of results.
+        selected_files: Optional list of file names to restrict the search.
 
     Returns:
-        List of search results compatible with existing retrieval system
+        List of dicts with content, score, metadata (match_type='keyword_match', etc.).
     """
     search_engine = get_keyword_search()
     results = search_engine.search(query_terms, k=k, selected_files=selected_files)
 
-    # Convert to format compatible with existing retrieval system
     formatted_results = []
     for result in results:
         formatted_result = {

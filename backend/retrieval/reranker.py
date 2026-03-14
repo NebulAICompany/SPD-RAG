@@ -1,3 +1,9 @@
+"""Precision reranking of retrieved passages using Cohere rerank-v4.0-fast.
+
+Used after dense retrieval to return only the top-n most relevant chunks (e.g. top-5
+for sub-agent search, top-20 for normal RAG), reducing noise and token usage.
+"""
+
 from typing import List, Dict, Any
 from backend.shared.logger import get_logger
 
@@ -11,7 +17,21 @@ def rerank(
     model_name: str = "rerank-v4.0-fast",
     top_n: int = 3,
 ) -> List[Dict[str, Any]]:
+    """Rerank documents by relevance to the query using Cohere rerank-v4.0-fast.
 
+    On failure (e.g. config or API error), returns the first top_n documents
+    in original order as fallback.
+
+    Args:
+        query: Search query.
+        documents: List of dicts with 'content' and optional 'metadata'.
+        with_score: If True, add 'score' to each result.
+        model_name: Cohere rerank model (default rerank-v4.0-fast).
+        top_n: Maximum number of results to return.
+
+    Returns:
+        Reranked list of document dicts (content, metadata, optional score).
+    """
     if not documents:
         return []
 
@@ -40,9 +60,7 @@ def rerank(
 
             reranked_results.append(reranked_doc)
 
-        logger.info(
-            f"Successfully reranked documents. Returned {len(reranked_results)} results"
-        )
+        logger.info("Reranked to %s results", len(reranked_results))
         return reranked_results
 
     except ValueError as e:

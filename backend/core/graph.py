@@ -16,26 +16,27 @@ logger = get_logger("GRAPH")
 def route_orchestrator(
     state: AgentState,
 ) -> Union[List[Send], Literal["synthesis_node"]]:
-    """
-    Determines whether to spawn parallel sub-agents or proceed to synthesis.
+    """Conditional edge: fan-out to sub-agents or go to synthesis.
 
-    This function implements the Map-Reduce fan-out logic:
-    - If there are selected documents that haven't been processed (no global_context),
-      spawn a sub-agent for each document.
-    - Otherwise, proceed directly to synthesis.
+    Map step: if selected_documents is non-empty and global_context is empty,
+    returns one Send per document so each runs the retrieval loop in parallel.
+    Reduce step: otherwise routes to synthesis_node to merge all findings.
 
     Args:
-        state: Current agent state with selected_documents and global_context.
+        state: Current agent state (selected_documents, global_context, sub_agent_todos).
 
     Returns:
-        Either a list of Send commands for parallel execution, or "synthesis_node".
+        List of Send(document_sub_agent_node, SubAgentInput) or the string "synthesis_node".
     """
     selected_docs = state.get("selected_documents", [])
     context = state.get("global_context", [])
     sub_agent_todos = state.get("sub_agent_todos", [])
 
-    # Fan-out: Process documents in parallel if we have docs but no context yet
-    logger.info(f"Selected docs: {selected_docs}, Context: {context}, Sub agent todos: {sub_agent_todos}")
+    # Fan-out: one sub-agent per document when we have docs and no results yet
+    logger.info(
+        "Routing: selected_docs=%s, context_len=%s, todos=%s",
+        selected_docs, len(context) if context else 0, len(sub_agent_todos),
+    )
     if selected_docs and not context:
         return [
             Send(
@@ -45,16 +46,19 @@ def route_orchestrator(
             for doc_name in selected_docs
         ]
 
-    # Reduce: All docs processed or no docs to process
+    # Reduce: all documents processed or none selected; proceed to synthesis
     return "synthesis_node"
 
 
 def build_graph() -> StateGraph:
-    """
-    Constructs and returns the AIris agent graph.
+    """Build the SPD-RAG LangGraph: coordination -> (parallel sub-agents) -> synthesis.
+
+    Nodes: orchestrator_node (coordination), document_sub_agent_node (retrieval),
+    synthesis_node (synthesis). Conditional edge after orchestrator fans out to
+    sub-agents or synthesis; sub-agents then converge to synthesis.
 
     Returns:
-        Compiled StateGraph with all nodes and edges configured.
+        Uncompiled StateGraph with nodes and edges defined.
     """
     workflow = StateGraph(AgentState, input=AgentInputState)
 
@@ -80,9 +84,9 @@ _compiled_graph = None
 
 
 def get_compiled_graph():
-    """
-    Returns (and caches) the compiled graph as a lazy singleton.
-    Both langgraph.json and main.py share the same instance.
+    """Return the compiled SPD-RAG graph, compiling and caching on first use.
+
+    Shared by the FastAPI app and any LangGraph tooling (e.g. langgraph.json).
     """
     global _compiled_graph
     if _compiled_graph is None:
@@ -92,9 +96,9 @@ def get_compiled_graph():
     return _compiled_graph
 
 
-# Lazy property for langgraph.json (expects graph.py:graph)
+# Expose a lazy graph for langgraph.json and other consumers that expect graph.py:graph
 class _LazyGraph:
-    """Lazy wrapper so `from graph import graph` works without eager compilation."""
+    """Proxy that compiles the SPD-RAG graph on first attribute access or invocation."""
     def __getattr__(self, name):
         return getattr(get_compiled_graph(), name)
     def __call__(self, *args, **kwargs):

@@ -1,4 +1,8 @@
-# robust_google_chat.py
+"""Robust Gemini wrapper: retries (5xx, 429), API key rotation, and backoff.
+
+Used for coordination/synthesis (Gemini 2.5 Pro) and sub-agents (Gemini 2.5 Flash)
+under concurrent load. See SPD-RAG README for GOOGLE_API_KEYS setup.
+"""
 import asyncio
 import os
 import re

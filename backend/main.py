@@ -1,3 +1,9 @@
+"""SPD-RAG FastAPI backend: upload, chat over the compiled LangGraph, and session state.
+
+Exposes /upload (document indexing), /chat (query with selected_documents), and
+/health, /files. The graph runs coordination -> parallel sub-agents -> synthesis.
+"""
+
 import sys
 import os
 
@@ -25,36 +31,37 @@ from backend.shared.constants import (
 )
 from langchain_core.messages import HumanMessage, AIMessage
 
-logger = get_logger("RRM_API")
+logger = get_logger("SPD_RAG_API")
 
-# Request Models
+
 class QueryRequest(BaseModel):
+    """Chat request: user query, optional session id, optional document filter."""
+
     query: str
     session_id: Optional[str] = "default_session"
     selected_files: Optional[List[str]] = None
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    logger.info("Starting RRM API...")
+    """Load vectorstore and compile graph on startup; close vectorstore on shutdown."""
+    logger.info("Starting SPD-RAG API")
     if os.path.exists(VECTORSTORE_PATH_STR):
         logger.info("Loading vectorstore...")
         load_vectorstore(VECTORSTORE_PATH_STR)
     else:
-        logger.warning(f"Vectorstore not found at {VECTORSTORE_PATH_STR}")
-    
-    # Initialize graph
+        logger.warning("Vectorstore not found at %s", VECTORSTORE_PATH_STR)
+
     app.state.graph = get_compiled_graph()
-    
+
     yield
-    
-    # Shutdown
-    logger.info("Shutting down RRM API...")
+
+    logger.info("Shutting down SPD-RAG API")
     close_vectorstore()
 
-app = FastAPI(title="RRM Agent API", lifespan=lifespan)
 
-# CORS
+app = FastAPI(title="SPD-RAG API", lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -63,17 +70,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory chat history for simple session management
-# In production, use a database (like the original implementations chat_history_manager)
+# In-memory chat history per session; replace with a database for production
 CHAT_HISTORY: Dict[str, List[Any]] = {}
+
 
 @app.get("/health")
 async def health_check():
+    """Liveness check for the API."""
     return {"status": "healthy"}
+
 
 @app.get("/files")
 async def get_files():
-    """Get list of uploaded files"""
+    """Return list of uploaded file names from the uploads directory."""
     try:
         if not os.path.exists(UPLOADS_PATH_STR):
             return {"files": []}
@@ -86,18 +95,16 @@ async def get_files():
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    """Upload and process a file for RAG"""
+    """Save the uploaded file, then parse, chunk, embed, and index it for retrieval."""
     try:
-        # Save file to uploads directory
         os.makedirs(UPLOADS_PATH_STR, exist_ok=True)
         file_path = os.path.join(UPLOADS_PATH_STR, file.filename)
-        
+
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
-        logger.info(f"File saved to {file_path}")
-        
-        # Process the file
+
+        logger.info("File saved to %s", file_path)
+
         result = await process_file(file_path)
         
         if result["status"] == "error":
@@ -111,60 +118,54 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/chat")
 async def chat_endpoint(request: QueryRequest):
+    """Run the SPD-RAG graph: coordination -> sub-agents -> synthesis; return final answer."""
     try:
         query = request.query
         session_id = request.session_id
         selected_files = request.selected_files
-        
-        logger.info(f"Received query: {query} (Session: {session_id})")
-        
-        # 1. Set global context for RAG tools
+
+        logger.info("Chat query (session=%s): %s", session_id, query[:80] if query else "")
+
         set_selected_files(selected_files)
         set_original_user_query(query)
-        
-        # 2. Manage Chat History
+
         if session_id not in CHAT_HISTORY:
             CHAT_HISTORY[session_id] = []
-            
+
         history = CHAT_HISTORY[session_id]
-        
-        # Prepare messages
-        messages = [msg for msg in history] # Copy existing
+        messages = list(history)
         messages.append(HumanMessage(content=query))
-        
-        # 3. Invoke Graph
+
         graph = app.state.graph
         config = {"configurable": {"thread_id": session_id}}
-        
+
         result = await graph.ainvoke(
             {
                 "messages": messages,
                 "selected_documents": selected_files or [],
             },
-            config=config
+            config=config,
         )
-        
-        # 4. Extract Answer
+
         answer = "I couldn't generate a response."
         if result.get("messages"):
             for msg in reversed(result["messages"]):
                 if msg.content:
                     answer = msg.content
                     break
-        
-        # 5. Update History
+
         CHAT_HISTORY[session_id].append(HumanMessage(content=query))
         CHAT_HISTORY[session_id].append(AIMessage(content=answer))
-        
-        # 6. Return Response
+
         return {
             "response": answer,
             "session_id": session_id
         }
 
     except Exception as e:
-        logger.error(f"Error in chat endpoint: {e}")
+        logger.error("Chat endpoint error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="127.0.0.1", port=8001, reload=True)

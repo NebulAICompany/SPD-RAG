@@ -34,10 +34,10 @@ _ENCODER: Optional[tiktoken.Encoding] = None
 
 
 def _get_encoder() -> tiktoken.Encoding:
-    """Lazily initialise and return a shared tiktoken encoder.
+    """Return a shared tiktoken encoder, initializing lazily on first use.
 
-    Uses cl100k_base, which is compatible with GPT-4/4.1/4o/5-style models
-    and already used elsewhere in this project for accurate token counting.
+    Uses the cl100k_base encoding, compatible with GPT-4/5-style models and
+    used project-wide for consistent token counting in the synthesis layer.
     """
     global _ENCODER
     if _ENCODER is None:
@@ -46,7 +46,7 @@ def _get_encoder() -> tiktoken.Encoding:
 
 
 def _estimate_tokens(text: str) -> int:
-    """Estimate token count using the cl100k_base tokenizer."""
+    """Return the number of tokens in text using the cl100k_base tokenizer."""
     if not text:
         return 0
     return len(_get_encoder().encode(text))
@@ -55,18 +55,19 @@ def _estimate_tokens(text: str) -> int:
 def _group_by_tokens(
     texts: List[str], children: np.ndarray, target_tokens: int
 ) -> List[List[str]]:
-    """Group texts into batches using the agglomerative clustering tree.
+    """Group texts into batches that respect the clustering hierarchy and token budget.
 
-    Traverses the merge history (children_) to identify the largest possible
-    clusters that satisfy the target_tokens constraint.
+    Traverses the UPGMA merge history (children_) from AgglomerativeClustering to form
+    the largest possible clusters whose combined token count does not exceed
+    target_tokens, preserving similarity-ordered batching for the synthesis layer.
 
     Args:
-        texts: List of original text chunks.
-        children: (N-1, 2) array of merge operations from AgglomerativeClustering.
-        target_tokens: Max token budget per batch.
+        texts: List of text chunks (e.g. sub-agent findings) to batch.
+        children: (N-1, 2) array of merge indices from sklearn AgglomerativeClustering.children_.
+        target_tokens: Maximum tokens per batch (typically from synthesizer context limit).
 
     Returns:
-        List of batches (each batch is a list of strings).
+        List of batches; each batch is a list of strings to be summarized together.
     """
     n_samples = len(texts)
 
@@ -112,7 +113,11 @@ async def _summarize_batch_findings(
     root_query: str,
     synthesis_directive: str = "",
 ) -> str:
-    """Summarize a batch of findings into a single merged summary."""
+    """Merge one batch of sub-agent findings into a single summary using the synthesis LLM.
+
+    Invokes the synthesis prompt with the batch text, root user query, and the
+    coordination-layer synthesis directive. Used inside recursive_summarize_findings.
+    """
     batch_text = "\n\n---\n\n".join(findings_batch)
     prompt_content = SYNTHESIS_PROMPT.format(
         findings=batch_text,
@@ -132,10 +137,13 @@ async def recursive_summarize_findings(
     target_batch_tokens: Optional[int] = None,
     synthesis_directive: str = "",
 ) -> str:
-    """Hybrid Similarity-Ordered Recursive Summarization.
+    """Recursively merge sub-agent findings via similarity-ordered agglomerative clustering.
 
-    Uses sklearn to perform agglomerative clustering on embeddings, then groups
-    chunks into maximally-sized batches that respect the similarity hierarchy.
+    Embeds all findings, computes cosine similarity, and runs UPGMA agglomerative
+    clustering. Batches are formed by traversing the merge tree so that each batch
+    stays within the token budget (default 750k-capable from config). Each batch
+    is summarized by the synthesis LLM; the process repeats until a single final
+    summary remains. Aligns with the synthesis layer design in the SPD-RAG paper.
     """
     if target_batch_tokens is None:
         synth_limit = get_synthesizer_token_limit_for_fast()
@@ -148,8 +156,8 @@ async def recursive_summarize_findings(
         iteration += 1
         n = len(current_level)
         logger.info(
-            f"🔄 Recursive summarization – iteration {iteration}, "
-            f"{n} chunk(s) remaining"
+            "Recursive summarization iteration %s, %s chunk(s) remaining",
+            iteration, n,
         )
 
         embeddings = np.array(
@@ -169,11 +177,11 @@ async def recursive_summarize_findings(
             current_level, clustering.children_, target_batch_tokens
         )
 
-        # If no reduction occurred, force a single batch to guarantee convergence
+        # If clustering did not reduce the number of batches, merge all into one to ensure convergence
         if len(batches) >= n:
             batches = [current_level]
 
-        logger.info(f"   📦 Formed {len(batches)} batch(es) for LLM synthesis")
+        logger.info("Formed %s batch(es) for LLM synthesis", len(batches))
 
         tasks = [
             _summarize_batch_findings(
@@ -191,33 +199,36 @@ async def recursive_summarize_findings(
 
 
 class WriteTodos(BaseModel):
-    """Structured output schema for the orchestrator to define tasks for sub-agents."""
+    """Structured output from the coordination layer: Shared Instruction Set plus synthesis directive.
+
+    The lead researcher (coordinator) produces this once per query. sub_agent_todos
+    are the atomic extraction tasks every document sub-agent executes; synthesis_directive
+    instructs the synthesis layer how to merge and structure the final response.
+    """
 
     sub_agent_todos: List[TodoItem] = Field(
-        description="A list of specific tasks that EVERY sub-agent must execute for their assigned document. Each item must have a 'task' and a 'status' (default 'pending')."
+        description="Shared Instruction Set: tasks every sub-agent must execute for its assigned document (task + status)."
     )
     synthesis_directive: str = Field(
-        description=(
-            "A concise instruction (2-4 sentences) for the downstream synthesizer: the main goal, what to prioritize, and how to structure the merged output."
-        )
+        description="Instruction for the synthesizer: goal, priorities, and output structure (2-4 sentences)."
     )
 
 
 async def orchestrator_node(
     state: AgentState, config: RunnableConfig
 ) -> Dict[str, Any]:
-    """
-    Defines tasks for sub-agents based on the user query.
+    """Coordination layer: decompose the user query into tasks and a synthesis directive.
 
-    Uses structured output (no tool binding) so the LLM always returns a
-    well-formed WriteTodos object deterministically.
+    Uses Gemini 2.5 Pro with structured output (WriteTodos) so the model returns
+    a Shared Instruction Set (sub_agent_todos) and a synthesis_directive without
+    tool binding. These drive the parallel retrieval layer and the synthesis layer.
 
     Args:
-        state: Current agent state.
-        config: Runtime configuration.
+        state: Current agent state (messages contain the user query).
+        config: LangGraph runtime configuration.
 
     Returns:
-        State updates including messages and sub_agent_todos.
+        State update with messages, sub_agent_todos, and synthesis_directive.
     """
     messages = state["messages"]
 
@@ -231,8 +242,8 @@ async def orchestrator_node(
         [{"role": "system", "content": LEAD_RESEARCHER_PROMPT}] + messages
     )
 
-    logger.info(f"🎯 SYNTHESIS DIRECTIVE created: {result.synthesis_directive}")
-    logger.info(f"📝 Generated {len(result.sub_agent_todos)} sub-agent todos")
+    logger.info("Synthesis directive created: %s", result.synthesis_directive)
+    logger.info("Generated %s sub-agent todo(s)", len(result.sub_agent_todos))
 
     return {
         "messages": [
@@ -246,21 +257,20 @@ async def orchestrator_node(
 
 
 async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
-    """
-    Processes a document using an RLM-inspired iterative retrieval loop.
+    """Parallel retrieval layer: one sub-agent per document with an iterative retrieval loop.
 
-    The LLM fully controls iteration: it outputs a structured AgentAction each
-    turn. The external loop executes the search and feeds results back, or exits
-    when the LLM signals action="finalize". No tools are ever bound to the LLM.
-
-    A high safety ceiling (SAFETY_LIMIT) exists only as an emergency fallback to
-    prevent runaway costs — the LLM is expected to finalize well before it.
+    The sub-agent (Gemini 2.5 Flash) outputs a structured AgentAction each turn;
+    the runner executes the search and appends results to the conversation, or
+    exits when action is "finalize". Tools are not bound to the LLM; the loop
+    interprets AgentAction and calls the document-scoped RAG tool. Each sub-agent
+    runs in isolation (single document, no cross-document context). A safety
+    ceiling (SAFETY_LIMIT) stops the loop after a maximum number of searches.
 
     Args:
-        input_data: SubAgentInput containing the document_name and assigned todos.
+        input_data: document_name and the Shared Instruction Set (todos) for this document.
 
     Returns:
-        State update with the Summary added to global_context.
+        State update containing a single Summary for global_context.
     """
     SAFETY_LIMIT = 5
 
@@ -297,8 +307,8 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
 
         if iteration > SAFETY_LIMIT:
             logger.error(
-                f"[{doc_name}] Safety ceiling of {SAFETY_LIMIT} iterations reached — "
-                f"LLM never issued 'finalize'. Forcing extraction."
+                "[%s] Safety ceiling of %s iterations reached; forcing extraction.",
+                doc_name, SAFETY_LIMIT,
             )
             messages.append(
                 HumanMessage(
@@ -312,7 +322,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
                     action.findings or "Safety limit reached; partial findings only."
                 )
             except Exception as e:
-                logger.error(f"[{doc_name}] Forced finalization failed: {e}")
+                logger.error("[%s] Forced finalization failed: %s", doc_name, e)
                 findings = "Extraction failed after safety limit."
             return {
                 "global_context": [Summary(document_name=doc_name, findings=findings)]
@@ -322,8 +332,8 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
             action: AgentAction = await action_extractor.ainvoke(messages)
         except Exception as e:
             logger.error(
-                f"[{doc_name}] AgentAction parsing failed (iter {iteration}): {e}. "
-                f"Aborting loop."
+                "[%s] AgentAction parsing failed (iter %s): %s; aborting loop.",
+                doc_name, iteration, e,
             )
             return {
                 "global_context": [
@@ -335,14 +345,15 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
             }
 
         logger.info(
-            f"[{doc_name}] Iter {iteration} — "
-            f"action={action.action!r} | reasoning={action.reasoning!r}"
+            "[%s] Iter %s action=%s reasoning=%s",
+            doc_name, iteration, action.action, action.reasoning,
         )
 
         if action.action == "finalize":
             if not action.findings:
                 logger.warning(
-                    f"[{doc_name}] LLM finalized with empty findings (iter {iteration})."
+                    "[%s] Sub-agent finalized with empty findings (iter %s).",
+                    doc_name, iteration,
                 )
             return {
                 "global_context": [
@@ -355,7 +366,8 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
 
         if not action.query:
             logger.warning(
-                f"[{doc_name}] LLM issued 'search' with no query (iter {iteration})."
+                "[%s] Sub-agent issued search with no query (iter %s).",
+                doc_name, iteration,
             )
             messages.append(
                 HumanMessage(
@@ -369,7 +381,7 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
         search_results = await search_specific_document_for_research.ainvoke(
             {"query": action.query, "file_name": doc_name}
         )
-        logger.info(f"[{doc_name}] Search query: '{action.query}'")
+        logger.info("[%s] Search query: %s", doc_name, action.query)
 
         messages.append(
             AIMessage(
@@ -386,17 +398,19 @@ async def document_sub_agent_node(input_data: SubAgentInput) -> Dict[str, Any]:
 async def synthesis_node(
     state: AgentState, config: RunnableConfig
 ) -> Command[Literal[END]]:
-    """
-    Aggregates all research findings and generates the final report.
+    """Synthesis layer: merge all sub-agent summaries into one final response.
 
-    Combines summaries from global_context into a comprehensive response.
+    Collects Summary objects from global_context, orders them by similarity via
+    recursive_summarize_findings (agglomerative clustering + token-bounded batching),
+    and returns an AIMessage with the merged report. Uses the coordination-layer
+    synthesis_directive to guide structure and priorities.
 
     Args:
-        state: Current agent state with global_context populated.
-        config: Runtime configuration.
+        state: Agent state with global_context and synthesis_directive set.
+        config: LangGraph runtime configuration.
 
     Returns:
-        Command routing to END with final report in messages.
+        Command to END with the final report appended to messages.
     """
     global_context = state.get("global_context", [])
     synthesis_directive = state.get("synthesis_directive", "")

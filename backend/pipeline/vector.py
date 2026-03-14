@@ -1,3 +1,10 @@
+"""Document chunking, embedding (Cohere embed-v4.0), and Qdrant indexing for SPD-RAG.
+
+Splits markdown-oriented text into chunks (token-counted with cl100k_base),
+embeds with Cohere embed-v4.0 (1536-dim), and uploads to the 'documents' collection.
+Used by the upload pipeline and by the synthesis layer for recursive summarization.
+"""
+
 from qdrant_client import QdrantClient, models
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from langchain_core.documents import Document
@@ -15,7 +22,7 @@ enc = tiktoken.get_encoding("cl100k_base")
 
 
 async def generate_embeddings(texts: List[str]) -> List[List[float]]:
-    """Embed texts using Cohere embed-v4.0, batching automatically (max 96/call)."""
+    """Embed texts with Cohere embed-v4.0 (search_document, 1536-dim), with batching and rate-limit retries."""
     if not texts:
         return []
 
@@ -54,16 +61,19 @@ async def generate_embeddings(texts: List[str]) -> List[List[float]]:
 
 
 class VectorStorePipeline:
-    """Simplified Vector Store Pipeline for RRM."""
+    """Chunk documents (markdown-oriented), embed with Cohere, and index in Qdrant.
+
+    Used when uploading new documents so they become searchable by the retrieval layer.
+    """
 
     class Embedding:
-        """Handles text embedding and Qdrant upload."""
+        """Generate embeddings for document chunks and upload them to Qdrant."""
 
         @staticmethod
         async def upload_text_embed(
             client: QdrantClient, processed_docs: List[Document]
         ):
-            """Create embeddings for all docs and upload as Qdrant points."""
+            """Embed all chunks with Cohere embed-v4.0 and upsert into the 'documents' collection."""
             if not processed_docs:
                 logger.warning("No documents to embed.")
                 return
@@ -97,7 +107,7 @@ class VectorStorePipeline:
                 )
 
             client.upload_points(collection_name="documents", points=all_points)
-            logger.info(f"Uploaded {len(all_points)} points to vectorstore")
+            logger.info("Uploaded %s points to vectorstore", len(all_points))
 
     def __init__(self):
         self.text_splitter = RecursiveCharacterTextSplitter.from_language(
@@ -108,13 +118,14 @@ class VectorStorePipeline:
         )
 
     def length_function(self, text: str) -> int:
+        """Token count for the splitter (cl100k_base)."""
         return len(enc.encode(text, disallowed_special=()))
 
     async def run(self, text_content: str, document_name: str, metadata: Optional[dict] = None):
-        """Process text content and index it."""
+        """Split text into chunks, embed with Cohere, and index in Qdrant under document_name."""
         try:
             if not text_content or not text_content.strip():
-                logger.error("❌ No valid text content provided")
+                logger.error("No valid text content provided")
                 return
 
             chunk_idx = 0
@@ -122,10 +133,10 @@ class VectorStorePipeline:
             docs = self.text_splitter.create_documents([text_content])
 
             if not docs:
-                logger.warning(f"⚠️ No chunks created for {document_name}.")
+                logger.warning("No chunks created for document: %s", document_name)
                 return
 
-            logger.info(f"✅ Document '{document_name}' split into {len(docs)} chunks")
+            logger.info("Document '%s' split into %s chunks", document_name, len(docs))
 
             for doc in docs:
                 if not hasattr(doc, "metadata") or doc.metadata is None:
@@ -156,13 +167,13 @@ class VectorStorePipeline:
                     ),
                 )
                 if existing.count > 0:
-                    logger.info(f"Document '{document_name}' already exists in vectorstore, skipping.")
+                    logger.info("Document '%s' already in vectorstore; skipping", document_name)
                     return
 
-            logger.info("Creating embeddings using Cohere embed-v4.0...")
+            logger.info("Creating embeddings with Cohere embed-v4.0")
             await self.Embedding.upload_text_embed(client, docs)
-            logger.info("Processing complete.")
+            logger.info("Vector pipeline complete")
 
         except Exception as e:
-            logger.error(f"❌ Error in vector store processing: {str(e)}")
+            logger.error("Vector pipeline error: %s", e)
             raise e

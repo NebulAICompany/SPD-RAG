@@ -1,3 +1,10 @@
+"""System prompts for the SPD-RAG coordination, retrieval, and synthesis layers.
+
+These prompts implement the roles described in the paper: lead researcher
+(coordination), document sub-agent (retrieval), and synthesizer. They are
+referenced in the paper appendix.
+"""
+
 RESEARCH_SYSTEM_PROMPT = """You are a sub-agent investigating a single document: "{file_name}".
 
 You operate inside an **iterative retrieval loop**. On each turn you output exactly one structured action:

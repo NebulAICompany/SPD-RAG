@@ -1,3 +1,9 @@
+"""SPD-RAG configuration: paths, API clients (Cohere, OpenAI, Gemini), and global query state.
+
+Cohere is used for embeddings (embed-v4.0) and reranking (rerank-v4.0-fast). Gemini
+models are wrapped with RobustChatGoogleGenerativeAI for retries and key rotation.
+"""
+
 import os
 from typing import List, Optional
 from dotenv import load_dotenv
@@ -65,31 +71,31 @@ ORIGINAL_USER_QUERY: Optional[str] = None
 
 
 def set_selected_files(files: Optional[List[str]]) -> None:
-    """Set the global selected files for RAG queries."""
+    """Set the list of document names to restrict retrieval (used by RAG tools)."""
     global SELECTED_FILES
     SELECTED_FILES = files
 
 
 def get_selected_files() -> Optional[List[str]]:
-    """Get the global selected files for RAG queries."""
+    """Return the current selected-documents filter, or None for no filter."""
     return SELECTED_FILES
 
 
 def set_original_user_query(query: Optional[str]) -> None:
-    """Set the global original user query."""
+    """Set the root user query (e.g. for synthesis or tool context)."""
     global ORIGINAL_USER_QUERY
     ORIGINAL_USER_QUERY = query
 
 
 def get_original_user_query() -> Optional[str]:
-    """Get the global original user query."""
+    """Return the current root user query, or None."""
     return ORIGINAL_USER_QUERY
 
 
 def get_synthesizer_token_limit_for_fast() -> int:
-    """
-    Return a safe synthesizer input-token limit based solely on
-    the currently configured RESEARCH_LLM_FAST model.
+    """Return a safe per-batch token limit for the synthesis layer (e.g. 750k for Gemini).
+
+    Derived from the configured RESEARCH_LLM_FAST model context size.
     """
     max_context_map = {
         "gpt-5": 400_000,

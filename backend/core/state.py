@@ -7,15 +7,17 @@ from typing_extensions import TypedDict
 def merge_summaries(
     left: Optional[List["Summary"]], right: List["Summary"]
 ) -> List["Summary"]:
-    """
-    Merges new summaries into the global context.
+    """Reducer: append new sub-agent summaries to the global context.
+
+    Used as the reducer for the global_context state key so that parallel
+    sub-agent results are merged without overwriting (LangGraph Send semantics).
 
     Args:
-        left: Existing list of summaries (can be None).
-        right: New summaries to append.
+        left: Existing list of Summary objects (may be None when no prior context).
+        right: New Summary objects from one or more document sub-agents.
 
     Returns:
-        Combined list of summaries.
+        Combined list of all summaries for the synthesis layer.
     """
     if left is None:
         left = []
@@ -25,66 +27,70 @@ def merge_summaries(
 
 
 class TodoItem(BaseModel):
-    """Represents a single actionable task."""
+    """One atomic extraction task from the Shared Instruction Set.
 
-    task: str = Field(description="The specific task to be executed")
+    Every sub-agent executes the same list of TodoItems for its assigned document.
+    """
+
+    task: str = Field(description="What to extract (e.g. a specific metric, definition, or claim).")
     status: str = Field(
         default="pending",
-        description="Status of the task: 'pending', 'in_progress', or 'completed'",
+        description="Task status: 'pending', 'in_progress', or 'completed'.",
     )
 
 
 class Summary(BaseModel):
-    """Research summary extracted from a single document by a sub-agent."""
+    """Output of one document sub-agent: findings from a single document.
 
-    document_name: str = Field(description="The source document name")
-    findings: str = Field(description="Extracted relevant information and analysis")
+    Produced when the sub-agent issues action='finalize'. Collected in
+    global_context and consumed by the synthesis layer.
+    """
+
+    document_name: str = Field(description="Name of the document that was searched.")
+    findings: str = Field(description="Extracted findings for the assigned tasks (raw facts, no synthesis).")
 
 
 class AgentAction(BaseModel):
-    """Structured action the sub-agent outputs in each iteration of the retrieval loop.
+    """Structured output from the sub-agent each retrieval-loop turn.
 
-    The external loop interprets this and either calls the retriever directly or
-    records the final findings — without ever binding tools to the LLM.
+    The runner (document_sub_agent_node) interprets this: on 'search' it runs
+    the document-scoped RAG tool and appends results; on 'finalize' it pushes
+    a Summary to global_context. Tools are not bound to the LLM.
     """
 
     action: Literal["search", "finalize"] = Field(
-        description="'search' to issue another retrieval query, 'finalize' when findings are complete"
+        description="'search' to run another retrieval query; 'finalize' when extraction is complete."
     )
     query: Optional[str] = Field(
         None,
-        description="The search query to run (only required when action='search')",
+        description="Search query string (required when action='search').",
     )
     reasoning: str = Field(
-        description="Brief explanation of why you are taking this action"
+        description="Brief justification for this action.",
     )
     findings: Optional[str] = Field(
         None,
-        description="Complete extracted findings from the document (only required when action='finalize')",
+        description="Full extracted findings from the document (required when action='finalize').",
     )
 
 
 class AgentInputState(MessagesState):
-    """
-    Input state schema for the agent graph.
+    """Input schema for the SPD-RAG graph invocation.
 
-    Inherits the 'messages' key from MessagesState.
-    Used to define the expected input structure for `graph.invoke()`.
+    Extends MessagesState with selected_documents (names of documents to query).
+    Passed as input to graph.invoke() / graph.ainvoke().
     """
     selected_documents: List[str] = []
 
 
 class AgentState(MessagesState):
-    """
-    Main agent state containing messages and global context.
+    """State carried through the SPD-RAG graph (coordination, retrieval, synthesis).
 
-    Inherits the 'messages' key from MessagesState, which is annotated
-    with the `add_messages` reducer for automatic message handling.
-
-    Attributes:
-        selected_documents: Document IDs selected for sub-agent processing.
-        global_context: Aggregated summaries from all sub-agents.
-        sub_agent_todos: Tasks delegated to sub-agents for document processing.
+    Inherits messages from MessagesState (with add_messages reducer). After the
+    coordination layer: sub_agent_todos (Shared Instruction Set) and
+    synthesis_directive are set. After the parallel retrieval layer: global_context
+    holds one Summary per document. The synthesis layer reads global_context and
+    synthesis_directive to produce the final response.
     """
 
     global_context: Annotated[List[Summary], merge_summaries] = []
@@ -94,13 +100,10 @@ class AgentState(MessagesState):
 
 
 class SubAgentInput(TypedDict):
-    """
-    Input schema for the document sub-agent node.
+    """Payload for one document sub-agent, sent via LangGraph Send for parallel execution.
 
-    Passed via LangGraph's `Send` API for parallel execution.
-
-    Attributes:
-        document_name: The name of the document to process.
+    Each Send carries the document name and the Shared Instruction Set (todos)
+    so the sub-agent runs an isolated retrieval loop on that document only.
     """
 
     document_name: str

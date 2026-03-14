@@ -1,3 +1,9 @@
+"""Dense retrieval over Qdrant using Cohere embed-v4.0 (1536-dim).
+
+Supports document-scoped filtering for SPD-RAG sub-agents and optional
+hybrid retrieval with BM25 keyword search.
+"""
+
 import os
 from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient, models
@@ -11,7 +17,7 @@ _qdrant_client: Optional[QdrantClient] = None
 
 
 def embed_query(query: str) -> List[float]:
-    """Embed a single query using Cohere"""
+    """Embed a single query with Cohere embed-v4.0 (search_query input type, 1536 dims)."""
     query_input = [{"content": [{"type": "text", "text": query}]}]
     query_emb = co.embed(
         inputs=query_input,
@@ -24,7 +30,7 @@ def embed_query(query: str) -> List[float]:
 
 
 def embed_documents(documents: List[str]) -> List[List[float]]:
-    """Embed multiple documents using Cohere"""
+    """Embed multiple documents with Cohere embed-v4.0 (search_document input type, 1536 dims)."""
     embed_input = [{"content": [{"type": "text", "text": doc}]} for doc in documents]
     doc_emb = co.embed(
         inputs=embed_input,
@@ -37,6 +43,7 @@ def embed_documents(documents: List[str]) -> List[List[float]]:
 
 
 def load_vectorstore(path: str) -> QdrantClient:
+    """Connect to Qdrant (server via QDRANT_URL or local path) and cache the client."""
     global _qdrant_client
 
     if _qdrant_client is not None:
@@ -46,13 +53,13 @@ def load_vectorstore(path: str) -> QdrantClient:
     if qdrant_url:
         try:
             _qdrant_client = QdrantClient(url=qdrant_url)
-            logger.info(f"✅ Vectorstore connected to Qdrant server at {qdrant_url}")
+            logger.info("Vectorstore connected to Qdrant at %s", qdrant_url)
         except Exception as e:
             raise RuntimeError(f"Failed to connect to Qdrant server at {qdrant_url}: {e}") from e
     else:
         try:
             _qdrant_client = QdrantClient(path=path)
-            logger.info(f"✅ Vectorstore loaded from {path}")
+            logger.info("Vectorstore loaded from path: %s", path)
         except Exception as e:
             if "already accessed" in str(e):
                 raise RuntimeError(
@@ -66,14 +73,16 @@ def load_vectorstore(path: str) -> QdrantClient:
 
     if _qdrant_client.collection_exists(collection_name="documents"):
         logger.info(
-            f"📦 Contains {_qdrant_client.count(collection_name='documents')} document chunks"
+            "Collection 'documents' has %s chunks",
+            _qdrant_client.count(collection_name="documents"),
         )
     else:
-        logger.info("No collection found")
+        logger.info("No 'documents' collection found")
     return _qdrant_client
 
 
 def get_vectorstore() -> Optional[QdrantClient]:
+    """Return the cached Qdrant client, or None if not yet loaded."""
     return _qdrant_client
 
 
@@ -95,8 +104,13 @@ def retrieve_top_k(
     k: int = 10,
     selected_files: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
+    """Retrieve top-k chunks by cosine similarity; optionally filter by file names.
+
+    Embeds the query with Cohere embed-v4.0 and queries the 'documents' collection.
+    Used by both document-scoped (sub-agent) and normal RAG search.
+    """
     try:
-        logger.info(f"🔍 Retrieving top {k} documents for query: {query}")
+        logger.info("Retrieving top %s for query: %s", k, query[:80] if query else "")
         if not client.collection_exists(collection_name="documents"):
             logger.info("No collection found")
             return []
@@ -106,8 +120,7 @@ def retrieve_top_k(
         )
 
         if selected_files:
-            # selected_files = [file.split(".")[0] for file in selected_files]
-            logger.info(f"🔍 Searching through {selected_files} document chunks")
+            logger.info("Filtering by files: %s", selected_files)
             docs_with_scores = client.query_points(
                 collection_name="documents",
                 query=embed_query(query),
@@ -129,7 +142,7 @@ def retrieve_top_k(
                 limit=k,
                 score_threshold=0,
             ).points
-        logger.info(f"✅ Retrieved {len(docs_with_scores)} documents from vectorstore")
+        logger.info("Retrieved %s points from vectorstore", len(docs_with_scores))
 
         results = []
         chunks_with_images = 0
@@ -153,11 +166,11 @@ def retrieve_top_k(
                     },
                 }
             )
-        logger.info(f"📈 Retrieved {len(results)} document chunks")
+        logger.info("Returning %s document chunks", len(results))
         return results
 
     except Exception as e:
-        logger.error(f"❌ Error during retrieval: {e}")
+        logger.error("Retrieval error: %s", e)
         return []
 
 
@@ -168,30 +181,29 @@ def retrieve_with_keyword_helping(
     k: int = 10,
     selected_files: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
+    """Hybrid retrieval: dense (top-k) plus BM25 keyword results (top-3) merged."""
     try:
-        logger.info(f"🔍 Vector + keyword search helping for: '{query}' (limit: {k}+3)")
+        logger.info("Hybrid retrieval for query (limit k+3): %s", query[:80] if query else "")
 
-        # Perform vector search
         vector_results = retrieve_top_k(
             client, query, k=k, selected_files=selected_files
         )
 
-        # Perform keyword search
         keyword_results = keyword_search(
             query_terms, k=3, selected_files=selected_files
         )
 
-        # Combine results (handle None case)
         if vector_results is None:
             vector_results = []
 
         results = vector_results + keyword_results
         logger.info(
-            f"✅ Retrieved {len(results)} documents via vector + keyword search helping ({len(vector_results)} vector, {len(keyword_results)} keyword)"
+            "Hybrid retrieval: %s total (%s vector, %s keyword)",
+            len(results), len(vector_results), len(keyword_results),
         )
 
         return results
 
     except Exception as e:
-        logger.error(f"❌ Error during vector + keyword search helping: {e}")
+        logger.error("Hybrid retrieval error: %s", e)
         return []
